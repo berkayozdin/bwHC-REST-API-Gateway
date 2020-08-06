@@ -52,9 +52,9 @@ abstract class RequestOps extends BaseController
 
 
   def toJsonOrElse[T: Writes](
-    th: => Future[Option[T]]
+    th: Future[Option[T]]
   )(
-    err: String
+    err: => String
   )(
     implicit
     ec: ExecutionContext

@@ -25,6 +25,12 @@ import play.api.libs.json.Json.toJson
 
 import cats.syntax.either._
 
+import de.bwhc.mtb.data.entry.dtos.{
+  MTBFile,
+  Patient
+}
+import de.bwhc.mtb.data.entry.api.MTBDataService
+
 
 
 class DataEntryController @Inject()(
@@ -36,10 +42,9 @@ class DataEntryController @Inject()(
 extends RequestOps
 {
 
-  import de.bwhc.mtb.data.entry.dtos.{MTBFile,Patient}
-  import de.bwhc.mtb.data.entry.api.MTBDataService
   import MTBDataService.Command._
   import MTBDataService.Response._
+  import MTBDataService.Error._
 
 
   private val service = services.dataService
@@ -54,24 +59,29 @@ extends RequestOps
 
         (service ! Upload(mtbfile))
           .map(
-            _.leftMap(err => Outcome.fromErrors(List(err)))
-             .leftMap(toJson(_))
-             .fold(
-               UnprocessableEntity(_),
-               {
-                 case Imported(issuesOrInput,_) =>
-                   issuesOrInput
-                     .bimap(toJson(_),toJson(_))
-                     .fold(
-                       Ok(_), 
-                       Created(_).withHeaders(LOCATION -> s"/data/MTBFile/${mtbfile.patient.id.value}")
-                     )
-                 case _ => InternalServerError
-               }
-             )
-          )
+            _.fold(
+              {
+                case InvalidData(qc) =>
+                  UnprocessableEntity(toJson(qc))
 
+                case UnspecificError(msg) =>
+                  BadRequest(toJson(Outcome.fromErrors(List(msg))))
+              },
+              {
+                case Imported(input,_) =>
+                  Ok(toJson(input))
+                    .withHeaders(LOCATION -> s"/data/MTBFile/${mtbfile.patient.id.value}")
+
+                case IssuesDetected(qc,_) => 
+                  Created(toJson(qc))
+                    .withHeaders(LOCATION -> s"/data/DataQualityReport/${mtbfile.patient.id.value}")
+
+                case _ => InternalServerError
+              }
+            )
+          )
       }
+
    }
 
 
