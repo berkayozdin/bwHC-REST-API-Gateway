@@ -1,0 +1,106 @@
+#!/bin/bash
+
+
+
+#Optional TODO: Adapt BASE_DIR
+BASE_DIR=$(pwd)
+
+
+#Optional TODO: Adapt PORT
+BWHC_PORT=9000
+
+
+#TODO adapt ZPM site name
+ZPM_SITE=Tübingen
+
+
+#TODO Adapt path to bwHCConnector config file
+BWHC_CONNECTOR_CONFIG=$BASE_DIR/bwhcConnectorConfig.xml
+
+
+#TODO adapt BWHC_DATA_DIR
+BWHC_DATA_ENTRY_DIR=/tmp/bwhc_data_entry
+
+BWHC_QUERY_DATA_DIR=/tmp/bwhc_query_data
+
+
+
+###############################################################################
+###############################################################################
+
+BWHC_APP_DIR=$BASE_DIR/bwhc-rest-api-gateway-1.0-SNAPSHOT
+
+
+case "$1" in
+
+  'start')
+
+    PID_FILE=$BWHC_APP_DIR/RUNNING_PID
+
+    if [ -f "$PID_FILE" ]; then
+
+      PID=$(cat $PID_FILE)
+      echo "-------------------------------------------------------------------------"
+      echo " bwHealthCloud Backend Service seems to run already on PID" $(cat $PID_FILE)
+      echo "   "
+      echo " Else delete obsolete RUNNING_PID file"
+      echo "-------------------------------------------------------------------------"
+
+    else
+
+      echo "-------------------------------------------------------------------------"
+      echo " Starting bwHealthCloud Backend Service" $ZPM_SITE
+      echo "-------------------------------------------------------------------------"
+     
+      cp logback.xml $BWHC_APP_DIR/conf/
+      
+      $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
+        -Dconfig.file=$BASE_DIR/production.conf \
+        -Dbwhc.zpm.site=$ZPM_SITE \
+        -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
+        -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
+        -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG \
+        -Dhttp.port=$BWHC_PORT &
+      
+      sleep 1s
+     
+      echo "-------------------------------------------------------------------------"
+      echo " bwHealthCloud Backend Service up and running on PID" $(cat $PID_FILE)
+      echo "-------------------------------------------------------------------------"
+    fi
+  ;;
+
+ 
+  'stop')
+
+    PID_FILE=$BWHC_APP_DIR/RUNNING_PID
+ 
+    if [ -f "$PID_FILE" ]; then
+
+      PID=$(cat $PID_FILE)
+  
+      echo "-------------------------------------------------------------------------"
+      echo " Shutting down bwHealthCloud Backend Service" $ZPM_SITE
+      echo "-------------------------------------------------------------------------"
+  
+      echo "-------------------------------------------------------------------------"
+      echo " Killing process PID:" $PID
+      echo "-------------------------------------------------------------------------"
+  
+      kill $PID
+
+    else
+      echo "-------------------------------------------------------------------------"
+      echo " No PID to indicate that bwHealthCloud Backend Service is running"
+      echo "-------------------------------------------------------------------------"
+    fi
+
+  ;;
+
+
+  *)
+     echo 'Arguments must be one of { start | stop }'
+  ;;
+
+
+esac
