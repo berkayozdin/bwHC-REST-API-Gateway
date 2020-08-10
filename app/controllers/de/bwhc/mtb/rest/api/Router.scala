@@ -32,6 +32,7 @@ extends SimpleRouter
     case GET(p"/data/MTBFile/$id")                       => dataEntry.mtbfile(id)
 
     //TODO: List of Patients with DataQualityReport
+    case GET(p"/data/Patient")                           => dataEntry.patients
     
     case GET(p"/data/DataQualityReport/$id")             => dataEntry.dataQualityReport(id)
 

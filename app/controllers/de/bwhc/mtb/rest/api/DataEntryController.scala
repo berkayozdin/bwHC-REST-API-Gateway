@@ -85,6 +85,16 @@ extends RequestOps
    }
 
 
+  def patients: Action[AnyContent] =
+    Action.async {
+      for {
+        ps   <- service.patientsWithIncompleteData 
+        set  =  SearchSet(ps)
+        json =  toJson(set)   
+      } yield Ok(json)
+    }
+
+
   def mtbfile(id: String): Action[AnyContent] =
     Action.async {
       toJsonOrElse(
