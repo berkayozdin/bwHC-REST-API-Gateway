@@ -18,7 +18,7 @@ import play.api.mvc.{
 import play.api.libs.json._
 import Json.toJson
 
-
+import cats.data.Ior
 import cats.syntax.either._
 
 
@@ -51,22 +51,102 @@ abstract class RequestOps extends BaseController
   }
 
 
-  def toJsonOrElse[T: Writes](
-    th: Future[Option[T]]
-  )(
-    err: => String
-  )(
-    implicit
-    ec: ExecutionContext
-  ): Future[Result] = {
+  implicit class OptionOps[T: Writes](opt: Option[T])
+  {
 
-    for {
-      opt    <- th
-      json   =  opt.map(toJson(_))
-      result =  json.fold(NotFound(err))(Ok(_))
-    } yield result
+    def toJsonOrElse(err: => String) = 
+      opt.map(toJson(_))
+        .map(Ok(_))
+        .getOrElse(NotFound(err)) 
 
   }
+
+
+/*
+  def toJsonResult[T](
+    xor: Either[Outcome,T]
+  )(
+    implicit
+    we: Writes[Outcome],
+    wt: Writes[T]
+  ): Result = {
+
+    xor.bimap(
+      toJson(_),
+      toJson(_)
+    )
+    .fold(
+      out => InternalServerError(out),
+      Ok(_)
+    )
+
+  }
+*/
+
+
+  implicit class EitherOutcomeOps[T](xor: Either[Outcome,T])(
+    implicit
+    we: Writes[Outcome],
+    wt: Writes[T]
+  ){
+
+    def toJsonResult: Result = {
+       xor.bimap(
+        toJson(_),
+        toJson(_)
+      )
+      .fold(
+        out => InternalServerError(out),
+        Ok(_)
+      )
+     }
+
+  }
+
+
+/*
+  def toJsonResult[T](
+    ior: Ior[Outcome,T]
+  )(
+    implicit
+    we: Writes[Outcome],
+    wt: Writes[T]
+  ): Result = {
+
+    ior.bimap(
+      toJson(_),
+      toJson(_)
+    )
+    .fold(
+      out => InternalServerError(out),
+      Ok(_),
+      (out,_) => InternalServerError(out),
+    )
+
+  }
+*/
+
+  implicit class IorOutcomeOps[T](ior: Ior[Outcome,T])(
+    implicit
+    we: Writes[Outcome],
+    wt: Writes[T]
+  ){
+
+    def toJsonResult: Result = {
+       ior.bimap(
+        toJson(_),
+        toJson(_)
+      )
+      .fold(
+        out => InternalServerError(out),
+        Ok(_),
+        (out,_) => InternalServerError(out),
+      )
+
+     }
+
+  }
+
 
 }
 

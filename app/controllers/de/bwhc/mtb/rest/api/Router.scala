@@ -11,7 +11,8 @@ import play.api.routing.sird._
 
 class Router @Inject()(
   examples: ExampleProvider,
-  dataEntry: DataEntryController
+  dataEntry: DataEntryController,
+  querying: QueryController
 )
 extends SimpleRouter
 {
@@ -29,12 +30,24 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
 
     case POST(p"/data/MTBFile")                          => dataEntry.processUpload
-    case GET(p"/data/MTBFile/$id")                       => dataEntry.mtbfile(id)
 
-    //TODO: List of Patients with DataQualityReport
     case GET(p"/data/Patient")                           => dataEntry.patients
-    
+    case GET(p"/data/MTBFile/$id")                       => dataEntry.mtbfile(id)
     case GET(p"/data/DataQualityReport/$id")             => dataEntry.dataQualityReport(id)
+
+    case DELETE(p"/data/Patient/$id")                    => dataEntry.delete(id)
+
+
+    //-------------------------------------------------------------------------
+    // Reporting / Evidence Query endpoints
+    //-------------------------------------------------------------------------
+ 
+    //-------------------------------------------------------------------------
+    // QC Reports
+    //-------------------------------------------------------------------------
+    case GET(p"/reporting/LocalQCReport")                => querying.getLocalQCReport
+    case GET(p"/reporting/GlobalQCReport")               => querying.getGlobalQCReport
+
 
 
   }

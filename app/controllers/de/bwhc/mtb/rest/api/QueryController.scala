@@ -1,0 +1,239 @@
+package de.bwhc.mtb.rest.api
+
+
+
+import scala.concurrent.{
+  Future,
+  ExecutionContext
+}
+
+import javax.inject.Inject
+
+import play.api.mvc.{
+  Action,
+  AnyContent,
+  BaseController,
+  ControllerComponents,
+  Request,
+  Result
+}
+import play.api.libs.json.{
+  Json, Format
+}
+
+import de.bwhc.mtb.data.entry.dtos.{
+  MTBFile,
+  Patient,
+  ZPM
+}
+import de.bwhc.mtb.query.api._
+
+import cats.data.{
+  EitherT,
+  OptionT
+}
+import cats.instances.future._
+import cats.syntax.either._
+
+
+
+case class QueryForm(
+  mode: Query.Mode.Value,
+  parameters: Query.Parameters,
+  filter: Option[Query.Filter]
+)
+
+object QueryForm
+{
+  implicit val format = Json.format[QueryForm]
+}
+
+
+class QueryController @Inject()(
+  val controllerComponents: ControllerComponents,
+  val services: Services
+)(
+  implicit ec: ExecutionContext
+)
+extends RequestOps
+{
+
+  private val service = services.queryService
+
+
+  def getLocalQCReport: Action[AnyContent] = 
+    Action.async {
+
+      //TODO: get Querier and originating ZPM from request/session
+      val querier = Querier("TODO")
+      val origin  = ZPM("TODO")
+
+      for {
+        qc      <- service.getLocalQCReportFor(origin,querier)
+        outcome = qc.leftMap(List(_))
+                    .leftMap(Outcome.fromErrors)
+        result  = outcome.toJsonResult
+      } yield result
+ 
+    }
+ 
+ 
+  def getGlobalQCReport: Action[AnyContent] = 
+    Action.async {
+
+      //TODO: get Querier from request/session
+      val querier = Querier("TODO")
+
+      for {
+        qc     <- service compileGlobalQCReport querier
+        outcome = qc.leftMap(_.toList)
+                    .leftMap(Outcome.fromErrors)
+        result  = outcome.toJsonResult
+      } yield result
+    }
+
+
+  //---------------------------------------------------------------------------
+  // Query commands
+  //---------------------------------------------------------------------------
+
+  import QueryOps.Command._  
+
+/*
+  def submit: Action[AnyContent] = 
+    Action.async { implicit req =>
+      
+      //TODO: get Querier from request/session
+      val querier = Querier.Id("TODO")
+
+      processJsonAsync[QueryForm]{
+        form => 
+          for {
+            subm   <- queryService ! Submit(querier,form.mode,form.parameters)
+            result =  toJsonResult(subm.leftMap(errs => Outcome.fromErrors(errs.toList)))
+          } yield result
+      }
+    }
+ 
+ 
+  def update(
+    id: String
+  ): Action[AnyContent] = 
+    Action.async { implicit req =>
+      
+      processJsonAsync[Update]{
+        form => 
+          for {
+            updated <- queryService ! Update(Query.Id(id),form.mode,form.parameters,form.filter)
+            result  =  toJsonResult(updated.leftMap(errs => Outcome.fromErrors(errs.toList)))
+          } yield result
+      }
+
+    }
+ 
+ 
+  def applyFilter(
+    id: String
+  ): Action[AnyContent] = 
+    Action.async { implicit req =>
+      
+      processJsonAsync[Filter]{
+        filter => 
+          for {
+            filtered <- queryService ! ApplyFilter(Query.Id(id),filter)
+            result   =  toJsonResult(filtered.leftMap(errs => Outcome.fromErrors(errs.toList)))
+          } yield result
+      }
+    }
+ 
+  //---------------------------------------------------------------------------
+  // Query data access queries
+  //---------------------------------------------------------------------------
+
+  def getQuery(
+    id: String
+  ): Action[AnyContent] = 
+    Action.async {
+      OptionT(queryService.get(Query.Id(id)))
+        .map(Json.toJson(_))
+        .fold(
+          NotFound(s"Invalid Query ID $id")
+        )(       
+          Ok(_)
+        )      
+    }
+
+
+  private def resultOf[T](
+    id: String
+  )(
+    rs: Future[Option[Iterable[T]]]
+  )(
+    implicit ft: Format[T]
+  ): Future[Result] = {
+    OptionT(rs)
+      .map(SearchSet(_))
+      .map(Json.toJson(_))
+      .fold(
+        NotFound(s"Invalid Query ID $id")
+      )(       
+        Ok(_)
+      )      
+  }
+
+  def patientsFrom(
+    id: String
+  ): Action[AnyContent] = 
+    Action.async {
+      resultOf(id)(queryService.patientsFrom(Query.Id(id)))
+    }
+
+  def therapyRecommendationsFrom(
+    id: String
+  ): Action[AnyContent] = 
+    Action.async {
+      resultOf(id)(queryService.therapyRecommendationsFrom(Query.Id(id)))
+    }
+
+  def ngsSummariesFrom(
+    id: String
+  ): Action[AnyContent] = 
+    Action.async {
+      resultOf(id)(queryService.ngsSummariesFrom(Query.Id(id)))
+    }
+
+
+  def mtbFileFrom(
+    id: String,
+    patId: String
+  ): Action[AnyContent] = 
+    Action.async {
+      OptionT(queryService.mtbFileFrom(Query.Id(id),Patient.Id(patId)))
+        .map(Json.toJson(_))
+        .fold(
+          NotFound(s"Invalid Query ID $id or Patient ID $patId")
+        )(       
+          Ok(_)
+        )      
+    }
+
+
+
+  //---------------------------------------------------------------------------
+  // Peer-to-peer operations
+  //---------------------------------------------------------------------------
+  def peerToPeerQueryResult: Action[AnyContent] = 
+    Action.async { implicit req =>
+
+      processJsonAsync[PeerToPeerQuery]{
+        query =>
+          queryService.resultsOf(query)
+            .map(SearchSet(_))
+            .map(Json.toJson(_))
+            .map(Ok(_))
+      }
+    }
+*/
+
+
+}

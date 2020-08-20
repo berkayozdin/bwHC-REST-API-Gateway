@@ -97,21 +97,37 @@ extends RequestOps
 
   def mtbfile(id: String): Action[AnyContent] =
     Action.async {
-      toJsonOrElse(
-        service mtbfile Patient.Id(id)
-      )(
-        s"Invalid Patient ID $id"
-      )
+      (service mtbfile Patient.Id(id))
+        .map (_ toJsonOrElse (s"Invalid Patient ID $id"))
     }
 
 
   def dataQualityReport(id: String): Action[AnyContent] =
     Action.async {
-      toJsonOrElse(
-        service dataQualityReport Patient.Id(id)
-      )(
-        s"Invalid Patient ID $id"
-      )
+      (service dataQualityReport Patient.Id(id))
+        .map (_ toJsonOrElse (s"Invalid Patient ID $id"))
+    }
+
+
+  def delete(id: String): Action[AnyContent] =
+    Action.async {
+
+      (service ! Delete(Patient.Id(id)))
+        .map(
+          _.fold(
+            {
+              case UnspecificError(msg) =>
+                BadRequest(toJson(Outcome.fromErrors(List(msg))))
+
+              case _ => InternalServerError
+            },
+            {
+              case Deleted(_,_) => Ok
+
+              case _ => InternalServerError
+            }
+          )
+        ) 
     }
 
 
