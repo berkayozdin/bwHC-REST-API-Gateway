@@ -1,1 +1,3 @@
-->	/bwhc/mtb/ 	de.bwhc.mtb.rest.api.Router
+->      /bwhc/mtb/api/          de.bwhc.mtb.rest.api.Router
+
+->      /bwhc/catalogs/api/     de.bwhc.catalogs.api.Router

@@ -11,8 +11,8 @@ import de.bwhc.mtb.query.api.QueryService
 class Services
 {
 
-  lazy val dataService = MTBDataService.getInstance.get
+  val dataService = MTBDataService.getInstance.get
 
-  lazy val queryService = QueryService.getInstance.get
+  val queryService = QueryService.getInstance.get
 
 }

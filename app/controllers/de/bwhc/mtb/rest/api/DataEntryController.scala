@@ -31,6 +31,8 @@ import de.bwhc.mtb.data.entry.dtos.{
 }
 import de.bwhc.mtb.data.entry.api.MTBDataService
 
+import de.bwhc.rest.util.SearchSet
+
 
 
 class DataEntryController @Inject()(
@@ -41,6 +43,7 @@ class DataEntryController @Inject()(
 )
 extends RequestOps
 {
+
 
   import MTBDataService.Command._
   import MTBDataService.Response._
