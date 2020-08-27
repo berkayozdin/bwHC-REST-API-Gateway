@@ -1,0 +1,163 @@
+package de.bwhc.catalogs.api
+
+
+
+import scala.util.Try
+
+import scala.concurrent.{
+  Future,
+  ExecutionContext
+}
+
+import javax.inject.Inject
+
+import play.api.mvc.{
+  Action,
+  AnyContent,
+  BaseController,
+  ControllerComponents,
+  Request,
+}
+import play.api.libs.json.{
+  Json, JsValue, Format
+}
+
+import cats.Functor
+
+import de.bwhc.catalogs.icd.{ICD10GMCatalogs,ICDO3Catalogs}
+import de.bwhc.catalogs.hgnc.HGNCCatalog
+import de.bwhc.catalogs.med.MedicationCatalog
+
+import de.bwhc.mtb.data.entry.dtos._
+
+import de.bwhc.rest.util.SearchSet
+
+
+object Catalogs
+{
+
+  lazy val icd10gm     = ICD10GMCatalogs.getInstance.get
+                       
+  lazy val icdO3       = ICDO3Catalogs.getInstance.get
+                       
+  lazy val hgnc        = HGNCCatalog.getInstance.get
+
+  lazy val medications = MedicationCatalog.getInstance.get
+
+
+
+  import ValueSets._
+
+
+  lazy val jsonValueSets =
+    List(
+      Json.toJson(ValueSet[Gender.Value]),
+      Json.toJson(ValueSet[Diagnosis.Status.Value]),
+      Json.toJson(ValueSet[FamilyMember.Relationship.Value]),   
+      Json.toJson(ValueSet[TherapyLine]),
+      Json.toJson(ValueSet[GuidelineTherapy.StopReason.Value]),
+      Json.toJson(ValueSet[Specimen.Type.Value]), 
+      Json.toJson(ValueSet[Specimen.Collection.Localization.Value]),
+      Json.toJson(ValueSet[Specimen.Collection.Method.Value]),
+      Json.toJson(ValueSet[MolecularTherapy.NotDoneReason.Value]),
+      Json.toJson(ValueSet[MolecularTherapy.StopReason.Value]),
+      Json.toJson(ValueSet[MolecularTherapy.Status.Value]),
+      Json.toJson(ValueSet[ECOG.Value]),
+      Json.toJson(ValueSet[RECIST.Value]),
+      Json.toJson(ValueSet[WHOGrade.Value]),
+      Json.toJson(ValueSet[ClaimResponse.Status.Value]),
+      Json.toJson(ValueSet[ClaimResponse.Reason.Value])
+    )
+    .map(js => (js \ "name").as[String].toLowerCase -> js)
+    .toMap
+
+}
+
+
+
+class CatalogsController @Inject()(
+  val controllerComponents: ControllerComponents
+)(
+  implicit ec: ExecutionContext
+)
+extends BaseController
+{
+
+  import Catalogs._ 
+
+
+  def coding(
+    system: String,
+    pattern: Option[String]
+  ): Action[AnyContent] = {
+
+    Action {
+      
+      val result = 
+        system.toLowerCase match {
+
+          case "icd-10-gm" => Try {
+                                pattern.fold(icd10gm.codings())(icd10gm.matches(_))
+                              }
+                              .map(SearchSet(_))
+                              .map(Json.toJson(_))
+
+          case "icd-o-3-t" => Try {
+                                pattern.fold(icdO3.topographyCodings())(icdO3.topographyMatches(_))
+                              }
+                              .map(SearchSet(_))
+                              .map(Json.toJson(_))
+
+          case "icd-o-3-m" => Try {
+                                pattern.fold(icdO3.morphologyCodings())(icdO3.morphologyMatches(_))
+                              }
+                              .map(SearchSet(_))
+                              .map(Json.toJson(_))
+
+          case "hgnc"      => Try {
+                                pattern.fold(hgnc.genes)(hgnc.genesMatchingName(_))
+                              }
+                              .map(SearchSet(_))
+                              .map(Json.toJson(_))
+
+          case "atc"       => Try {
+                                pattern.fold(medications.entries)(medications.findMatching(_))
+                              }
+                              .map(SearchSet(_))
+                              .map(Json.toJson(_))
+
+          case _           => Try { throw new IllegalArgumentException(s"Unknown Coding $system") }
+
+        }
+
+      result.fold(
+        t => NotFound(s"Unknown Coding $system"),
+        Ok(_)
+      )
+
+    }
+
+  }
+
+
+
+  def valueSets: Action[AnyContent] =
+    Action {
+      Ok(Json.toJson(SearchSet(jsonValueSets.values)))
+    }
+
+
+
+  def valueSet(
+    name: String
+  ): Action[AnyContent] = 
+    Action {
+
+     jsonValueSets.get(name.toLowerCase)
+       .map(Ok(_))
+       .getOrElse(NotFound(s"Unknown ValueSet $name"))
+
+   }
+
+
+}
