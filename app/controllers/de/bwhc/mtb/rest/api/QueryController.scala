@@ -35,18 +35,21 @@ import cats.data.{
 import cats.instances.future._
 import cats.syntax.either._
 
+import de.bwhc.rest.util.SearchSet
 
 
-case class QueryForm(
+
+final case class QueryForm(
   mode: Query.Mode.Value,
-  parameters: Query.Parameters,
-  filter: Option[Query.Filter]
+  parameters: Query.Parameters
 )
 
 object QueryForm
 {
   implicit val format = Json.format[QueryForm]
 }
+
+
 
 
 class QueryController @Inject()(
@@ -99,18 +102,19 @@ extends RequestOps
 
   import QueryOps.Command._  
 
-/*
+
   def submit: Action[AnyContent] = 
     Action.async { implicit req =>
       
       //TODO: get Querier from request/session
-      val querier = Querier.Id("TODO")
+      val querier = Querier("TODO")
 
-      processJsonAsync[QueryForm]{
-        form => 
+      processJson[QueryForm]{ 
+        case QueryForm(mode,params) => 
           for {
-            subm   <- queryService ! Submit(querier,form.mode,form.parameters)
-            result =  toJsonResult(subm.leftMap(errs => Outcome.fromErrors(errs.toList)))
+            resp    <- service ! Submit(querier,mode,params)
+            outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
+            result  =  outcome.toJsonResult
           } yield result
       }
     }
@@ -121,40 +125,43 @@ extends RequestOps
   ): Action[AnyContent] = 
     Action.async { implicit req =>
       
-      processJsonAsync[Update]{
-        form => 
+      processJson[Update]{
+        update => 
           for {
-            updated <- queryService ! Update(Query.Id(id),form.mode,form.parameters,form.filter)
-            result  =  toJsonResult(updated.leftMap(errs => Outcome.fromErrors(errs.toList)))
+            updated <- service ! update
+            outcome =  updated.leftMap(errs => Outcome.fromErrors(errs.toList))
+            result  =  outcome.toJsonResult
           } yield result
       }
 
     }
  
- 
+
   def applyFilter(
     id: String
   ): Action[AnyContent] = 
     Action.async { implicit req =>
       
-      processJsonAsync[Filter]{
+      processJson[ApplyFilter]{
         filter => 
           for {
-            filtered <- queryService ! ApplyFilter(Query.Id(id),filter)
-            result   =  toJsonResult(filtered.leftMap(errs => Outcome.fromErrors(errs.toList)))
+            filtered <- service ! filter
+            outcome  =  filtered.leftMap(errs => Outcome.fromErrors(errs.toList))
+            result   =  outcome.toJsonResult
           } yield result
       }
     }
+
  
   //---------------------------------------------------------------------------
   // Query data access queries
   //---------------------------------------------------------------------------
 
-  def getQuery(
+  def query(
     id: String
   ): Action[AnyContent] = 
     Action.async {
-      OptionT(queryService.get(Query.Id(id)))
+      OptionT(service.get(Query.Id(id)))
         .map(Json.toJson(_))
         .fold(
           NotFound(s"Invalid Query ID $id")
@@ -164,12 +171,10 @@ extends RequestOps
     }
 
 
-  private def resultOf[T](
+  private def resultOf[T: Format](
     id: String
   )(
     rs: Future[Option[Iterable[T]]]
-  )(
-    implicit ft: Format[T]
   ): Future[Result] = {
     OptionT(rs)
       .map(SearchSet(_))
@@ -185,9 +190,26 @@ extends RequestOps
     id: String
   ): Action[AnyContent] = 
     Action.async {
-      resultOf(id)(queryService.patientsFrom(Query.Id(id)))
+      resultOf(id)(service patientsFrom Query.Id(id))
     }
 
+
+  def mtbfileFrom(
+    id: String,
+    patId: String
+  ): Action[AnyContent] = 
+    Action.async {
+      OptionT(service mtbFileFrom (Query.Id(id),Patient.Id(patId)))
+        .map(Json.toJson(_))
+        .fold(
+          NotFound(s"Invalid Query ID $id or Patient ID $patId")
+        )(       
+          Ok(_)
+        )      
+    }
+
+
+/*
   def therapyRecommendationsFrom(
     id: String
   ): Action[AnyContent] = 
@@ -201,23 +223,10 @@ extends RequestOps
     Action.async {
       resultOf(id)(queryService.ngsSummariesFrom(Query.Id(id)))
     }
+*/
 
 
-  def mtbFileFrom(
-    id: String,
-    patId: String
-  ): Action[AnyContent] = 
-    Action.async {
-      OptionT(queryService.mtbFileFrom(Query.Id(id),Patient.Id(patId)))
-        .map(Json.toJson(_))
-        .fold(
-          NotFound(s"Invalid Query ID $id or Patient ID $patId")
-        )(       
-          Ok(_)
-        )      
-    }
-
-
+/*
 
   //---------------------------------------------------------------------------
   // Peer-to-peer operations
