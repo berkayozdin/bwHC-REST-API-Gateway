@@ -33,6 +33,10 @@ import de.bwhc.mtb.data.entry.dtos._
 import de.bwhc.rest.util.SearchSet
 
 
+import shapeless.{Poly1,Generic}
+import shapeless.syntax._
+
+
 object Catalogs
 {
 
@@ -46,30 +50,33 @@ object Catalogs
 
 
 
-  import ValueSets._
+  object ToJson extends Poly1
+  {
+
+    implicit def anyCase[T](
+      implicit js: Format[ValueSet[T]]
+    ): Case.Aux[ValueSet[T],JsValue] = 
+      at(Json.toJson(_))
+
+  }
+
+
+  implicit class ProductOps[T <: Product](val t: T) extends AnyVal
+  {
+    def toHList[L](
+      implicit gen: Generic.Aux[T,L]
+    ): L = gen.to(t)
+  }
 
 
   lazy val jsonValueSets =
-    List(
-      Json.toJson(ValueSet[Gender.Value]),
-      Json.toJson(ValueSet[Diagnosis.Status.Value]),
-      Json.toJson(ValueSet[FamilyMember.Relationship.Value]),   
-      Json.toJson(ValueSet[TherapyLine]),
-      Json.toJson(ValueSet[GuidelineTherapy.StopReason.Value]),
-      Json.toJson(ValueSet[Specimen.Type.Value]), 
-      Json.toJson(ValueSet[Specimen.Collection.Localization.Value]),
-      Json.toJson(ValueSet[Specimen.Collection.Method.Value]),
-      Json.toJson(ValueSet[MolecularTherapy.NotDoneReason.Value]),
-      Json.toJson(ValueSet[MolecularTherapy.StopReason.Value]),
-      Json.toJson(ValueSet[MolecularTherapy.Status.Value]),
-      Json.toJson(ValueSet[ECOG.Value]),
-      Json.toJson(ValueSet[RECIST.Value]),
-      Json.toJson(ValueSet[WHOGrade.Value]),
-      Json.toJson(ValueSet[ClaimResponse.Status.Value]),
-      Json.toJson(ValueSet[ClaimResponse.Reason.Value])
-    )
-    .map(js => (js \ "name").as[String].toLowerCase -> js)
-    .toMap
+    ValueSets.all
+      .toHList
+      .map(ToJson)
+      .toList
+      .map(js => (js \ "name").as[String].toLowerCase -> js)
+      .toMap
+
 
 }
 
