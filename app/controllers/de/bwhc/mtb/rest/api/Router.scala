@@ -12,7 +12,7 @@ import play.api.routing.sird._
 class Router @Inject()(
   examples: ExampleProvider,
   dataEntry: DataEntryController,
-  querying: QueryController
+  queryController: QueryController
 )
 extends SimpleRouter
 {
@@ -22,41 +22,44 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // Data example endpoints
     //-------------------------------------------------------------------------
-    case GET(p"/data/examples/MTBFile")             => examples.mtbfile
+    case GET(p"/data/examples/MTBFile")         => examples.mtbfile
 
 
     //-------------------------------------------------------------------------
-    // Data Management endpoints
+    // Data Management endpoints                                               
     //-------------------------------------------------------------------------
 
-    case POST(p"/data/MTBFile")                     => dataEntry.processUpload
+    case POST(p"/data/MTBFile")                 => dataEntry.processUpload
 
-    case GET(p"/data/Patient")                      => dataEntry.patients
-    case GET(p"/data/MTBFile/$id")                  => dataEntry.mtbfile(id)
-    case GET(p"/data/DataQualityReport/$id")        => dataEntry.dataQualityReport(id)
+    case GET(p"/data/Patient")                  => dataEntry.patients
+    case GET(p"/data/MTBFile/$id")              => dataEntry.mtbfile(id)
+    case GET(p"/data/DataQualityReport/$id")    => dataEntry.dataQualityReport(id)
 
-    case DELETE(p"/data/Patient/$id")               => dataEntry.delete(id)
-
-
-    //-------------------------------------------------------------------------
-    // ZPM QC Reports
-    //-------------------------------------------------------------------------
-    case GET(p"/reporting/LocalQCReport")           => querying.getLocalQCReport
-    case GET(p"/reporting/GlobalQCReport")          => querying.getGlobalQCReport
+    case DELETE(p"/data/Patient/$id")           => dataEntry.delete(id)
 
 
     //-------------------------------------------------------------------------
-    // MTBFile Cohort Queries
+    // ZPM QC Reports                                                          
+    //-------------------------------------------------------------------------
+    case GET(p"/reporting/LocalQCReport")       => queryController.getLocalQCReport
+    case GET(p"/reporting/GlobalQCReport")      => queryController.getGlobalQCReport
+
+
+    //-------------------------------------------------------------------------
+    // MTBFile Cohort Queries                                                  
     //-------------------------------------------------------------------------
  
-    case POST(p"/query")                            => querying.submit
-    case POST(p"/query/$id")                        => querying.update(id)
-    case PUT(p"/query/$id/filter")                  => querying.applyFilter(id)
+    case POST(p"/query")                        => queryController.submit
+    case POST(p"/query/$id")                    => queryController.update(id)
+    case PUT(p"/query/$id/filter")              => queryController.applyFilter(id)
 
-    case GET(p"/query/$id")                         => querying.query(id)
-    case GET(p"/query/$id/Patient")                 => querying.patientsFrom(id)
-    case GET(p"/query/$id/MTBFile/$patId")          => querying.mtbfileFrom(id,patId)
+    case GET(p"/query/$id")                     => queryController.query(id)
+    case GET(p"/query/$id/Patient")             => queryController.patientsFrom(id)
+    case GET(p"/query/$id/MTBFile/$patId")      => queryController.mtbfileFrom(id,patId)
 
+
+    case POST(p"/peer2peer/query")              => queryController.processPeerToPeerQuery
+    case GET(p"/peer2peer/LocalQCReport")       => queryController.getLocalQCReport
 
   }
 

@@ -226,23 +226,21 @@ extends RequestOps
 */
 
 
-/*
 
   //---------------------------------------------------------------------------
   // Peer-to-peer operations
   //---------------------------------------------------------------------------
-  def peerToPeerQueryResult: Action[AnyContent] = 
+  def processPeerToPeerQuery: Action[AnyContent] = 
     Action.async { implicit req =>
 
-      processJsonAsync[PeerToPeerQuery]{
+      processJson[PeerToPeerQuery]{
         query =>
-          queryService.resultsOf(query)
+          service.resultsOf(query)
             .map(SearchSet(_))
             .map(Json.toJson(_))
             .map(Ok(_))
       }
     }
-*/
 
 
 }

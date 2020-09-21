@@ -51,7 +51,9 @@ case "$1" in
       echo "-------------------------------------------------------------------------"
       echo " Starting bwHealthCloud Backend Service" $ZPM_SITE
       echo "-------------------------------------------------------------------------"
-     
+    
+      #-Dbwhc.query.data.generate=20
+ 
       cp logback.xml $BWHC_APP_DIR/conf/
       
       $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
