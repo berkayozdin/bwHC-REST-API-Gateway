@@ -22,6 +22,11 @@ libraryDependencies ++= Seq(
   guice,
   "org.scalatestplus.play" %% "scalatestplus-play"              % "5.0.0" % "test",
   "org.typelevel"          %% "cats-core"                       % "2.1.1",
+
+  "de.bwhc.user.auth"      %% "user-service-api"                % "0.1-SNAPSHOT",
+  "de.bwhc.user.auth"      %% "user-service-impl"               % "0.1-SNAPSHOT",
+  "de.bwhc.user.auth"      %% "user-service-fs-repos"           % "0.1-SNAPSHOT",
+
   "de.bwhc"                %% "data-entry-service-api"          % "1.0-SNAPSHOT",
   "de.bwhc"                %% "data-entry-service-impl"         % "1.0-SNAPSHOT",
   "de.bwhc"                %% "data-entry-service-dependencies" % "1.0-SNAPSHOT",

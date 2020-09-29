@@ -31,17 +31,20 @@ import de.bwhc.mtb.data.entry.dtos.{
 }
 import de.bwhc.mtb.data.entry.api.MTBDataService
 
+import de.bwhc.rest.auth.{AuthorizationActions,UserRequest,UserAction}
 import de.bwhc.rest.util.SearchSet
 
 
 
 class DataEntryController @Inject()(
   val controllerComponents: ControllerComponents,
-  val services: Services
+  val services: Services,
+  val userAction: UserAction
 )(
   implicit ec: ExecutionContext
 )
 extends RequestOps
+with AuthorizationActions
 {
 
 
@@ -96,6 +99,29 @@ extends RequestOps
         json =  toJson(set)   
       } yield Ok(json)
     }
+
+
+/*
+  import de.bwhc.user.auth.api.Role._
+
+  def patients: Action[AnyContent] =
+    userAction
+      .andThen(
+        PermissionCheck[UserRequest](
+          _.user match {
+            case Some(user) if (!user.roles.isEmpty) => true
+            case _ => false
+          }
+        )
+      )
+      .async {
+        for {
+          ps   <- service.patientsWithIncompleteData 
+          set  =  SearchSet(ps)
+          json =  toJson(set)   
+        } yield Ok(json)
+      }
+*/
 
 
   def mtbfile(id: String): Action[AnyContent] =
