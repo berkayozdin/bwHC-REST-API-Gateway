@@ -9,14 +9,11 @@ import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
 
-//import de.bwhc.rest.auth._
-
 
 class Router @Inject()(
   examples: ExampleProvider,
   dataEntry: DataEntryController,
   queryController: QueryController,
-//  userAction: UserAction
 )
 extends SimpleRouter
 {
@@ -36,7 +33,6 @@ extends SimpleRouter
     case POST(p"/data/MTBFile")                 => dataEntry.processUpload
 
     case GET(p"/data/Patient")                  => dataEntry.patients
-//    case GET(p"/data/Patient")                  => userAction.andThen( dataEntry.patients )
 
 
 

@@ -3,10 +3,23 @@ package de.bwhc.mtb.rest.api
 
 import javax.inject.Singleton
 
+
+import de.bwhc.rest.util.ServiceWrapper
+
 import de.bwhc.mtb.data.entry.api.MTBDataService
 import de.bwhc.mtb.query.api.QueryService
 
 
+@Singleton
+class WrappedDataService extends ServiceWrapper(MTBDataService)
+
+
+@Singleton
+class WrappedQueryService extends ServiceWrapper(QueryService)
+
+
+
+/*
 @Singleton
 class Services
 {
@@ -16,3 +29,4 @@ class Services
   val queryService = QueryService.getInstance.get
 
 }
+*/

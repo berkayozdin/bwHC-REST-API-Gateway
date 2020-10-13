@@ -35,7 +35,7 @@ import cats.data.{
 import cats.instances.future._
 import cats.syntax.either._
 
-import de.bwhc.rest.util.SearchSet
+import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
 
 
@@ -54,14 +54,15 @@ object QueryForm
 
 class QueryController @Inject()(
   val controllerComponents: ControllerComponents,
-  val services: Services
+  val queryService: WrappedQueryService
 )(
   implicit ec: ExecutionContext
 )
-extends RequestOps
+extends BaseController
+with RequestOps
 {
 
-  private val service = services.queryService
+  private val service = queryService.instance
 
 
   def getLocalQCReport: Action[AnyContent] = 
@@ -104,6 +105,20 @@ extends RequestOps
 
 
   def submit: Action[AnyContent] = 
+    JsonAction[QueryForm]{ 
+      case QueryForm(mode,params) => {
+
+        //TODO: get Querier from request/session
+        val querier = Querier("TODO")
+
+        for {
+          resp    <- service ! Submit(querier,mode,params)
+          outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
+          result  =  outcome.toJsonResult
+        } yield result
+      }
+    }
+/*
     Action.async { implicit req =>
       
       //TODO: get Querier from request/session
@@ -118,11 +133,21 @@ extends RequestOps
           } yield result
       }
     }
- 
+*/ 
  
   def update(
     id: String
   ): Action[AnyContent] = 
+    JsonAction[Update]{
+      update => 
+        for {
+          updated <- service ! update
+          outcome =  updated.leftMap(errs => Outcome.fromErrors(errs.toList))
+          result  =  outcome.toJsonResult
+        } yield result
+    }
+
+/*
     Action.async { implicit req =>
       
       processJson[Update]{
@@ -135,11 +160,20 @@ extends RequestOps
       }
 
     }
- 
+*/ 
 
   def applyFilter(
     id: String
   ): Action[AnyContent] = 
+    JsonAction[ApplyFilter]{
+      filter => 
+        for {
+          filtered <- service ! filter
+          outcome  =  filtered.leftMap(errs => Outcome.fromErrors(errs.toList))
+          result   =  outcome.toJsonResult
+        } yield result
+    }
+/*
     Action.async { implicit req =>
       
       processJson[ApplyFilter]{
@@ -151,7 +185,7 @@ extends RequestOps
           } yield result
       }
     }
-
+*/
  
   //---------------------------------------------------------------------------
   // Query data access queries
@@ -231,6 +265,14 @@ extends RequestOps
   // Peer-to-peer operations
   //---------------------------------------------------------------------------
   def processPeerToPeerQuery: Action[AnyContent] = 
+    JsonAction[PeerToPeerQuery]{
+      query =>
+        service.resultsOf(query)
+          .map(SearchSet(_))
+          .map(Json.toJson(_))
+          .map(Ok(_))
+    }
+/*
     Action.async { implicit req =>
 
       processJson[PeerToPeerQuery]{
@@ -241,6 +283,6 @@ extends RequestOps
             .map(Ok(_))
       }
     }
-
+*/
 
 }

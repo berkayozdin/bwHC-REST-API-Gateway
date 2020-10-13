@@ -1,3 +1,8 @@
+->      /bwhc/user/api/         de.bwhc.rest.auth.Router
+
+
 ->      /bwhc/mtb/api/          de.bwhc.mtb.rest.api.Router
 
+
 ->      /bwhc/catalogs/api/     de.bwhc.catalogs.api.Router
+

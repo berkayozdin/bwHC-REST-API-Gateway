@@ -1,6 +1,8 @@
-package de.bwhc.mtb.rest.api
+package de.bwhc.rest.util
 
 
+
+import scala.util.Either
 
 import scala.concurrent.{
   ExecutionContext,
@@ -9,7 +11,7 @@ import scala.concurrent.{
 
 import play.api.mvc.{
   Action,
-//  ActionRefiner,
+  ActionRefiner,
   AnyContent,
   BaseController,
   Request,
@@ -19,50 +21,76 @@ import play.api.mvc.{
 import play.api.libs.json._
 import Json.toJson
 
+import cats.Id
 import cats.data.Ior
 import cats.syntax.either._
 
 
-abstract class RequestOps extends BaseController
+trait RequestOps
 {
 
-/*
-  def JsonAction[T: Reads](
-    block: T => Future[Result]  
-  )(
-    implicit ec: ExecutionContext 
-  ) = ActionRefiner[Request[AnyContent],Option[T]]{
-
-    override def refine[A](request: R[A]): Future[Either[Result, P[A]]] = ???
-
-  }
-*/
+  this: BaseController =>
 
 
-  def processJson[T: Reads](
-    f: T => Future[Result]
-  )(
-    implicit
-    req: Request[AnyContent],
-    ec: ExecutionContext
-  ): Future[Result] = {
-
-    req.body
+  def ErrorsOrJson[T: Reads]: Request[AnyContent] => Either[Result,T] = {
+    _.body
       .asJson
       .fold(
-        Future.successful(BadRequest("Missing or Invalid JSON body"))
+        BadRequest("Missing or Invalid JSON body").asLeft[T]
       )(
         _.validate[T]
          .asEither
          .leftMap(Outcome.fromJsErrors(_))
          .leftMap(toJson(_))
-         .fold(
-           out => Future.successful(BadRequest(out)),
-           f(_)
-         )
+         .leftMap(BadRequest(_))
       )
 
+    }
+
+
+  implicit class EitherResultHelpers[T](val f: Request[AnyContent] => Either[Result,T]){
+
+    def thenApply(
+      g: T => Future[Result]
+    )(
+      implicit ec: ExecutionContext
+    ): Request[AnyContent] => Future[Result] = {
+      req =>
+        f(req).fold(
+          Future.successful(_),
+          g(_)
+        )
+    }
+
   }
+
+
+
+  def JsonAction[T: Reads](
+    block: T => Future[Result]
+  )(
+    implicit
+    ec: ExecutionContext
+  ): Action[AnyContent] =
+    Action.async { req =>
+
+      req.body
+        .asJson
+        .fold(
+          Future.successful(BadRequest("Missing or Invalid JSON body"))
+        )(
+          _.validate[T]
+           .asEither
+           .leftMap(Outcome.fromJsErrors(_))
+           .leftMap(toJson(_))
+           .fold(
+             out => Future.successful(BadRequest(out)),
+             block(_)
+           )
+        )
+
+    }
+
 
 
   implicit class OptionOps[T: Writes](opt: Option[T])

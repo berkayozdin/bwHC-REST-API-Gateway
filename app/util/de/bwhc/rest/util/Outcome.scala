@@ -1,4 +1,4 @@
-package de.bwhc.mtb.rest.api
+package de.bwhc.rest.util
 
 
 import play.api.libs.json.{
