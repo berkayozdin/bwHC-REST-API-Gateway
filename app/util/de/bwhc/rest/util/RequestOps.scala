@@ -32,7 +32,7 @@ trait RequestOps
   this: BaseController =>
 
 
-  def ErrorsOrJson[T: Reads]: Request[AnyContent] => Either[Result,T] = {
+  def errorsOrJson[T: Reads]: Request[AnyContent] => Either[Result,T] = {
     _.body
       .asJson
       .fold(

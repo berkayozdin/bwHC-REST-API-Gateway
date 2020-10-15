@@ -30,6 +30,7 @@ import cats.data.NonEmptyList
 import cats.syntax.either._
 
 
+
 import de.bwhc.rest.util.{
   Outcome,
   RequestOps,
@@ -83,7 +84,7 @@ with AuthenticationOps[UserWithRoles]
   
 
   def login: Action[AnyContent] =
-    Action.async { request =>
+    Action.async { implicit request =>
 
       val body = request.body
      
@@ -117,13 +118,13 @@ with AuthenticationOps[UserWithRoles]
 
 
   def logout: Action[AnyContent] =
-    Action.async { authService.logout(_) }
+    AuthenticatedAction.async { authService.logout(_) }
 
 
   def create = 
     AuthenticatedAction(AdminRights)
       .async {
-        ErrorsOrJson[UserCommand.Create] thenApply processUserCommand
+        errorsOrJson[UserCommand.Create] thenApply processUserCommand
       }
 
 
@@ -138,31 +139,48 @@ with AuthenticationOps[UserWithRoles]
 
 
   def get(id: User.Id) =
-    AuthenticatedAction(
-      AdminRights or ResourceOwnership(id)
-    )
-    .async {
-      for {
-        user   <- userService.instance.get(id)
-        result =  user.map(toJson(_))
-                    .map(Ok(_))
-                    .getOrElse(NotFound(s"Invalid UserId $id"))
-      } yield result
-    }
-
-
-  //TODO: Require User him-/herself
-  def update =
-    AuthenticatedAction(AdminRights)
+    AuthenticatedAction( AdminRights or ResourceOwnership(id) )
       .async {
-        ErrorsOrJson[UserCommand.Update] thenApply processUserCommand
+        for {
+          user   <- userService.instance.get(id)
+          result =  user.map(toJson(_))
+                      .map(Ok(_))
+                      .getOrElse(NotFound(s"Invalid UserId $id"))
+        } yield result
       }
+
+
+  def update =
+    AuthenticatedAction.async {
+
+      request => 
+
+      val user = request.user
+
+      errorsOrJson[UserCommand.Update].apply(request)
+        .fold(
+          Future.successful,
+
+          update => 
+            for {
+              isAdmin       <- user has AdminRights
+
+              isUserHimself <- user has ResourceOwnership(update.id)
+ 
+              allowed = (isAdmin || isUserHimself)
+
+              result <- if (allowed) processUserCommand(update)
+                        else Future.successful(Forbidden)
+
+            } yield result
+        )
+    }
 
 
   def updateRoles =
     AuthenticatedAction(AdminRights)
       .async {
-        ErrorsOrJson[UserCommand.UpdateRoles] thenApply processUserCommand
+        errorsOrJson[UserCommand.UpdateRoles] thenApply processUserCommand
       }
 
 

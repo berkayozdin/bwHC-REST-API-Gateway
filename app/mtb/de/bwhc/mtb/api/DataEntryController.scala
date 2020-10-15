@@ -1,4 +1,4 @@
-package de.bwhc.mtb.rest.api
+package de.bwhc.mtb.api
 
 
 
@@ -94,7 +94,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def patients: Action[AnyContent] =
-    AuthenticatedAction(DataQualityModeAccess).async {
+    AuthenticatedAction(DataQualityAccessRights).async {
       for {
         ps   <- service.patientsWithIncompleteData 
         set  =  SearchSet(ps)
@@ -105,7 +105,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def mtbfile(id: String): Action[AnyContent] =
-    AuthenticatedAction(DataQualityModeAccess).async {
+    AuthenticatedAction(DataQualityAccessRights).async {
 
       service.mtbfile(Patient.Id(id))
         .map(_ toJsonOrElse (s"Invalid Patient ID $id"))
@@ -114,7 +114,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def dataQualityReport(id: String): Action[AnyContent] =
-    AuthenticatedAction(DataQualityModeAccess).async {
+    AuthenticatedAction(DataQualityAccessRights).async {
 
       service.dataQualityReport(Patient.Id(id))
         .map(_ toJsonOrElse (s"Invalid Patient ID $id"))
@@ -123,7 +123,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def delete(id: String): Action[AnyContent] =
-    AuthenticatedAction(DataQualityModeAccess).async {
+    AuthenticatedAction(DataQualityAccessRights).async {
 
       (service ! Delete(Patient.Id(id)))
         .map(
@@ -141,8 +141,8 @@ with AuthenticationOps[UserWithRoles]
             }
           )
         ) 
-    }
 
+    }
 
 
 }

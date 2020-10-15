@@ -1,4 +1,4 @@
-package de.bwhc.mtb.rest.api
+package de.bwhc.mtb.api
 
 
 
@@ -9,6 +9,7 @@ import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
 
+import de.bwhc.mtb.query.api.Query
 
 class Router @Inject()(
   examples: ExampleProvider,
@@ -54,12 +55,12 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
  
     case POST(p"/query")                        => queryController.submit
-    case POST(p"/query/$id")                    => queryController.update(id)
-    case PUT(p"/query/$id/filter")              => queryController.applyFilter(id)
+    case POST(p"/query/$id")                    => queryController.update(Query.Id(id))
+    case PUT(p"/query/$id/filter")              => queryController.applyFilter(Query.Id(id))
 
-    case GET(p"/query/$id")                     => queryController.query(id)
-    case GET(p"/query/$id/Patient")             => queryController.patientsFrom(id)
-    case GET(p"/query/$id/MTBFile/$patId")      => queryController.mtbfileFrom(id,patId)
+    case GET(p"/query/$id")                     => queryController.query(Query.Id(id))
+    case GET(p"/query/$id/Patient")             => queryController.patientsFrom(Query.Id(id))
+    case GET(p"/query/$id/MTBFile/$patId")      => queryController.mtbfileFrom(Query.Id(id),patId)
 
 
     case POST(p"/peer2peer/query")              => queryController.processPeerToPeerQuery
