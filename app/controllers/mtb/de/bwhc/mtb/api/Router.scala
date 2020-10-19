@@ -55,8 +55,8 @@ extends SimpleRouter
     case GET(p"/query/$id/MTBFile/$patId")      => queryController.mtbfileFrom(Query.Id(id),patId)
 
 
-    case POST(p"/peer2peer/query")              => queryController.processPeerToPeerQuery
-    case GET(p"/peer2peer/LocalQCReport")       => queryController.getLocalQCReport
+//    case POST(p"/peer2peer/query")              => queryController.processPeerToPeerQuery
+//    case GET(p"/peer2peer/LocalQCReport")       => queryController.getLocalQCReport
 
   }
 

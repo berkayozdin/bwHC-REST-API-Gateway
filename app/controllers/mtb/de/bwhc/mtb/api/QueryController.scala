@@ -59,6 +59,69 @@ object QueryForm
 
 
 
+//object QueryModePermissions
+trait QueryModePermissions
+{
+
+  import de.bwhc.user.api.Role._
+
+
+  val LocalQCAccess =
+    Authorization[UserWithRoles](user =>
+      (user hasRole LocalZPMCoordinator) ||
+      (user hasRole GlobalZPMCoordinator) ||
+      (user hasRole MTBCoordinator)
+    )
+
+
+  val GlobalQCAccess =
+    Authorization[UserWithRoles](_ hasRole GlobalZPMCoordinator)
+
+
+  val FederatedEvidenceQuery =
+    Authorization[UserWithRoles](
+      _ hasAnyOf Set(GlobalZPMCoordinator, Researcher)
+    )
+
+
+  val LocalEvidenceQuery =
+    Authorization[UserWithRoles](
+      _ hasAnyOf Set(GlobalZPMCoordinator, Researcher, LocalZPMCoordinator, MTBCoordinator)
+    )
+
+  val EvidenceQuery = LocalEvidenceQuery
+
+
+  def QueryRightsFor(
+    mode: Query.Mode.Value
+  ): Authorization[UserWithRoles] =
+    if (mode == Query.Mode.Federated) FederatedEvidenceQuery
+    else LocalEvidenceQuery
+ 
+
+  protected val service: QueryService
+
+
+  def AccessRightsFor(
+    queryId: Query.Id
+  )(
+    implicit ec: ExecutionContext
+  ): Authorization[UserWithRoles] = Authorization.async{
+
+    case UserWithRoles(userId,_) =>
+
+      for {
+        query <- service get queryId
+        ok    =  query.exists(_.querier.value == userId.value)
+      } yield ok
+  }
+
+
+}
+
+
+
+
 
 class QueryController @Inject()(
   val controllerComponents: ControllerComponents,
@@ -70,19 +133,18 @@ class QueryController @Inject()(
 extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
+with QueryModePermissions
 {
-
-  import Authorizations._
 
 
   implicit val authService = sessionManager.instance
 
-  private val service = queryService.instance
+  protected val service = queryService.instance
 
 
   //TODO: Check how to distinguish locally issued LocalQCReport query from externally issued for GlobalQCReport compilation
   def getLocalQCReport: Action[AnyContent] = 
-    AuthenticatedAction( LocalQCAccessRights ).async {
+    AuthenticatedAction( LocalQCAccess ).async {
 
       request =>
 
@@ -102,7 +164,7 @@ with AuthenticationOps[UserWithRoles]
  
  
   def getGlobalQCReport: Action[AnyContent] = 
-    AuthenticatedAction( GlobalQCAccessRights ).async {
+    AuthenticatedAction( GlobalQCAccess ).async {
 
       request =>
 
@@ -125,7 +187,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def submit: Action[AnyContent] =
-    AuthenticatedAction( EvidenceQueryRights ).async {
+    AuthenticatedAction( EvidenceQuery ).async {
 
       request => 
 
@@ -157,28 +219,10 @@ with AuthenticationOps[UserWithRoles]
    }
 
 
-  private def QueryRightsFor(
-    mode: Query.Mode.Value
-  ): Authorization[UserWithRoles] =
-    if (mode == Query.Mode.Federated) FederatedEvidenceQueryRights
-    else LocalEvidenceQueryRights
- 
-
-
-  implicit val userIsQuerySubmitter: (User.Id,Query.Id) => Future[Boolean] = {
-    (userId,queryId) =>
-       for {
-         query <- service get queryId
-         ok    =  query.exists(_.querier.value == userId.value)
-       } yield ok
-
-  }
-
-
   def update(
     id: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction(EvidenceQueryRights).async {
+    AuthenticatedAction( EvidenceQuery AND AccessRightsFor(id) ).async {
 
       request => 
 
@@ -191,13 +235,9 @@ with AuthenticationOps[UserWithRoles]
           update => 
             for {         
               queryModeAllowed <- user has QueryRightsFor(update.mode)
-           
-              isQuerySubmitter <- user has ResourceOwnership(update.id) 
-
-              allowed = (queryModeAllowed && isQuerySubmitter)
 
               result <-
-                if (allowed)
+                if (queryModeAllowed)
                   for {
                     resp    <- service ! update
                     outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
@@ -216,7 +256,7 @@ with AuthenticationOps[UserWithRoles]
   def applyFilter(
     id: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRights and ResourceOwnership(id) )
+    AuthenticatedAction( EvidenceQuery AND AccessRightsFor(id) )
       .async {
   
         request => 
@@ -238,48 +278,16 @@ with AuthenticationOps[UserWithRoles]
           )
   
       }
-/*
-    AuthenticatedAction( EvidenceQueryRights ).async {
-
-      request => 
-
-      val user = request.user
-
-      errorsOrJson[Command.ApplyFilter].apply(request)
-        .fold(
-          Future.successful,
-
-          update => 
-            for {         
-           
-              isQuerySubmitter <- user has ResourceOwnership(update.id) 
-
-              result <-
-                if (!isQuerySubmitter) Future.successful(Forbidden)
-                else {
-                  for {
-                    resp    <- service ! update
-                    outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
-                    result  =  outcome.toJsonResult
-                  } yield result
-                }
-            } yield result
-    
-        )
-
-    }
-*/
  
   //---------------------------------------------------------------------------
   // Query data access queries
   //---------------------------------------------------------------------------
 
 
-
   def query(
     queryId: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRights and ResourceOwnership(queryId) )
+    AuthenticatedAction( EvidenceQuery and AccessRightsFor(queryId) )
       .async {
         OptionT(service get queryId)
           .map(Json.toJson(_))
@@ -309,7 +317,7 @@ with AuthenticationOps[UserWithRoles]
   def patientsFrom(
     queryId: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRights and ResourceOwnership(queryId) )
+    AuthenticatedAction( EvidenceQuery and AccessRightsFor(queryId) )
       .async {
         resultOf(queryId)(service patientsFrom queryId)
       }
@@ -319,7 +327,7 @@ with AuthenticationOps[UserWithRoles]
     queryId: Query.Id,
     patId: String
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRights and ResourceOwnership(queryId) )
+    AuthenticatedAction( EvidenceQuery and AccessRightsFor(queryId) )
       .async {
         OptionT(service mtbFileFrom (queryId,Patient.Id(patId)))
           .map(Json.toJson(_))
@@ -347,18 +355,5 @@ with AuthenticationOps[UserWithRoles]
     }
 */
 
-
-
-  //---------------------------------------------------------------------------
-  // Peer-to-peer operations
-  //---------------------------------------------------------------------------
-  def processPeerToPeerQuery: Action[AnyContent] = 
-    JsonAction[PeerToPeerQuery]{
-      query =>
-        service.resultsOf(query)
-          .map(SearchSet(_))
-          .map(Json.toJson(_))
-          .map(Ok(_))
-    }
 
 }

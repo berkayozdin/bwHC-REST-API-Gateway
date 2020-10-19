@@ -41,7 +41,8 @@ import de.bwhc.user.api.{
   User,
   UserCommand,
   UserEvent,
-  UserService
+  UserService,
+  Role
 }
 
 import de.bwhc.auth.core._
@@ -68,6 +69,40 @@ Map[String,Authorization[UserWithRoles]](
 */
 
 
+//object UserManagementPermissions
+trait UserManagementPermissions
+{
+
+  import Role._
+
+
+  private val AdminRights = Authorization[UserWithRoles](_ hasRole Admin)
+
+
+  val Create = AdminRights
+
+
+  def Read(id: User.Id) =
+    Authorization[UserWithRoles](user =>
+      (user hasRole Admin) || (user.userId == id)
+    )
+
+
+  def Update(id: User.Id) = Read(id)
+
+
+  def UpdateRoles = AdminRights
+
+
+  val Delete = AdminRights
+
+
+  val GetAll = AdminRights
+
+}
+
+
+
 class UserController @Inject()(
   val controllerComponents: ControllerComponents,
   val sessionManager: WrappedSessionManager,
@@ -78,16 +113,17 @@ class UserController @Inject()(
 extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
+with UserManagementPermissions
 {
 
   implicit val authService = sessionManager.instance
 
 
-  import Authorizations._
+//  import UserManagementPermissions._
 
 
-  implicit val userOwnsUserResource: (User.Id,User.Id) => Future[Boolean] =
-    (userId,ownerId) => Future.successful(userId == ownerId)
+//  implicit val userOwnsUserResource: (User.Id,User.Id) => Future[Boolean] =
+//    (userId,ownerId) => Future.successful(userId == ownerId)
   
 
   def login: Action[AnyContent] =
@@ -129,16 +165,14 @@ with AuthenticationOps[UserWithRoles]
 
 
   def create = 
-//    AuthenticatedAction(CreateUserRights)
-    AuthenticatedAction(AdminRights)
+    AuthenticatedAction( Create )
       .async {
         errorsOrJson[UserCommand.Create] thenApply processUserCommand
       }
 
 
   def getAll =
-//    AuthenticatedAction(GetAllUserRights).async {
-    AuthenticatedAction(AdminRights).async {
+    AuthenticatedAction( GetAll ).async {
       for {
         users   <- userService.instance.getAll
         userSet =  SearchSet(users)
@@ -148,9 +182,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def get(id: User.Id) =
-//    AuthenticatedAction( AdminRights or ResourceOwnership(id) )
-    AuthenticatedAction( AdminRights )
-//    AuthenticatedAction( AdminRights or IsUserHimself(id) )
+    AuthenticatedAction( Read(id) )
       .async {
         for {
           user   <- userService.instance.get(id)
@@ -174,11 +206,8 @@ with AuthenticationOps[UserWithRoles]
 
           update => 
             for {
-              isAdmin       <- user has AdminRights
 
-              isUserHimself <- user has ResourceOwnership(update.id)
- 
-              allowed = (isAdmin || isUserHimself)
+              allowed <- user isAllowedTo Update(update.id)
 
               result <- if (allowed) processUserCommand(update)
                         else Future.successful(Forbidden)
@@ -189,15 +218,14 @@ with AuthenticationOps[UserWithRoles]
 
 
   def updateRoles =
-    AuthenticatedAction(AdminRights)
+    AuthenticatedAction( UpdateRoles )
       .async {
         errorsOrJson[UserCommand.UpdateRoles] thenApply processUserCommand
       }
 
 
   def delete(id: User.Id) =
-//    AuthenticatedAction(AdminRights or ResourceOwnership(id))
-    AuthenticatedAction( AdminRights )
+    AuthenticatedAction( Delete )
       .async {
         processUserCommand(UserCommand.Delete(id))
       }

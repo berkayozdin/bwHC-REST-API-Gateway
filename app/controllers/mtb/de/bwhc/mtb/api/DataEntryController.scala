@@ -40,6 +40,23 @@ import de.bwhc.services.{WrappedDataService, WrappedSessionManager}
 
 
 
+object DataQualityModePermissions
+{
+
+  import de.bwhc.user.api.Role._
+
+  private val DocumentaristRights =
+    Authorization[UserWithRoles](_ hasRole Documentarist)
+
+
+  val DataQualityAccessRights = DocumentaristRights
+
+
+}
+
+
+
+
 class DataEntryController @Inject()(
   val controllerComponents: ControllerComponents,
   val dataService: WrappedDataService,
@@ -52,7 +69,7 @@ with RequestOps
 with AuthenticationOps[UserWithRoles]
 {
 
-  import Authorizations._
+  import DataQualityModePermissions._
 
   import MTBDataService.Command._
   import MTBDataService.Response._
@@ -62,35 +79,6 @@ with AuthenticationOps[UserWithRoles]
 
   private val service = dataService.instance
 
-/*
-  def processUpload: Action[AnyContent] =
-    JsonAction[MTBFile]{ mtbfile =>
-
-      (service ! Upload(mtbfile))
-        .map(
-          _.fold(
-            {
-              case InvalidData(qc) =>
-                UnprocessableEntity(toJson(qc))
-
-              case UnspecificError(msg) =>
-                BadRequest(toJson(Outcome.fromErrors(List(msg))))
-            },
-            {
-              case Imported(input,_) =>
-                Ok(toJson(input))
-                  .withHeaders(LOCATION -> s"/data/MTBFile/${mtbfile.patient.id.value}")
-
-              case IssuesDetected(qc,_) => 
-                Created(toJson(qc))
-                  .withHeaders(LOCATION -> s"/data/DataQualityReport/${mtbfile.patient.id.value}")
-
-              case _ => InternalServerError
-            }
-          )
-        )
-    }
-*/
 
   def patients: Action[AnyContent] =
     AuthenticatedAction(DataQualityAccessRights).async {
