@@ -1,4 +1,4 @@
-package de.bwhc.mtb.api
+package de.bwhc.fake.data
 
 
 import scala.concurrent.{

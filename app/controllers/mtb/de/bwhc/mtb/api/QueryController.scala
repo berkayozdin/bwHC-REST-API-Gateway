@@ -42,7 +42,8 @@ import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 import de.bwhc.auth.api._
 import de.bwhc.auth.core._
 import de.bwhc.auth.core.Authorization._
-import de.bwhc.rest.auth.WrappedSessionManager
+
+import de.bwhc.services.{WrappedQueryService,WrappedSessionManager}
 
 
 
@@ -81,7 +82,7 @@ with AuthenticationOps[UserWithRoles]
 
   //TODO: Check how to distinguish locally issued LocalQCReport query from externally issued for GlobalQCReport compilation
   def getLocalQCReport: Action[AnyContent] = 
-    AuthenticatedAction(LocalQCAccessRights).async {
+    AuthenticatedAction( LocalQCAccessRights ).async {
 
       request =>
 
@@ -101,14 +102,14 @@ with AuthenticationOps[UserWithRoles]
  
  
   def getGlobalQCReport: Action[AnyContent] = 
-    AuthenticatedAction(GlobalQCAccessRights).async {
+    AuthenticatedAction( GlobalQCAccessRights ).async {
 
       request =>
 
       val querier = Querier(request.user.userId.value)
 
       for {
-        qc     <- service compileGlobalQCReport querier
+        qc     <- service.compileGlobalQCReport(querier)
         outcome = qc.leftMap(_.toList)
                     .leftMap(Outcome.fromErrors)
         result  = outcome.toJsonResult
@@ -124,7 +125,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def submit: Action[AnyContent] =
-    AuthenticatedAction(EvidenceQueryRights).async {
+    AuthenticatedAction( EvidenceQueryRights ).async {
 
       request => 
 
@@ -162,30 +163,6 @@ with AuthenticationOps[UserWithRoles]
     if (mode == Query.Mode.Federated) FederatedEvidenceQueryRights
     else LocalEvidenceQueryRights
  
-/*
-  private def submitQueryFor(
-    user: UserWithRoles
-  ): QueryForm => Future[Result] = {
-     
-    case QueryForm(mode,params) =>
-
-      for {         
-        allowed <- user has QueryRightsFor(mode)
-
-        result <-
-          if (allowed)
-            for {
-              resp    <- service ! Command.Submit(Querier(user.userId.value),mode,params)
-              outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
-              result  =  outcome.toJsonResult
-            } yield result
-          else 
-            Future.successful(Forbidden)
-          
-      } yield result
-    
-  }
-*/
 
 
   implicit val userIsQuerySubmitter: (User.Id,Query.Id) => Future[Boolean] = {
@@ -290,14 +267,6 @@ with AuthenticationOps[UserWithRoles]
     
         )
 
-    }
-    JsonAction[Command.ApplyFilter]{
-      filter => 
-        for {
-          filtered <- service ! filter
-          outcome  =  filtered.leftMap(errs => Outcome.fromErrors(errs.toList))
-          result   =  outcome.toJsonResult
-        } yield result
     }
 */
  

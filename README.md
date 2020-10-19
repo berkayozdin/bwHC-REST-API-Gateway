@@ -21,7 +21,7 @@ https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5
 Request a random-generated MTBFile JSON example
 
 
-__GET__ http://HOST:PORT/bwhc/mtb/api/data/examples/MTBFile
+__GET__ http://HOST:PORT/bwhc/fake/data/api/MTBFile
 
 
 
@@ -33,7 +33,7 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/data/examples/MTBFile
 
 Required header: "Content-Type: application/json"
 
-__POST__ http://HOST:PORT/bwhc/mtb/api/data/MTBFile
+__POST__ http://HOST:PORT/bwhc/system/api/data/upload
 
 __Response__:
 

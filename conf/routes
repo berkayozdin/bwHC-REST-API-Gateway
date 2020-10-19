@@ -1,8 +1,23 @@
-->      /bwhc/user/api/         de.bwhc.rest.auth.Router
 
+# Unsecured endpoints
+
+->      /bwhc/fake/data/api/    de.bwhc.fake.data.Router
+
+->      /bwhc/catalogs/api/     de.bwhc.catalogs.api.Router
+
+
+
+
+# MUST be secured via mutual SSL!
+->      /bwhc/system/api/       de.bwhc.systems.api.Router
+
+
+
+
+# User endpoints Auth&Auth 
+
+->      /bwhc/user/api/         de.bwhc.rest.auth.Router
 
 ->      /bwhc/mtb/api/          de.bwhc.mtb.api.Router
 
-
-->      /bwhc/catalogs/api/     de.bwhc.catalogs.api.Router
 

@@ -36,8 +36,7 @@ import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
 import de.bwhc.auth.core._
 import de.bwhc.auth.api._
-import de.bwhc.rest.auth.WrappedSessionManager
-
+import de.bwhc.services.{WrappedDataService, WrappedSessionManager}
 
 
 
@@ -63,7 +62,7 @@ with AuthenticationOps[UserWithRoles]
 
   private val service = dataService.instance
 
-
+/*
   def processUpload: Action[AnyContent] =
     JsonAction[MTBFile]{ mtbfile =>
 
@@ -91,7 +90,7 @@ with AuthenticationOps[UserWithRoles]
           )
         )
     }
-
+*/
 
   def patients: Action[AnyContent] =
     AuthenticatedAction(DataQualityAccessRights).async {

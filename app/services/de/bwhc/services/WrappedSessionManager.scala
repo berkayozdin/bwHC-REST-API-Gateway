@@ -1,4 +1,4 @@
-package de.bwhc.rest.auth
+package de.bwhc.services
 
 
 import javax.inject.Singleton

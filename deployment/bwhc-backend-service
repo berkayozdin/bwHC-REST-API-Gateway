@@ -18,10 +18,12 @@ ZPM_SITE=Tübingen
 BWHC_CONNECTOR_CONFIG=$BASE_DIR/bwhcConnectorConfig.xml
 
 
-#TODO adapt BWHC_DATA_DIR
+#TODO adapt data directories
 BWHC_DATA_ENTRY_DIR=/tmp/bwhc_data_entry
 
 BWHC_QUERY_DATA_DIR=/tmp/bwhc_query_data
+
+BWHC_USER_DB_DIR=/tmp/bwhc_users
 
 
 
@@ -61,6 +63,7 @@ case "$1" in
         -Dbwhc.zpm.site=$ZPM_SITE \
         -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
         -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
+        -Dbwhc.user.data.dir=$BWHC_USER_DB_DIR \
         -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG \
         -Dhttp.port=$BWHC_PORT &
       

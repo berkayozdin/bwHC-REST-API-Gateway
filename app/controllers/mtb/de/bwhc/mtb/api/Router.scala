@@ -12,7 +12,6 @@ import play.api.routing.sird._
 import de.bwhc.mtb.query.api.Query
 
 class Router @Inject()(
-  examples: ExampleProvider,
   dataEntry: DataEntryController,
   queryController: QueryController,
 )
@@ -21,21 +20,14 @@ extends SimpleRouter
 
   override def routes: Routes = {
 
-    //-------------------------------------------------------------------------
-    // Data example endpoints
-    //-------------------------------------------------------------------------
-    case GET(p"/data/examples/MTBFile")         => examples.mtbfile
-
 
     //-------------------------------------------------------------------------
     // Data Management endpoints                                               
     //-------------------------------------------------------------------------
 
-    case POST(p"/data/MTBFile")                 => dataEntry.processUpload
+//    case POST(p"/data/MTBFile")                 => dataEntry.processUpload
 
     case GET(p"/data/Patient")                  => dataEntry.patients
-
-
 
     case GET(p"/data/MTBFile/$id")              => dataEntry.mtbfile(id)
     case GET(p"/data/DataQualityReport/$id")    => dataEntry.dataQualityReport(id)

@@ -46,6 +46,7 @@ import de.bwhc.user.api.{
 
 import de.bwhc.auth.core._
 import de.bwhc.auth.api._
+import de.bwhc.services.{WrappedSessionManager,WrappedUserService}
 
 
 case class Credentials
@@ -59,6 +60,12 @@ object Credentials
   implicit val reads = Json.reads[Credentials]
 }
 
+/*
+Map[String,Authorization[UserWithRoles]](
+  "CreateUser" -> Authorization[UserWithRoles](_ hasRole Admin)
+
+)
+*/
 
 
 class UserController @Inject()(
@@ -122,6 +129,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def create = 
+//    AuthenticatedAction(CreateUserRights)
     AuthenticatedAction(AdminRights)
       .async {
         errorsOrJson[UserCommand.Create] thenApply processUserCommand
@@ -129,6 +137,7 @@ with AuthenticationOps[UserWithRoles]
 
 
   def getAll =
+//    AuthenticatedAction(GetAllUserRights).async {
     AuthenticatedAction(AdminRights).async {
       for {
         users   <- userService.instance.getAll
@@ -139,7 +148,9 @@ with AuthenticationOps[UserWithRoles]
 
 
   def get(id: User.Id) =
-    AuthenticatedAction( AdminRights or ResourceOwnership(id) )
+//    AuthenticatedAction( AdminRights or ResourceOwnership(id) )
+    AuthenticatedAction( AdminRights )
+//    AuthenticatedAction( AdminRights or IsUserHimself(id) )
       .async {
         for {
           user   <- userService.instance.get(id)
@@ -185,7 +196,8 @@ with AuthenticationOps[UserWithRoles]
 
 
   def delete(id: User.Id) =
-    AuthenticatedAction(AdminRights or ResourceOwnership(id))
+//    AuthenticatedAction(AdminRights or ResourceOwnership(id))
+    AuthenticatedAction( AdminRights )
       .async {
         processUserCommand(UserCommand.Delete(id))
       }
