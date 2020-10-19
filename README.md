@@ -99,13 +99,13 @@ __POST__ http://HOST:PORT/bwhc/mtb/api/query
 
 ```javascript
 {
-  "mode": "Local",                         // Query Mode: {Local,Federated}
+  "mode": "local",                         // Query Mode: {local,federated}
   "parameters": {
     "diagnoses": ["C22.0", "C25.6", ...],  // ICD-10-GM codes
     "medicationsWithUsage": [
       {
         "code": "L01XE15",                 // ATC Medication Code,
-        "usage": "Used"                    // Medication usage: Recommended, Used
+        "usage": "used"                    // Medication usage: {recommended, used}
       },                                  
       ...                                 
     ],                                    
@@ -121,7 +121,7 @@ __Response__: Created Query Object
   "id": "b65defa0-3bef-44e2-b1f7-3dfec07e8a24",
   "querier": "TODO",
   "submittedAt": "2020-05-12T15:35:50.528746",
-  "mode": "Local",
+  "mode": "local",
   "parameters": {
       "diagnoses": [
           "C25.6"
@@ -129,7 +129,7 @@ __Response__: Created Query Object
       "medicationsWithUsage": [
           {
               "code": "L01XE15",
-              "usage": "Used"
+              "usage": "used"
           }
       ],
       "responses": [
