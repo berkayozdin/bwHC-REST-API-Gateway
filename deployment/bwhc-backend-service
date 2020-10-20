@@ -1,30 +1,7 @@
 #!/bin/bash
 
 
-
-#Optional TODO: Adapt BASE_DIR
-BASE_DIR=$(pwd)
-
-
-#Optional TODO: Adapt PORT
-BWHC_PORT=9000
-
-
-#TODO adapt ZPM site name
-ZPM_SITE=Tübingen
-
-
-#TODO Adapt path to bwHCConnector config file
-BWHC_CONNECTOR_CONFIG=$BASE_DIR/bwhcConnectorConfig.xml
-
-
-#TODO adapt data directories
-BWHC_DATA_ENTRY_DIR=/tmp/bwhc_data_entry
-
-BWHC_QUERY_DATA_DIR=/tmp/bwhc_query_data
-
-BWHC_USER_DB_DIR=/tmp/bwhc_users
-
+source ./config
 
 
 ###############################################################################

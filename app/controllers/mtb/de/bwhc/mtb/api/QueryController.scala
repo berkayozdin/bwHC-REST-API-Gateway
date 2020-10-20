@@ -59,14 +59,13 @@ object QueryForm
 
 
 
-//object QueryModePermissions
 trait QueryModePermissions
 {
 
   import de.bwhc.user.api.Role._
 
 
-  val LocalQCAccess =
+  val LocalQCAccessRight =
     Authorization[UserWithRoles](user =>
       (user hasRole LocalZPMCoordinator) ||
       (user hasRole GlobalZPMCoordinator) ||
@@ -74,35 +73,35 @@ trait QueryModePermissions
     )
 
 
-  val GlobalQCAccess =
+  val GlobalQCAccessRight =
     Authorization[UserWithRoles](_ hasRole GlobalZPMCoordinator)
 
 
-  val FederatedEvidenceQuery =
+  val FederatedEvidenceQueryRight =
     Authorization[UserWithRoles](
       _ hasAnyOf Set(GlobalZPMCoordinator, Researcher)
     )
 
 
-  val LocalEvidenceQuery =
+  val LocalEvidenceQueryRight =
     Authorization[UserWithRoles](
       _ hasAnyOf Set(GlobalZPMCoordinator, Researcher, LocalZPMCoordinator, MTBCoordinator)
     )
 
-  val EvidenceQuery = LocalEvidenceQuery
+  val EvidenceQueryRight = LocalEvidenceQueryRight
 
 
-  def QueryRightsFor(
+  def QueryRightFor(
     mode: Query.Mode.Value
   ): Authorization[UserWithRoles] =
-    if (mode == Query.Mode.Federated) FederatedEvidenceQuery
-    else LocalEvidenceQuery
+    if (mode == Query.Mode.Federated) FederatedEvidenceQueryRight
+    else LocalEvidenceQueryRight
  
 
   protected val service: QueryService
 
 
-  def AccessRightsFor(
+  def AccessRightFor(
     queryId: Query.Id
   )(
     implicit ec: ExecutionContext
@@ -144,7 +143,7 @@ with QueryModePermissions
 
   //TODO: Check how to distinguish locally issued LocalQCReport query from externally issued for GlobalQCReport compilation
   def getLocalQCReport: Action[AnyContent] = 
-    AuthenticatedAction( LocalQCAccess ).async {
+    AuthenticatedAction( LocalQCAccessRight ).async {
 
       request =>
 
@@ -164,7 +163,7 @@ with QueryModePermissions
  
  
   def getGlobalQCReport: Action[AnyContent] = 
-    AuthenticatedAction( GlobalQCAccess ).async {
+    AuthenticatedAction( GlobalQCAccessRight ).async {
 
       request =>
 
@@ -187,7 +186,7 @@ with QueryModePermissions
 
 
   def submit: Action[AnyContent] =
-    AuthenticatedAction( EvidenceQuery ).async {
+    AuthenticatedAction( EvidenceQueryRight ).async {
 
       request => 
 
@@ -200,7 +199,7 @@ with QueryModePermissions
           {
             case QueryForm(mode,params) =>
               for {         
-                allowed <- user has QueryRightsFor(mode)
+                allowed <- user has QueryRightFor(mode)
             
                 result <-
                   if (allowed)
@@ -222,7 +221,7 @@ with QueryModePermissions
   def update(
     id: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQuery AND AccessRightsFor(id) ).async {
+    AuthenticatedAction( EvidenceQueryRight AND AccessRightFor(id) ).async {
 
       request => 
 
@@ -234,7 +233,7 @@ with QueryModePermissions
 
           update => 
             for {         
-              queryModeAllowed <- user has QueryRightsFor(update.mode)
+              queryModeAllowed <- user has QueryRightFor(update.mode)
 
               result <-
                 if (queryModeAllowed)
@@ -256,7 +255,7 @@ with QueryModePermissions
   def applyFilter(
     id: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQuery AND AccessRightsFor(id) )
+    AuthenticatedAction( EvidenceQueryRight AND AccessRightFor(id) )
       .async {
   
         request => 
@@ -287,7 +286,7 @@ with QueryModePermissions
   def query(
     queryId: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQuery and AccessRightsFor(queryId) )
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
       .async {
         OptionT(service get queryId)
           .map(Json.toJson(_))
@@ -300,9 +299,9 @@ with QueryModePermissions
 
 
   private def resultOf[T: Format](
-    queryId: Query.Id
-  )(
     rs: Future[Option[Iterable[T]]]
+  )(
+    queryId: Query.Id
   ): Future[Result] = {
     OptionT(rs)
       .map(SearchSet(_))
@@ -317,9 +316,9 @@ with QueryModePermissions
   def patientsFrom(
     queryId: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQuery and AccessRightsFor(queryId) )
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
       .async {
-        resultOf(queryId)(service patientsFrom queryId)
+        resultOf(service patientsFrom queryId)(queryId)
       }
 
 
@@ -327,7 +326,7 @@ with QueryModePermissions
     queryId: Query.Id,
     patId: String
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQuery and AccessRightsFor(queryId) )
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
       .async {
         OptionT(service mtbFileFrom (queryId,Patient.Id(patId)))
           .map(Json.toJson(_))
@@ -336,24 +335,36 @@ with QueryModePermissions
           )(       
             Ok(_)
           )      
-    }
+      }
 
 
-/*
+
   def therapyRecommendationsFrom(
-    id: String
+    queryId: Query.Id,
   ): Action[AnyContent] = 
-    Action.async {
-      resultOf(id)(queryService.therapyRecommendationsFrom(Query.Id(id)))
-    }
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+      .async {
+        resultOf(service therapyRecommendationsFrom queryId)(queryId)
+      }
+
+
+  def molecularTherapiesFrom(
+    queryId: Query.Id,
+  ): Action[AnyContent] = 
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+      .async {
+        resultOf(service molecularTherapiesFrom queryId)(queryId)
+      }
+
 
   def ngsSummariesFrom(
-    id: String
+    queryId: Query.Id,
   ): Action[AnyContent] = 
-    Action.async {
-      resultOf(id)(queryService.ngsSummariesFrom(Query.Id(id)))
-    }
-*/
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+      .async {
+        resultOf(service.ngsSummariesFrom(queryId))(queryId)
+      }
+
 
 
 }

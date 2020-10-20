@@ -25,38 +25,36 @@ extends SimpleRouter
     // Data Management endpoints                                               
     //-------------------------------------------------------------------------
 
-//    case POST(p"/data/MTBFile")                 => dataEntry.processUpload
-
-    case GET(p"/data/Patient")                  => dataEntry.patients
-
-    case GET(p"/data/MTBFile/$id")              => dataEntry.mtbfile(id)
-    case GET(p"/data/DataQualityReport/$id")    => dataEntry.dataQualityReport(id)
-
-    case DELETE(p"/data/Patient/$id")           => dataEntry.delete(id)
+    case GET(p"/data/Patient")                     => dataEntry.patients
+                                                  
+    case GET(p"/data/MTBFile/$id")                 => dataEntry.mtbfile(id)
+    case GET(p"/data/DataQualityReport/$id")       => dataEntry.dataQualityReport(id)
+                                                  
+    case DELETE(p"/data/Patient/$id")              => dataEntry.delete(id)
 
 
     //-------------------------------------------------------------------------
     // ZPM QC Reports                                                          
     //-------------------------------------------------------------------------
-    case GET(p"/reporting/LocalQCReport")       => queryController.getLocalQCReport
-    case GET(p"/reporting/GlobalQCReport")      => queryController.getGlobalQCReport
+    case GET(p"/reporting/LocalQCReport")          => queryController.getLocalQCReport
+    case GET(p"/reporting/GlobalQCReport")         => queryController.getGlobalQCReport
 
 
     //-------------------------------------------------------------------------
     // MTBFile Cohort Queries                                                  
     //-------------------------------------------------------------------------
  
-    case POST(p"/query")                        => queryController.submit
-    case POST(p"/query/$id")                    => queryController.update(Query.Id(id))
-    case PUT(p"/query/$id/filter")              => queryController.applyFilter(Query.Id(id))
+    case POST(p"/query")                           => queryController.submit
+    case POST(p"/query/$id")                       => queryController.update(Query.Id(id))
+    case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
+                                                  
+    case GET(p"/query/$id")                        => queryController.query(Query.Id(id))
+    case GET(p"/query/$id/Patient")                => queryController.patientsFrom(Query.Id(id))
+    case GET(p"/query/$id/MTBFile/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
+    case GET(p"/query/$id/TherapyRecommendation")  => queryController.therapyRecommendationsFrom(Query.Id(id))
+    case GET(p"/query/$id/MolecularTherapy")       => queryController.molecularTherapiesFrom(Query.Id(id))
+    case GET(p"/query/$id/NGSSummary")             => queryController.ngsSummariesFrom(Query.Id(id))
 
-    case GET(p"/query/$id")                     => queryController.query(Query.Id(id))
-    case GET(p"/query/$id/Patient")             => queryController.patientsFrom(Query.Id(id))
-    case GET(p"/query/$id/MTBFile/$patId")      => queryController.mtbfileFrom(Query.Id(id),patId)
-
-
-//    case POST(p"/peer2peer/query")              => queryController.processPeerToPeerQuery
-//    case GET(p"/peer2peer/LocalQCReport")       => queryController.getLocalQCReport
 
   }
 

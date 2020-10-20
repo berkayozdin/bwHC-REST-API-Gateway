@@ -61,43 +61,29 @@ object Credentials
   implicit val reads = Json.reads[Credentials]
 }
 
-/*
-Map[String,Authorization[UserWithRoles]](
-  "CreateUser" -> Authorization[UserWithRoles](_ hasRole Admin)
 
-)
-*/
-
-
-//object UserManagementPermissions
 trait UserManagementPermissions
 {
 
   import Role._
 
-
   private val AdminRights = Authorization[UserWithRoles](_ hasRole Admin)
 
 
-  val Create = AdminRights
+  val CreateRights = AdminRights
 
-
-  def Read(id: User.Id) =
+  def ReadRights(id: User.Id) =
     Authorization[UserWithRoles](user =>
       (user hasRole Admin) || (user.userId == id)
     )
 
+  def UpdateRights(id: User.Id) = ReadRights(id)
 
-  def Update(id: User.Id) = Read(id)
+  val UpdateRolesRights = AdminRights
 
+  val DeleteRights = AdminRights
 
-  def UpdateRoles = AdminRights
-
-
-  val Delete = AdminRights
-
-
-  val GetAll = AdminRights
+  val GetAllRights = AdminRights
 
 }
 
@@ -118,13 +104,6 @@ with UserManagementPermissions
 
   implicit val authService = sessionManager.instance
 
-
-//  import UserManagementPermissions._
-
-
-//  implicit val userOwnsUserResource: (User.Id,User.Id) => Future[Boolean] =
-//    (userId,ownerId) => Future.successful(userId == ownerId)
-  
 
   def login: Action[AnyContent] =
     Action.async { implicit request =>
@@ -165,14 +144,14 @@ with UserManagementPermissions
 
 
   def create = 
-    AuthenticatedAction( Create )
+    AuthenticatedAction( CreateRights )
       .async {
         errorsOrJson[UserCommand.Create] thenApply processUserCommand
       }
 
 
   def getAll =
-    AuthenticatedAction( GetAll ).async {
+    AuthenticatedAction( GetAllRights ).async {
       for {
         users   <- userService.instance.getAll
         userSet =  SearchSet(users)
@@ -182,7 +161,7 @@ with UserManagementPermissions
 
 
   def get(id: User.Id) =
-    AuthenticatedAction( Read(id) )
+    AuthenticatedAction( ReadRights(id) )
       .async {
         for {
           user   <- userService.instance.get(id)
@@ -207,7 +186,7 @@ with UserManagementPermissions
           update => 
             for {
 
-              allowed <- user isAllowedTo Update(update.id)
+              allowed <- user has UpdateRights(update.id)
 
               result <- if (allowed) processUserCommand(update)
                         else Future.successful(Forbidden)
@@ -218,14 +197,14 @@ with UserManagementPermissions
 
 
   def updateRoles =
-    AuthenticatedAction( UpdateRoles )
+    AuthenticatedAction( UpdateRolesRights )
       .async {
         errorsOrJson[UserCommand.UpdateRoles] thenApply processUserCommand
       }
 
 
   def delete(id: User.Id) =
-    AuthenticatedAction( Delete )
+    AuthenticatedAction( DeleteRights )
       .async {
         processUserCommand(UserCommand.Delete(id))
       }

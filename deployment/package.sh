@@ -21,6 +21,8 @@ cp ../target/universal/bwhc-rest-api-gateway-1.0-SNAPSHOT.zip $APP_DIR/
 
 cp install.sh $APP_DIR/
 
+cp config $APP_DIR/
+
 cp bwhc-backend-service $APP_DIR/
 
 cp bwhcConnectorConfig.xml $APP_DIR/
