@@ -12,7 +12,7 @@ import play.api.routing.sird._
 import de.bwhc.mtb.query.api.Query
 
 class Router @Inject()(
-  dataEntry: DataEntryController,
+  dataController: DataManagementController,
   queryController: QueryController,
 )
 extends SimpleRouter
@@ -25,12 +25,17 @@ extends SimpleRouter
     // Data Management endpoints                                               
     //-------------------------------------------------------------------------
 
-    case GET(p"/data/Patient")                     => dataEntry.patients
+    case GET(p"/data/Patient")                     => dataController.patientsWithStatus
+    case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
+
+                                                   
+    case GET(p"/data/qc/Patient")                  => dataController.patientsForQC
+//    case GET(p"/data/qc/MTBFile/$id")              => dataController.mtbfile(id)
+//    case GET(p"/data/qc/DataQualityReport/$id")    => dataController.dataQualityReport(id)
+
+    case GET(p"/data/MTBFile/$id")                 => dataController.mtbfile(id)
+    case GET(p"/data/DataQualityReport/$id")       => dataController.dataQualityReport(id)
                                                   
-    case GET(p"/data/MTBFile/$id")                 => dataEntry.mtbfile(id)
-    case GET(p"/data/DataQualityReport/$id")       => dataEntry.dataQualityReport(id)
-                                                  
-    case DELETE(p"/data/Patient/$id")              => dataEntry.delete(id)
 
 
     //-------------------------------------------------------------------------
@@ -41,7 +46,7 @@ extends SimpleRouter
 
 
     //-------------------------------------------------------------------------
-    // MTBFile Cohort Queries                                                  
+    // MTBFile Queries                                                  
     //-------------------------------------------------------------------------
  
     case POST(p"/query")                           => queryController.submit

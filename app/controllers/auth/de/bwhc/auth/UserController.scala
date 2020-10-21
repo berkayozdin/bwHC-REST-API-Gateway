@@ -70,20 +70,20 @@ trait UserManagementPermissions
   private val AdminRights = Authorization[UserWithRoles](_ hasRole Admin)
 
 
-  val CreateRights = AdminRights
+  val CreateUserRights = AdminRights
 
-  def ReadRights(id: User.Id) =
+  def ReadUserRights(id: User.Id) =
     Authorization[UserWithRoles](user =>
       (user hasRole Admin) || (user.userId == id)
     )
 
-  def UpdateRights(id: User.Id) = ReadRights(id)
+  def UpdateUserRights(id: User.Id) = ReadUserRights(id)
 
-  val UpdateRolesRights = AdminRights
+  val UpdateUserRolesRights = AdminRights
 
-  val DeleteRights = AdminRights
+  val DeleteUserRights = AdminRights
 
-  val GetAllRights = AdminRights
+  val GetAllUserRights = AdminRights
 
 }
 
@@ -112,15 +112,26 @@ with UserManagementPermissions
      
       val credentials: Either[Result,Credentials] =
         body
-         .asFormUrlEncoded
-         .flatMap( form =>
-           for {
-             username <- form.get("username").flatMap(_.headOption).map(User.Name(_))
-             password <- form.get("password").flatMap(_.headOption).map(User.Password(_))
-           } yield Credentials(username,password).asRight[Result]
-         )
-         .getOrElse(BadRequest("Invalid or missing Form body").asLeft[Credentials])
- 
+          .asJson
+          .map(
+            _.validate[Credentials]
+             .asEither
+             .leftMap(Outcome.fromJsErrors(_))
+             .leftMap(toJson(_))
+             .leftMap(BadRequest(_))
+          )
+          .orElse(
+            body
+              .asFormUrlEncoded
+              .flatMap( form =>
+                for {
+                  username <- form.get("username").flatMap(_.headOption).map(User.Name(_))
+                  password <- form.get("password").flatMap(_.headOption).map(User.Password(_))
+                } yield Credentials(username,password).asRight[Result]
+              )
+          )
+          .getOrElse(BadRequest("Invalid or missing Form body").asLeft[Credentials])
+
       credentials.fold(
         Future.successful(_),
         {
@@ -144,14 +155,14 @@ with UserManagementPermissions
 
 
   def create = 
-    AuthenticatedAction( CreateRights )
+    AuthenticatedAction( CreateUserRights )
       .async {
         errorsOrJson[UserCommand.Create] thenApply processUserCommand
       }
 
 
   def getAll =
-    AuthenticatedAction( GetAllRights ).async {
+    AuthenticatedAction( GetAllUserRights ).async {
       for {
         users   <- userService.instance.getAll
         userSet =  SearchSet(users)
@@ -161,7 +172,7 @@ with UserManagementPermissions
 
 
   def get(id: User.Id) =
-    AuthenticatedAction( ReadRights(id) )
+    AuthenticatedAction( ReadUserRights(id) )
       .async {
         for {
           user   <- userService.instance.get(id)
@@ -186,7 +197,7 @@ with UserManagementPermissions
           update => 
             for {
 
-              allowed <- user has UpdateRights(update.id)
+              allowed <- user has UpdateUserRights(update.id)
 
               result <- if (allowed) processUserCommand(update)
                         else Future.successful(Forbidden)
@@ -197,14 +208,14 @@ with UserManagementPermissions
 
 
   def updateRoles =
-    AuthenticatedAction( UpdateRolesRights )
+    AuthenticatedAction( UpdateUserRolesRights )
       .async {
         errorsOrJson[UserCommand.UpdateRoles] thenApply processUserCommand
       }
 
 
   def delete(id: User.Id) =
-    AuthenticatedAction( DeleteRights )
+    AuthenticatedAction( DeleteUserRights )
       .async {
         processUserCommand(UserCommand.Delete(id))
       }
