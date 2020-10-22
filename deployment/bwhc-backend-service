@@ -30,8 +30,9 @@ case "$1" in
       echo "-------------------------------------------------------------------------"
       echo " Starting bwHealthCloud Backend Service" $ZPM_SITE
       echo "-------------------------------------------------------------------------"
-    
-      #-Dbwhc.query.data.generate=20
+
+      #N_RANDOM_FILES=50    
+      #-Dbwhc.query.data.generate=$N_RANDOM_FILES \
  
       cp logback.xml $BWHC_APP_DIR/conf/
       

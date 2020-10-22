@@ -25,6 +25,7 @@ libraryDependencies ++= Seq(
 
   "de.bwhc"                %% "authentication-api"              % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
+//  "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
 
   "de.bwhc"                %% "user-service-api"                % "1.0-SNAPSHOT",
   "de.bwhc"                %% "user-service-impl"               % "1.0-SNAPSHOT",

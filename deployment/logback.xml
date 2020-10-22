@@ -3,7 +3,7 @@
 <configuration scan="true">
 
   <property name="LOG_DIR"  value="./bwhc_logs/"/>
-  <property name="LOG_FILE" value="bwhealthcloud-query"/>
+  <property name="LOG_FILE" value="bwhealthcloud"/>
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
