@@ -18,7 +18,7 @@ import play.api.mvc.{
   Result
 }
 import play.api.libs.json.{
-  Json, Format
+  Json, Format, Writes
 }
 
 import de.bwhc.mtb.data.entry.dtos.{
@@ -141,7 +141,6 @@ with QueryModePermissions
   protected val service = queryService.instance
 
 
-  //TODO: Check how to distinguish locally issued LocalQCReport query from externally issued for GlobalQCReport compilation
   def getLocalQCReport: Action[AnyContent] = 
     AuthenticatedAction( LocalQCAccessRight ).async {
 

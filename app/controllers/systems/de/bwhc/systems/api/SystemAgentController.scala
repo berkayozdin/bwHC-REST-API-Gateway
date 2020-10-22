@@ -98,6 +98,10 @@ with RequestOps
   // Peer-to-peer operations
   //---------------------------------------------------------------------------
 
+  private val BWHC_SITE_ORIGIN  = "bwhc-site-origin"
+  private val BWHC_QUERY_USERID = "bwhc-query-userid"
+
+
   def getLocalQCReport: Action[AnyContent] = 
     Action.async {
 
@@ -105,18 +109,26 @@ with RequestOps
 
       //TODO: get originating ZPM and Querier from request
       
-      val querier = Querier("TODO")
+//      val querier = Querier("TODO")
+//      val origin  = ZPM("TODO")
 
-      val origin  = ZPM("TODO")
+      val result =
+        for {
+          origin  <- request.headers.get(BWHC_SITE_ORIGIN).map(ZPM(_))
+          querier <- request.headers.get(BWHC_QUERY_USERID).map(Querier(_))
+          res =
+            for {
+              qc      <- queryService.instance.getLocalQCReportFor(origin,querier)
+              outcome =  qc.leftMap(List(_))
+                           .leftMap(Outcome.fromErrors)
+            } yield outcome.toJsonResult
+        
+        } yield res
 
+      result.getOrElse(
+        Future.successful(BadRequest(s"Missing Header(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID"))
+      )
 
-      for {
-        qc      <- queryService.instance.getLocalQCReportFor(origin,querier)
-        outcome = qc.leftMap(List(_))
-                    .leftMap(Outcome.fromErrors)
-        result  = outcome.toJsonResult
-      } yield result
- 
     }
  
 
