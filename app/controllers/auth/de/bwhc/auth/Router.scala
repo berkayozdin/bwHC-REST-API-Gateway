@@ -41,7 +41,6 @@ extends SimpleRouter
     case PUT(p"/user/$id/roles")   => userController.updateRoles
     case DELETE(p"/user/$id")      => userController.delete(User.Id(id))
 
-
   }
 
 

@@ -67,14 +67,15 @@ trait UserManagementPermissions
 
   import Role._
 
-  private val AdminRights = Authorization[UserWithRoles](_ hasRole Admin)
+  private val AdminRights =
+    Authorization[UserWithRoles](_ hasRole Admin)
 
 
   val CreateUserRights = AdminRights
 
   def ReadUserRights(id: User.Id) =
     Authorization[UserWithRoles](user =>
-      (user hasRole Admin) || (user.userId == id)
+      (user.userId == id) || (user hasRole Admin) 
     )
 
   def UpdateUserRights(id: User.Id) = ReadUserRights(id)
@@ -157,7 +158,7 @@ with UserManagementPermissions
   def create = 
     AuthenticatedAction( CreateUserRights )
       .async {
-        errorsOrJson[UserCommand.Create] thenApply processUserCommand
+        errorsOrJson[UserCommand.Create] thenApply process
       }
 
 
@@ -171,12 +172,26 @@ with UserManagementPermissions
     }
 
 
+  import de.bwhc.rest.util.hal._
+  import de.bwhc.rest.util.hal.Relations._
+  import de.bwhc.rest.util.hal.syntax._
+
+
+  implicit val addHypermedia: User => Hyper[User] = {
+    user =>
+      user.withLinks(
+        Self -> s"/bwhc/user/api/user/${user.id.value}"
+      )
+  }
+
+
   def get(id: User.Id) =
     AuthenticatedAction( ReadUserRights(id) )
       .async {
         for {
           user   <- userService.instance.get(id)
-          result =  user.map(toJson(_))
+          result =  user.map(_.withHypermedia)
+                      .map(toJson(_))
                       .map(Ok(_))
                       .getOrElse(NotFound(s"Invalid UserId $id"))
         } yield result
@@ -199,7 +214,7 @@ with UserManagementPermissions
 
               allowed <- user has UpdateUserRights(update.id)
 
-              result <- if (allowed) processUserCommand(update)
+              result <- if (allowed) process(update)
                         else Future.successful(Forbidden)
 
             } yield result
@@ -210,19 +225,18 @@ with UserManagementPermissions
   def updateRoles =
     AuthenticatedAction( UpdateUserRolesRights )
       .async {
-        errorsOrJson[UserCommand.UpdateRoles] thenApply processUserCommand
+        errorsOrJson[UserCommand.UpdateRoles] thenApply process
       }
 
 
   def delete(id: User.Id) =
     AuthenticatedAction( DeleteUserRights )
       .async {
-        processUserCommand(UserCommand.Delete(id))
+        process(UserCommand.Delete(id))
       }
 
 
-
-  private def processUserCommand(
+  private def process(
     cmd: UserCommand
   ): Future[Result] =
     for {
@@ -231,9 +245,9 @@ with UserManagementPermissions
         response.fold(
           errs => UnprocessableEntity(toJson(Outcome.fromErrors(errs.toList))),
           {
-            case UserEvent.Created(user,_) => Created(toJson(user))
+            case UserEvent.Created(user,_) => Created(toJson(user.withHypermedia))
 
-            case UserEvent.Updated(user,_) => Ok(toJson(user))
+            case UserEvent.Updated(user,_) => Ok(toJson(user.withHypermedia))
 
             case UserEvent.Deleted(userId,_) => Ok
 
