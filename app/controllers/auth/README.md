@@ -123,7 +123,7 @@ __PUT__ http://HOST:PORT/bwhc/user/api/user/{UserID}/roles
 
 __POST__ http://HOST:PORT/bwhc/user/api/login
 
-with Credentials either as Form payload (x-www-url-formencoded):
+with Credentials either as Form payload (x-www-form-urlencoded):
 
 ```javascript
 username=...

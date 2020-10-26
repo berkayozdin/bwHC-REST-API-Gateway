@@ -89,8 +89,8 @@ object syntax
 {
   implicit class HyperSyntax[T <: Product](val t: T) extends AnyVal
   {
-    def addLinks(links: (Relation,Link)*): Hyper[T] =
-      Hyper(t,links.toMap)
+//    def addLinks(links: (Relation,Link)*): Hyper[T] =
+//      Hyper(t,links.toMap)
 
     def withLinks(links: (Relation,String)*): Hyper[T] =
       Hyper(t,links.toMap.map { case (rel,href) => (rel -> Link(URI.create(href))) })

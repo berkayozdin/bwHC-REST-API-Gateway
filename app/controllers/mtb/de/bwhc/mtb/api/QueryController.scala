@@ -38,10 +38,10 @@ import cats.instances.future._
 import cats.syntax.either._
 
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
+import de.bwhc.rest.util.hal.syntax._
 
 import de.bwhc.auth.api._
 import de.bwhc.auth.core._
-import de.bwhc.auth.core.Authorization._
 
 import de.bwhc.services.{WrappedQueryService,WrappedSessionManager}
 
@@ -56,101 +56,6 @@ object QueryForm
 {
   implicit val format = Json.format[QueryForm]
 }
-
-
-
-trait QueryModePermissions
-{
-
-  import de.bwhc.user.api.Role._
-
-
-  val LocalQCAccessRight =
-    Authorization[UserWithRoles](user =>
-      (user hasRole LocalZPMCoordinator) ||
-      (user hasRole GlobalZPMCoordinator) ||
-      (user hasRole MTBCoordinator)
-    )
-
-
-  val GlobalQCAccessRight =
-    Authorization[UserWithRoles](_ hasRole GlobalZPMCoordinator)
-
-
-  val FederatedEvidenceQueryRight =
-    Authorization[UserWithRoles](
-      _ hasAnyOf Set(GlobalZPMCoordinator, Researcher)
-    )
-
-
-  val LocalEvidenceQueryRight =
-    Authorization[UserWithRoles](
-      _ hasAnyOf Set(GlobalZPMCoordinator, Researcher, LocalZPMCoordinator, MTBCoordinator)
-    )
-
-  val EvidenceQueryRight = LocalEvidenceQueryRight
-
-
-  def QueryRightFor(
-    mode: Query.Mode.Value
-  ): Authorization[UserWithRoles] =
-    if (mode == Query.Mode.Federated) FederatedEvidenceQueryRight
-    else LocalEvidenceQueryRight
- 
-
-  protected val service: QueryService
-
-
-  def AccessRightFor(
-    queryId: Query.Id
-  )(
-    implicit ec: ExecutionContext
-  ): Authorization[UserWithRoles] = Authorization.async{
-
-    case UserWithRoles(userId,_) =>
-
-      for {
-        query <- service get queryId
-        ok    =  query.exists(_.querier.value == userId.value)
-      } yield ok
-  }
-
-
-}
-
-
-import de.bwhc.rest.util.hal._
-import de.bwhc.rest.util.hal.syntax._
-
-
-trait QueryHypermedia
-{
-
-  import de.bwhc.rest.util.hal.Relations._
-
-  val Patients               = Relation("Patients")
-  val NGSSummaries           = Relation("NGSSummaries")
-  val TherapyRecommendations = Relation("TherapyRecommendations")
-  val MolecularTherapies     = Relation("MolecularTherapies")
-
-
-  implicit val hyperQuery: Query => Hyper[Query] = {
-    query =>
-
-      val queryId = query.id.value 
-
-      query.withLinks(
-        Self                   -> s"/bwhc/mtb/api/query/${queryId}",
-        Patients               -> s"/bwhc/mtb/api/query/${queryId}/Patient",
-        NGSSummaries           -> s"/bwhc/mtb/api/query/${queryId}/NGSSummary",
-        TherapyRecommendations -> s"/bwhc/mtb/api/query/${queryId}/TherapyRecommendation",
-        MolecularTherapies     -> s"/bwhc/mtb/api/query/${queryId}/MolecularTherapy",
-      )
-  }
-
-}
-
-
 
 
 class QueryController @Inject()(
@@ -274,7 +179,10 @@ with QueryHypermedia
                 if (queryModeAllowed)
                   for {
                     resp    <- service ! update
-                    outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
+                    outcome =  resp.bimap(
+                                 errs => Outcome.fromErrors(errs.toList),
+                                 _.withHypermedia
+                               )
                     result  =  outcome.toJsonResult
                   } yield result
                 else 
@@ -295,17 +203,17 @@ with QueryHypermedia
   
         request => 
   
-        val user = request.user
-  
-        errorsOrJson[Command.ApplyFilter]
-          .apply(request)
+        errorsOrJson[Command.ApplyFilter].apply(request)
           .fold(
             Future.successful,
   
             applyFilter => 
               for {
                 resp    <- service ! applyFilter
-                outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
+                outcome =  resp.bimap(
+                             errs => Outcome.fromErrors(errs.toList),
+                             _.withHypermedia
+                           )
                 result  =  outcome.toJsonResult
               } yield result
       
@@ -324,6 +232,7 @@ with QueryHypermedia
     AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
       .async {
         OptionT(service get queryId)
+          .map(_.withHypermedia)
           .map(Json.toJson(_))
           .fold(
             NotFound(s"Invalid Query ID ${queryId.value}")

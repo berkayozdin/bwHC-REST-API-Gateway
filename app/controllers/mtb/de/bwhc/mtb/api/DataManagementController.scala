@@ -48,30 +48,6 @@ import de.bwhc.services._
 
 
 
-trait DataManagementPermissions
-{
-
-  import de.bwhc.user.api.Role._
-
-
-  private val AdminRights =
-    Authorization[UserWithRoles](_ hasRole Admin)
-
-
-  private val DocumentaristRights =
-    Authorization[UserWithRoles](_ hasRole Documentarist)
-
-
-  val PatientStatusAccessRights = AdminRights
-
-
-  val DataQualityAccessRights = DocumentaristRights
-
-
-}
-
-
-
 object DataStatus extends Enumeration
 {
   val CurationRequired  = Value
@@ -91,9 +67,39 @@ final case class PatientWithStatus
   status: DataStatus.Value
 )
 
+
+import de.bwhc.rest.util.hal._
+import de.bwhc.rest.util.hal.syntax._
+
+
+
 object PatientWithStatus
 {
+
   implicit val format = Json.format[PatientWithStatus]
+
+
+  import DataStatus._
+
+  implicit val hyperPatientWithStatus: PatientWithStatus => Hyper[PatientWithStatus] = {
+    patient =>
+
+      val Patient.Id(id) = patient.id 
+
+      patient.status match {
+
+        case CurationRequired =>         
+          patient.withLinks(
+            Relation("MTBFile")           -> s"/bwhc/mtb/api/data/MTBFile/$id",
+            Relation("DataQualityReport") -> s"/bwhc/mtb/api/data/DataQualityReport/$id"
+          )
+        
+        case ReadyForReporting =>
+          patient.withLinks()
+        
+      }
+  }
+
 }
 
 
@@ -151,7 +157,7 @@ with DataManagementPermissions
                               patsInReporting.filter(!patIDsForQc.contains(_))
                                 .map(_.mapTo(Status(ReadyForReporting)))
 
-          set  =  SearchSet(allPats)
+          set  =  SearchSet(allPats.map(_.withHypermedia))
 
           json =  toJson(set)   
 
@@ -192,7 +198,8 @@ with DataManagementPermissions
 
 
   def delete(id: String): Action[AnyContent] =
-    AuthenticatedAction(DataQualityAccessRights).async {
+    AuthenticatedAction( DataQualityAccessRights )
+      .async {
 
       (dataService.instance ! Delete(Patient.Id(id)))
         .map(
@@ -211,7 +218,7 @@ with DataManagementPermissions
           )
         ) 
 
-    }
+      }
 
 
 }
