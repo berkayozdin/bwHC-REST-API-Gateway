@@ -23,6 +23,9 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play"              % "5.0.0" % "test",
   "org.typelevel"          %% "cats-core"                       % "2.1.1",
 
+//  "com.github.andyglow"    %% "scala-jsonschema"                % "0.4.0",
+//  "com.github.andyglow"    %% "scala-jsonschema-play-json"      % "0.4.0",
+
   "de.bwhc"                %% "authentication-api"              % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
 //  "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",

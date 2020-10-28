@@ -33,6 +33,9 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // User management 
     //-------------------------------------------------------------------------
+    case GET(p"/")                 => userController.apiHypermedia
+    case GET(p"/user")             => userController.getAll
+
     case GET(p"/user")             => userController.getAll
     case GET(p"/user/$id")         => userController.get(User.Id(id))
                                    

@@ -2,19 +2,23 @@ package de.bwhc.mtb.api
 
 
 import de.bwhc.mtb.query.api.Query
+  
+import de.bwhc.rest.util.hal._
+import de.bwhc.rest.util.hal.syntax._
+import de.bwhc.rest.util.hal.Relations._
+
 
 trait QueryHypermedia
 {
 
-  import de.bwhc.rest.util.hal._
-  import de.bwhc.rest.util.hal.syntax._
-  import de.bwhc.rest.util.hal.Relations._
-
-
+/*
   val Patients               = Relation("Patients")
   val NGSSummaries           = Relation("NGSSummaries")
   val TherapyRecommendations = Relation("TherapyRecommendations")
   val MolecularTherapies     = Relation("MolecularTherapies")
+*/
+
+  private val baseUrl = "/bwhc/mtb/api/query"
 
 
   implicit val hyperQuery: Query => Hyper[Query] = {
@@ -23,11 +27,13 @@ trait QueryHypermedia
       val queryId = query.id.value 
 
       query.withLinks(
-        Self                   -> s"/bwhc/mtb/api/query/${queryId}",
-        Patients               -> s"/bwhc/mtb/api/query/${queryId}/Patient",
-        NGSSummaries           -> s"/bwhc/mtb/api/query/${queryId}/NGSSummary",
-        TherapyRecommendations -> s"/bwhc/mtb/api/query/${queryId}/TherapyRecommendation",
-        MolecularTherapies     -> s"/bwhc/mtb/api/query/${queryId}/MolecularTherapy",
+        Self                               -> s"/$baseUrl/${queryId}",
+        Relation("update")                 -> s"/$baseUrl/${queryId}",        //TODO: add HTTP Method
+        Relation("filter")                 -> s"/$baseUrl/${queryId}/filter", //TODO: add HTTP Method
+        Relation("Patients")               -> s"/$baseUrl/${queryId}/Patient",
+        Relation("NGSSummaries")           -> s"/$baseUrl/${queryId}/NGSSummary",
+        Relation("TherapyRecommendations") -> s"/$baseUrl/${queryId}/TherapyRecommendation",
+        Relation("MolecularTherapies")     -> s"/$baseUrl/${queryId}/MolecularTherapy",
       )
   }
 

@@ -36,6 +36,7 @@ import de.bwhc.rest.util.{
   RequestOps,
   SearchSet
 }
+import de.bwhc.rest.util.cphl.syntax._
 
 import de.bwhc.user.api.{
   User,
@@ -101,9 +102,16 @@ extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
 with UserManagementPermissions
+with UserHypermedia
 {
 
   implicit val authService = sessionManager.instance
+
+
+  def apiHypermedia: Action[AnyContent] = 
+    Action {
+      Ok(Json.toJson(userApiActions))
+    }
 
 
   def login: Action[AnyContent] =
@@ -140,9 +148,13 @@ with UserManagementPermissions
             for {
               optUser <- userService.instance.identify(username,password)
           
-              result  <- optUser.map( 
-                           user => authService.login(UserWithRoles(user.id,user.roles))
-                         )
+              result  <- optUser
+                           .map( user =>
+                              authService.login(
+                                UserWithRoles(user.id,user.roles),
+                                Some(user.withHypermedia)
+                              )
+                            )
                          .getOrElse(Future.successful(Forbidden))
             } yield result
         }
@@ -165,24 +177,12 @@ with UserManagementPermissions
   def getAll =
     AuthenticatedAction( GetAllUserRights ).async {
       for {
-        users   <- userService.instance.getAll
-        userSet =  SearchSet(users)
-        result  =  toJson(userSet)
+        users      <- userService.instance.getAll
+        hyperUsers =  users.map(_.withHypermedia) 
+        userSet    =  SearchSet(hyperUsers)
+        result     =  toJson(userSet)
       } yield Ok(result)
     }
-
-
-  import de.bwhc.rest.util.hal._
-  import de.bwhc.rest.util.hal.Relations._
-  import de.bwhc.rest.util.hal.syntax._
-
-
-  implicit val addHypermedia: User => Hyper[User] = {
-    user =>
-      user.withLinks(
-        Self -> s"/bwhc/user/api/user/${user.id.value}"
-      )
-  }
 
 
   def get(id: User.Id) =
