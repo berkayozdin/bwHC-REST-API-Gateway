@@ -22,16 +22,15 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // Catalogs / ValueSets
     //-------------------------------------------------------------------------
-    case GET(p"/Coding/$system"?q_o"pattern=$pattern")            => catalogs.coding(system,pattern)
-    case GET(p"/Coding"?q"system=$system"?q_o"pattern=$pattern")  => catalogs.coding(system,pattern)
+    case GET(p"/")                                                => catalogs.apiHypermedia
 
+    case GET(p"/Coding/$system"?q_o"pattern=$pattern"?q_o"version=$v") => catalogs.coding(system,pattern,v)
 
-    case GET(p"/ValueSet")                                        => catalogs.valueSets
+    case GET(p"/Coding"?q"system=$system"?q_o"pattern=$pattern"?q_o"version=$v")  => catalogs.coding(system,pattern,v)
+
     case GET(p"/ValueSet/$name")                                  => catalogs.valueSet(name)
     case GET(p"/ValueSet"?q"name=$name")                          => catalogs.valueSet(name)
-
-//    case GET(p"/ValueSet"?q_o"language=$lang")          => catalogs.valueSets(lang)
-//    case GET(p"/ValueSet/$name"?q_o"language=$lang")    => catalogs.valueSet(name,lang)
+    case GET(p"/ValueSet")                                        => catalogs.valueSets
 
   }
 

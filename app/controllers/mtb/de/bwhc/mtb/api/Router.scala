@@ -24,6 +24,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // Data Management endpoints                                               
     //-------------------------------------------------------------------------
+    case GET(p"/data/")                            => dataController.apiHypermedia
 
     case GET(p"/data/Patient")                     => dataController.patientsWithStatus
     case DELETE(p"/data/Patient/$id")              => dataController.delete(id)

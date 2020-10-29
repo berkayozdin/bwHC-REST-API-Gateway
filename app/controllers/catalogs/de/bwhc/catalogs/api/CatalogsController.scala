@@ -19,12 +19,14 @@ import play.api.mvc.{
   Request,
 }
 import play.api.libs.json.{
-  Json, JsValue, Format
+  Json, JsValue, JsObject, Format
 }
 
 import cats.Functor
 
-import de.bwhc.catalogs.icd.{ICD10GMCatalogs,ICDO3Catalogs}
+import de.bwhc.catalogs.icd.{
+  ICD10GM, ICD10GMCatalogs, ICDO3Catalogs
+}
 import de.bwhc.catalogs.hgnc.HGNCCatalog
 import de.bwhc.catalogs.med.MedicationCatalog
 
@@ -81,6 +83,33 @@ object Catalogs
 }
 
 
+import de.bwhc.rest.util.cphl._
+import de.bwhc.rest.util.cphl.syntax._
+import de.bwhc.rest.util.cphl.Relations._
+import de.bwhc.rest.util.cphl.Method._
+
+trait CatalogHypermedia
+{
+
+  val baseUrl = "/bwhc/catalogs/api"
+
+  private val links =
+    (Self -> Action(s"$baseUrl/", GET)) +:
+    (
+      Seq("icd-10-gm","icd-o-3-t","icd-o-3-m","hgnc","atc")
+        .map(sys => Relation(s"catalog-$sys") -> Action(s"$baseUrl/Coding?system=$sys" , GET)) ++
+      (
+        (Relation("valuesets") -> Action(s"$baseUrl/ValueSet" , GET)) +:
+        Catalogs.jsonValueSets.keys 
+          .map(vs => Relation(s"valueset-$vs") -> Action(s"$baseUrl/ValueSet?name=$vs" , GET)).toSeq
+      )
+    )
+
+  val apiCPHL =
+    CPHL.empty[JsObject](links: _*)
+
+}
+
 
 class CatalogsController @Inject()(
   val controllerComponents: ControllerComponents
@@ -88,14 +117,22 @@ class CatalogsController @Inject()(
   implicit ec: ExecutionContext
 )
 extends BaseController
+with CatalogHypermedia
 {
 
   import Catalogs._ 
 
 
+  def apiHypermedia: Action[AnyContent] =
+    Action {
+      Ok(Json.toJson(apiCPHL))
+    }
+
+
   def coding(
     system: String,
-    pattern: Option[String]
+    pattern: Option[String],
+    version: Option[String]
   ): Action[AnyContent] = {
 
     Action {
@@ -103,11 +140,21 @@ extends BaseController
       val result = 
         system.toLowerCase match {
 
-          case "icd-10-gm" => Try {
-                                pattern.fold(icd10gm.codings())(icd10gm.matches(_))
-                              }
-                              .map(SearchSet(_))
-                              .map(Json.toJson(_))
+          case "icd-10-gm" => {
+            (
+              version match {
+
+                case Some(vsn) => Try { ICD10GM.Version(vsn) }
+                                    .map(v => pattern.fold(icd10gm.codings())(icd10gm.matches(_,v)) )
+
+                case None    => Try { pattern.fold(icd10gm.codings())(icd10gm.matches(_)) }
+
+              }
+            )
+            .map(SearchSet(_))
+            .map(Json.toJson(_))
+          }
+
 
           case "icd-o-3-t" => Try {
                                 pattern.fold(icdO3.topographyCodings())(icdO3.topographyMatches(_))
@@ -128,7 +175,7 @@ extends BaseController
                               .map(Json.toJson(_))
 
           case "atc"       => Try {
-                                pattern.fold(medications.entries)(medications.findMatching(_))
+                                pattern.map(medications.findMatching(_)).getOrElse(medications.entries)
                               }
                               .map(SearchSet(_))
                               .map(Json.toJson(_))
@@ -138,7 +185,7 @@ extends BaseController
         }
 
       result.fold(
-        t => NotFound(s"Unknown Coding $system"),
+        t => NotFound(s"Unknown Coding System '$system' or wrong/unavailable version '$version'"),
         Ok(_)
       )
 

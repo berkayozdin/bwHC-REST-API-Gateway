@@ -174,9 +174,9 @@ __TODO TODO TODO__
 -------
 #### Coding Systems (Catalogs)
 
-__GET__ http://HOST:PORT/bwhc/catalogs/api/Coding/SYSTEM[?pattern=CHARS]
+__GET__ http://HOST:PORT/bwhc/catalogs/api/Coding/SYSTEM[?pattern=CHARS][?version=VERSION]
 
-__GET__ http://HOST:PORT/bwhc/catalogs/api/Coding?system=SYSTEM[&pattern=CHARS]
+__GET__ http://HOST:PORT/bwhc/catalogs/api/Coding?system=SYSTEM[&pattern=CHARS][?version=VERSION]
 
 SYSTEM must be any of:
 
@@ -188,7 +188,9 @@ SYSTEM must be any of:
 | HGNC |
 | ATC |
 
-Parameter "pattern" filters for codings whose display label contains CHARS 
+Optional Parameter "pattern" filters for codings whose display label contains CHARS 
+
+Optional Parameter "version" indicated requested catalog version (only different ICD-10-GM versions a.t.m)
 
 
 -------

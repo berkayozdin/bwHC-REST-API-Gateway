@@ -24,7 +24,7 @@ import play.api.mvc.{
   Request,
   Result
 }
-import play.api.libs.json.Json
+import play.api.libs.json.{Json,JsObject}
 import Json.toJson
 
 import cats.syntax.either._
@@ -68,20 +68,37 @@ final case class PatientWithStatus
 )
 
 
-import de.bwhc.rest.util.hal._
-import de.bwhc.rest.util.hal.syntax._
-
+import de.bwhc.rest.util.cphl._
+import de.bwhc.rest.util.cphl.syntax._
 
 
 object PatientWithStatus
 {
-
   implicit val format = Json.format[PatientWithStatus]
+}
 
+
+
+trait DataManagementHypermedia
+{
+
+  import de.bwhc.rest.util.cphl.Method._
+  import de.bwhc.rest.util.cphl.Relations._
 
   import DataStatus._
 
-  implicit val hyperPatientWithStatus: PatientWithStatus => Hyper[PatientWithStatus] = {
+  private val baseUrl = "/bwhc/mtb/api/data"
+
+
+  val apiCPHL =
+    CPHL.empty[JsObject](
+      Self                           -> Action(s"$baseUrl/"       , GET),
+      Relation("PatientsWithStatus") -> Action(s"$baseUrl/Patient", GET),
+      Relation("PatientsForQC")      -> Action(s"$baseUrl/qc/Patient", GET)
+    )
+
+/*
+  implicit val hyperPatientWithStatus: PatientWithStatus => CPHL[PatientWithStatus] = {
     patient =>
 
       val Patient.Id(id) = patient.id 
@@ -90,14 +107,26 @@ object PatientWithStatus
 
         case CurationRequired =>         
           patient.withLinks(
-            Relation("MTBFile")           -> s"/bwhc/mtb/api/data/MTBFile/$id",
-            Relation("DataQualityReport") -> s"/bwhc/mtb/api/data/DataQualityReport/$id"
+            Relation("MTBFile")           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
+            Relation("DataQualityReport") -> Action(s"$baseUrl/DataQualityReport/$id", GET)
           )
         
         case ReadyForReporting =>
           patient.withLinks()
         
       }
+  }
+*/
+
+  implicit val hyperPatient: Patient => CPHL[Patient] = {
+    patient =>
+
+      val Patient.Id(id) = patient.id 
+
+      patient.withLinks(
+        Relation("MTBFile")           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
+        Relation("DataQualityReport") -> Action(s"$baseUrl/DataQualityReport/$id", GET)
+      )
   }
 
 }
@@ -117,6 +146,7 @@ extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
 with DataManagementPermissions
+with DataManagementHypermedia
 {
 
 
@@ -139,9 +169,16 @@ with DataManagementPermissions
       )
   }
 
+
+
+  def apiHypermedia: Action[AnyContent] = 
+    Action {
+      Ok(Json.toJson(apiCPHL))
+    }
+
+
   import DataStatus._
   import de.bwhc.util.mapping.syntax._
-
 
   def patientsWithStatus: Action[AnyContent] =
     AuthenticatedAction( PatientStatusAccessRights )
@@ -170,8 +207,12 @@ with DataManagementPermissions
     AuthenticatedAction( DataQualityAccessRights )
       .async {
         for {
-          ps   <- dataService.instance.patientsWithIncompleteData 
-          set  =  SearchSet(ps)
+          pats   <- dataService.instance.patientsWithIncompleteData 
+
+          hyperPats = pats.map(_.withHypermedia)
+
+          set  =  SearchSet(hyperPats)
+//          set  =  SearchSet(ps)
           json =  toJson(set)   
         } yield Ok(json)
       }

@@ -121,9 +121,12 @@ object Action
 case class CPHL[T <: Product]
 (
   state: Option[T],
-//  state: T,
   links: Map[Relation,Action]
 )
+{
+  def withLinks(newLinks: (Relation,Action)*): CPHL[T] =
+    CPHL(state, links ++ newLinks.toMap)
+}
 
 object CPHL
 {
@@ -136,6 +139,9 @@ object CPHL
 
   def apply[T <: Product](t: Option[T], links: (Relation,Action)*): CPHL[T] =
     CPHL(t,links.toMap)
+
+  def empty[T <: Product](links: (Relation,Action)*): CPHL[T] =
+    CPHL(None,links.toMap)
 
 
   implicit def format[T <: Product: Format]: Format[CPHL[T]] = {
@@ -152,7 +158,6 @@ object CPHL
       Writes(
         hyper =>
           hyper.state.map(Json.toJson(_).as[JsObject]).getOrElse(JsObject.empty) +
-//          Json.toJson(hyper.state).as[JsObject] +
           ("_links" -> JsObject(hyper.links.map { case (rel,link) => (rel.toString -> Json.toJson(link)) }))
       )
     )
