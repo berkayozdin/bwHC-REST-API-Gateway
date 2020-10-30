@@ -3,9 +3,8 @@ package de.bwhc.rest.util
 
 import java.net.URI
 
-import play.api.libs.json.{
-  Json, JsObject, Format, Reads, Writes
-}
+import play.api.libs.json
+import play.api.libs.json._
 
 
 package object cphl {
@@ -16,15 +15,6 @@ package object cphl {
  * cd Work/Software/bwHC/bwhc-rest-api-gateway/
  *
  */
-
-/*
-sealed abstract class Method
-final case object GET    extends Method
-final case object POST   extends Method
-final case object PUT    extends Method
-final case object PATCH  extends Method
-final case object DELETE extends Method
-*/
 
 object Method extends Enumeration
 {
@@ -71,13 +61,17 @@ case class Action
   description: Option[String] = None,
   href: URI,
   methods: Set[Method.Value],
-//  formats: Map[Action.Format.Name,Action.Format] = Map.empty[Action.Format.Name,Action.Format]
+  formats: Map[Action.Format.Name,Action.Format] = Map.empty[Action.Format.Name,Action.Format]
 /*
   TODO
   rel: Relation,
   expiration: Instant
 */  
 )
+{
+  def withFormats(fs: (Action.Format.Name,Action.Format)*): Action =
+    this.copy(formats = formats ++ fs.toMap)
+}
 
 object Action
 {
@@ -95,8 +89,20 @@ object Action
   ): Action =
     Action(None,None,URI.create(href),methods.toSet)
 
+  def apply(
+    title: String,
+    description: String,
+    href: String,
+    method: Method.Value,
+    formats: (Action.Format.Name,Action.Format)*
+  ): Action = 
+    Action(Some(title),Some(description),URI.create(href),Set(method),formats.toMap)
 
-  final case class Format(mimeType: String, schema: URI)
+
+  final case class Format(
+    mimeType: Option[String],
+    schema: Option[URI]
+  )
 
   object Format
   {
@@ -107,11 +113,28 @@ object Action
     val XML  = Name("xml")
 
     def apply(mimeType: String, schema: String): Format =
-      Format(mimeType, URI.create(schema))
+      Format(Some(mimeType), Some(URI.create(schema)))
+
+    def apply(mimeType: String): Format =
+      Format(Some(mimeType), None)
+
+
+    implicit val formatName = Json.valueFormat[Name]
 
     implicit val format = Json.format[Format]
   }
 
+  implicit val formatFormats: json.Format[Map[Action.Format.Name,Action.Format]] =
+    json.Format(
+      Reads(js =>
+        js.validate[List[(Action.Format.Name,Action.Format)]]
+          .map(_.toMap)
+      ),
+      Writes( fs =>
+        JsObject(fs.map { case (n,f) => (n.name -> Json.toJson(f)) })
+          
+      )
+    )
 
   implicit val format = Json.format[Action]
 
@@ -130,9 +153,6 @@ case class CPHL[T <: Product]
 
 object CPHL
 {
-
-  def apply[T <: Product](t: T)(implicit hyper: T => CPHL[T]): CPHL[T] =
-    hyper(t)
 
   def apply[T <: Product](t: T, links: (Relation,Action)*): CPHL[T] =
     CPHL(Some(t),links.toMap)
@@ -156,9 +176,9 @@ object CPHL
 
       },
       Writes(
-        hyper =>
-          hyper.state.map(Json.toJson(_).as[JsObject]).getOrElse(JsObject.empty) +
-          ("_links" -> JsObject(hyper.links.map { case (rel,link) => (rel.toString -> Json.toJson(link)) }))
+        cphl =>
+          cphl.state.map(Json.toJson(_).as[JsObject]).getOrElse(JsObject.empty) +
+          ("_links" -> JsObject(cphl.links.map { case (rel,link) => (rel.toString -> Json.toJson(link)) }))
       )
     )
   }
@@ -169,14 +189,15 @@ object CPHL
 
 object syntax
 {
+
   implicit class CPHLSyntax[T <: Product](val t: T) extends AnyVal
   {
 
     def withActions(links: (Relation,Action)*): CPHL[T] =
       CPHL(t, links: _*)
 
-
-    def withHypermedia(implicit hyper: T => CPHL[T]): CPHL[T] = CPHL(t)
+    def withHypermedia(implicit hyper: T => CPHL[T]): CPHL[T] =
+      hyper(t)
   }
 }
 

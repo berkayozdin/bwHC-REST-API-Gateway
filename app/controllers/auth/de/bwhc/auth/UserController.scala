@@ -102,8 +102,11 @@ extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
 with UserManagementPermissions
-with UserHypermedia
+//with UserHypermedia
 {
+
+  import UserHypermedia._
+
 
   implicit val authService = sessionManager.instance
 

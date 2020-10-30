@@ -40,6 +40,8 @@ import de.bwhc.mtb.data.entry.api.MTBDataService
 
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
+import de.bwhc.rest.util.cphl.syntax._
+
 import de.bwhc.auth.core._
 import de.bwhc.auth.api._
 
@@ -66,72 +68,24 @@ final case class PatientWithStatus
   dateOfDeath: Option[LocalDate],
   status: DataStatus.Value
 )
-
-
-import de.bwhc.rest.util.cphl._
-import de.bwhc.rest.util.cphl.syntax._
-
-
 object PatientWithStatus
 {
-  implicit val format = Json.format[PatientWithStatus]
-}
 
-
-
-trait DataManagementHypermedia
-{
-
-  import de.bwhc.rest.util.cphl.Method._
-  import de.bwhc.rest.util.cphl.Relations._
-
-  import DataStatus._
-
-  private val baseUrl = "/bwhc/mtb/api/data"
-
-
-  val apiCPHL =
-    CPHL.empty[JsObject](
-      Self                           -> Action(s"$baseUrl/"       , GET),
-      Relation("PatientsWithStatus") -> Action(s"$baseUrl/Patient", GET),
-      Relation("PatientsForQC")      -> Action(s"$baseUrl/qc/Patient", GET)
-    )
-
-/*
-  implicit val hyperPatientWithStatus: PatientWithStatus => CPHL[PatientWithStatus] = {
+  def apply(status: DataStatus.Value): Patient => PatientWithStatus = {
     patient =>
-
-      val Patient.Id(id) = patient.id 
-
-      patient.status match {
-
-        case CurationRequired =>         
-          patient.withLinks(
-            Relation("MTBFile")           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
-            Relation("DataQualityReport") -> Action(s"$baseUrl/DataQualityReport/$id", GET)
-          )
-        
-        case ReadyForReporting =>
-          patient.withLinks()
-        
-      }
-  }
-*/
-
-  implicit val hyperPatient: Patient => CPHL[Patient] = {
-    patient =>
-
-      val Patient.Id(id) = patient.id 
-
-      patient.withLinks(
-        Relation("MTBFile")           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
-        Relation("DataQualityReport") -> Action(s"$baseUrl/DataQualityReport/$id", GET)
+      PatientWithStatus(
+        patient.id, 
+        patient.gender, 
+        patient.birthDate, 
+        patient.insurance, 
+        patient.dateOfDeath, 
+        status
       )
   }
 
+  implicit val format = Json.format[PatientWithStatus]
+
 }
-
-
 
 
 class DataManagementController @Inject()(
@@ -146,29 +100,15 @@ extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
 with DataManagementPermissions
-with DataManagementHypermedia
 {
 
+  import DataManagementHypermedia._
 
   import MTBDataService.Command._
   import MTBDataService.Response._
   import MTBDataService.Error._
 
   implicit val authService = sessionManager.instance
-
-
-  private def Status(status: DataStatus.Value): Patient => PatientWithStatus = {
-    patient =>
-      PatientWithStatus(
-        patient.id, 
-        patient.gender, 
-        patient.birthDate, 
-        patient.insurance, 
-        patient.dateOfDeath, 
-        status
-      )
-  }
-
 
 
   def apiHypermedia: Action[AnyContent] = 
@@ -190,9 +130,9 @@ with DataManagementHypermedia
 
           patsInReporting <- queryService.instance.patients
          
-          allPats         = patsForQC.map(_.mapTo(Status(CurationRequired))) ++
+          allPats         = patsForQC.map(_.mapTo(PatientWithStatus(CurationRequired))) ++
                               patsInReporting.filter(!patIDsForQc.contains(_))
-                                .map(_.mapTo(Status(ReadyForReporting)))
+                                .map(_.mapTo(PatientWithStatus(ReadyForReporting)))
 
           set  =  SearchSet(allPats.map(_.withHypermedia))
 
@@ -208,11 +148,8 @@ with DataManagementHypermedia
       .async {
         for {
           pats   <- dataService.instance.patientsWithIncompleteData 
-
           hyperPats = pats.map(_.withHypermedia)
-
           set  =  SearchSet(hyperPats)
-//          set  =  SearchSet(ps)
           json =  toJson(set)   
         } yield Ok(json)
       }

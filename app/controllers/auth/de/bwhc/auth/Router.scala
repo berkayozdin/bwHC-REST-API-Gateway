@@ -4,6 +4,7 @@ package de.bwhc.rest.auth
 
 import javax.inject.Inject
 
+import play.api.mvc.Results
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
@@ -34,6 +35,13 @@ extends SimpleRouter
     // User management 
     //-------------------------------------------------------------------------
     case GET(p"/")                 => userController.apiHypermedia
+ 
+    case GET(p"/schema/$rel")      => userController.Action {
+                                        UserHypermedia.schemaFor(rel)
+                                          .map(Results.Ok(_))
+                                          .getOrElse(Results.NotFound)
+                                      }
+
     case GET(p"/user")             => userController.getAll
 
     case GET(p"/user")             => userController.getAll
