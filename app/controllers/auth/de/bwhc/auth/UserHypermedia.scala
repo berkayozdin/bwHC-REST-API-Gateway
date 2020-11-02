@@ -12,6 +12,7 @@ import de.bwhc.rest.util.cphl.syntax._
 
 import play.api.libs.json.JsValue
 
+import json._
 import de.bwhc.util.json.schema._
 
 import de.bwhc.user.api.{
@@ -23,9 +24,7 @@ import de.bwhc.user.api.{
 trait Schemas
 {
 
-  import json._
-
-  implicit val roleSchema: Schema[Role.Value] = enumSchema(Role)  
+  import de.bwhc.util.json.schema.workarounds._
 
   implicit val userSchema        = Json.schema[User]  
   implicit val createUserSchema  = Json.schema[UserCommand.Create]  
