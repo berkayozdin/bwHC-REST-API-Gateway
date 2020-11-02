@@ -38,7 +38,7 @@ import cats.instances.future._
 import cats.syntax.either._
 
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
-import de.bwhc.rest.util.hal.syntax._
+import de.bwhc.rest.util.cphl.syntax._
 
 import de.bwhc.auth.api._
 import de.bwhc.auth.core._
@@ -69,8 +69,9 @@ extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
 with QueryModePermissions
-with QueryHypermedia
 {
+
+  import QueryHypermedia._
 
 
   implicit val authService = sessionManager.instance

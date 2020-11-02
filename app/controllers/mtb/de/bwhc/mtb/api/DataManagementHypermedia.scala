@@ -8,6 +8,19 @@ import de.bwhc.rest.util.cphl.syntax._
 import play.api.libs.json.JsObject
 
 import de.bwhc.mtb.data.entry.dtos.Patient
+import de.bwhc.mtb.data.entry.api.DataQualityReport
+
+import json._
+import de.bwhc.util.json.schema._
+
+trait Schemas
+{
+
+  implicit val patientWithStatusSchema = Json.schema[PatientWithStatus]
+//  implicit val dataQualityReportSchema = Json.schema[DataQualityReport]
+
+}
+object Schemas extends Schemas
 
 
 
@@ -19,14 +32,23 @@ trait DataManagementHypermedia
 
   import DataStatus._
 
+
   private val baseUrl = "/bwhc/mtb/api/data"
 
 
-  val apiCPHL =
+  private val GetPatientsWithStatus = Relation("PatientsWithStatus")
+  private val GetPatientsForQC      = Relation("PatientsForQC")       
+  private val GetMTBFile            = Relation("MTBFile")          
+  private val GetDataQualityReport  = Relation("DataQualityReport")
+  private val DeletePatient         = Delete       
+
+
+  val apiActions =
     CPHL.empty[JsObject](
-      Self                           -> Action(s"$baseUrl/"       , GET),
-      Relation("PatientsWithStatus") -> Action(s"$baseUrl/Patient", GET),
-      Relation("PatientsForQC")      -> Action(s"$baseUrl/qc/Patient", GET)
+      Self                  -> Action(s"$baseUrl/"          , GET),
+      GetPatientsWithStatus -> Action(s"$baseUrl/Patient"   , GET),
+      GetPatientsForQC      -> Action(s"$baseUrl/qc/Patient", GET),
+      DeletePatient         -> Action(s"$baseUrl/Patient/ID", DELETE),
     )
 
 
@@ -39,8 +61,9 @@ trait DataManagementHypermedia
 
         case CurationRequired =>         
           patient.withActions(
-            Relation("MTBFile")           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
-            Relation("DataQualityReport") -> Action(s"$baseUrl/DataQualityReport/$id", GET)
+            GetMTBFile           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
+            GetDataQualityReport -> Action(s"$baseUrl/DataQualityReport/$id", GET),
+            DeletePatient        -> Action(s"$baseUrl/Patient/$id"          , DELETE)
           )
 
         case ReadyForReporting =>
@@ -57,8 +80,9 @@ trait DataManagementHypermedia
       val Patient.Id(id) = patient.id 
 
       patient.withActions(
-        Relation("MTBFile")           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
-        Relation("DataQualityReport") -> Action(s"$baseUrl/DataQualityReport/$id", GET)
+        GetMTBFile           -> Action(s"$baseUrl/MTBFile/$id"          , GET),
+        GetDataQualityReport -> Action(s"$baseUrl/DataQualityReport/$id", GET),
+        DeletePatient        -> Action(s"$baseUrl/Patient/$id"          , DELETE)
       )
   }
 

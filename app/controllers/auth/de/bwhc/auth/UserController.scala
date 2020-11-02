@@ -102,7 +102,6 @@ extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
 with UserManagementPermissions
-//with UserHypermedia
 {
 
   import UserHypermedia._
@@ -154,8 +153,7 @@ with UserManagementPermissions
               result  <- optUser
                            .map( user =>
                               authService.login(
-                                UserWithRoles(user.id,user.roles),
-                                Some(user.withHypermedia)
+                                UserWithRoles(user.id,user.roles)
                               )
                             )
                          .getOrElse(Future.successful(Forbidden))

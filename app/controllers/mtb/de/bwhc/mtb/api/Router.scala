@@ -4,12 +4,16 @@ package de.bwhc.mtb.api
 
 import javax.inject.Inject
 
+import play.api.mvc.Results.Ok
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
-
 import de.bwhc.mtb.query.api.Query
+
+import play.api.libs.json.Json.toJson
+
+
 
 class Router @Inject()(
   dataController: DataManagementController,
@@ -24,7 +28,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // Data Management endpoints                                               
     //-------------------------------------------------------------------------
-    case GET(p"/data/")                            => dataController.apiHypermedia
+    case GET(p"/data/")                            => dataController.Action { Ok(toJson(DataManagementHypermedia.apiActions)) }
 
     case GET(p"/data/Patient")                     => dataController.patientsWithStatus
     case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
@@ -49,6 +53,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // MTBFile Queries                                                  
     //-------------------------------------------------------------------------
+    case GET(p"/query")                            => queryController.Action { Ok(toJson(QueryHypermedia.apiActions)) }
  
     case POST(p"/query")                           => queryController.submit
     case POST(p"/query/$id")                       => queryController.update(Query.Id(id))

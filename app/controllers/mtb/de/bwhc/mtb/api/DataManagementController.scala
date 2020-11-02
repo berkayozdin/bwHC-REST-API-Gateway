@@ -110,11 +110,12 @@ with DataManagementPermissions
 
   implicit val authService = sessionManager.instance
 
-
+/*
   def apiHypermedia: Action[AnyContent] = 
     Action {
-      Ok(Json.toJson(apiCPHL))
+      Ok(Json.toJson(apiActions))
     }
+*/
 
 
   import DataStatus._
