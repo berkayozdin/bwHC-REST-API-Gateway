@@ -4,7 +4,7 @@ package de.bwhc.mtb.api
 
 import javax.inject.Inject
 
-import play.api.mvc.Results.Ok
+import play.api.mvc.Results.{Ok,NotFound}
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
@@ -28,7 +28,15 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // Data Management endpoints                                               
     //-------------------------------------------------------------------------
-    case GET(p"/data/")                            => dataController.Action { Ok(toJson(DataManagementHypermedia.apiActions)) }
+    case GET(p"/data/")                            => dataController.Action {
+                                                        Ok(toJson(DataManagementHypermedia.apiActions))
+                                                      }
+
+    case GET(p"/data/schema/$rel")                 => dataController.Action {
+                                                        DataManagementHypermedia.schemaFor(rel)
+                                                          .map(Ok(_))
+                                                          .getOrElse(NotFound)
+                                                      }
 
     case GET(p"/data/Patient")                     => dataController.patientsWithStatus
     case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
@@ -53,7 +61,15 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // MTBFile Queries                                                  
     //-------------------------------------------------------------------------
-    case GET(p"/query")                            => queryController.Action { Ok(toJson(QueryHypermedia.apiActions)) }
+    case GET(p"/query/")                           => queryController.Action {
+                                                        Ok(toJson(QueryHypermedia.apiActions))
+                                                      }
+
+    case GET(p"/query/schema/$rel")                => queryController.Action {
+                                                        QueryHypermedia.schemaFor(rel)
+                                                          .map(Ok(_))
+                                                          .getOrElse(NotFound)
+                                                      }
  
     case POST(p"/query")                           => queryController.submit
     case POST(p"/query/$id")                       => queryController.update(Query.Id(id))

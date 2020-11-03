@@ -99,7 +99,9 @@ trait CatalogHypermedia
       Seq("icd-10-gm","icd-o-3-t","icd-o-3-m","hgnc","atc")
         .map(sys => Relation(s"catalog-$sys") -> Action(s"$baseUrl/Coding?system=$sys" , GET)) ++
       (
+
         (Relation("valuesets") -> Action(s"$baseUrl/ValueSet" , GET)) +:
+
         Catalogs.jsonValueSets.keys 
           .map(vs => Relation(s"valueset-$vs") -> Action(s"$baseUrl/ValueSet?name=$vs" , GET)).toSeq
       )

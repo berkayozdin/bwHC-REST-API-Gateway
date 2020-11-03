@@ -142,7 +142,6 @@ with QueryModePermissions
                   if (allowed)
                     for {
                       resp    <- service ! Command.Submit(Querier(user.userId.value),mode,params)
-//                      outcome =  resp.leftMap(errs => Outcome.fromErrors(errs.toList))
                       outcome =  resp.bimap(
                                    errs => Outcome.fromErrors(errs.toList),
                                    _.withHypermedia

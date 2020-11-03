@@ -21,9 +21,9 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq(
   guice,
   "org.scalatestplus.play" %% "scalatestplus-play"              % "5.0.0" % "test",
-  "org.typelevel"          %% "cats-core"                       % "2.1.1",
 
-  "com.github.andyglow"    %% "scala-jsonschema"                % "0.5.0",
+//  "com.github.andyglow"    %% "scala-jsonschema"                % "0.5.0",
+//  "com.github.andyglow"    %% "scala-jsonschema-cats"           % "0.5.0",
 
   "de.bwhc"                %% "authentication-api"              % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
