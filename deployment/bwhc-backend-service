@@ -7,7 +7,7 @@ source ./config
 ###############################################################################
 ###############################################################################
 
-BWHC_APP_DIR=$BASE_DIR/bwhc-rest-api-gateway-1.0-SNAPSHOT
+BWHC_APP_DIR="$BASE_DIR/BWHCAPPPLACEHOLDER"
 
 
 case "$1" in

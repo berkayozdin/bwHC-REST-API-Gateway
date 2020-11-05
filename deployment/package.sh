@@ -1,37 +1,66 @@
 #!/bin/bash
 
 
-APP_DIR=bwhc-backend
-APP_ZIP=$APP_DIR.zip
+BWHC_APP_PLACEHOLDER="BWHCAPPPLACEHOLDER"
+
+PCKG_DIR=bwhc-backend
+
+PCKG_ZIP=$PCKG_DIR.zip
 
 
-if [ -d "$APP_DIR" ]; then
-  rm -r $APP_DIR
+TARGET=""
+
+if [ "$#" -eq "0" ]; then
+  echo "ERROR: Enter the Play application package to be deployed"
+  exit 1
+else
+  TARGET="$1"
 fi
 
-if [ -d "$APP_ZIP" ]; then
-  rm $APP_ZIP
+if [ ! -f "$TARGET" ]; then
+  echo "ERROR: File $TARGET does not exist!"
+  exit 1
 fi
 
 
-mkdir $APP_DIR
+BWHC_APP_FILE="${TARGET##*/}"
+BWHC_APP_NAME="${BWHC_APP_FILE%.*}"
 
 
-cp ../target/universal/bwhc-rest-api-gateway-1.0-SNAPSHOT.zip $APP_DIR/
 
-cp install.sh $APP_DIR/
+if [ -d "$PCKG_DIR" ]; then
+  rm -r $PCKG_DIR
+fi
 
-cp config $APP_DIR/
+if [ -d "$PCKG_ZIP" ]; then
+  rm $PCKG_ZIP
+fi
 
-cp bwhc-backend-service $APP_DIR/
-
-cp bwhcConnectorConfig.xml $APP_DIR/
-
-cp logback.xml  $APP_DIR/
-
-cp production.conf $APP_DIR/
+mkdir $PCKG_DIR
 
 
-zip --encrypt -r $APP_ZIP $APP_DIR/
+cp $TARGET $PCKG_DIR/
 
-rm -r $APP_DIR
+cp install.sh $PCKG_DIR/
+
+cp config $PCKG_DIR/
+
+cp bwhcConnectorConfig.xml $PCKG_DIR/
+
+cp logback.xml  $PCKG_DIR/
+
+cp production.conf $PCKG_DIR/
+
+cp bwhc-backend-service $PCKG_DIR/
+
+
+REPLACE_COMMAND="s/BWHCAPPPLACEHOLDER/$BWHC_APP_NAME/g"
+
+sed -i $REPLACE_COMMAND $PCKG_DIR/bwhc-backend-service
+sed -i $REPLACE_COMMAND $PCKG_DIR/install.sh
+
+
+
+zip --encrypt -r $PCKG_ZIP $PCKG_DIR/
+
+rm -r $PCKG_DIR

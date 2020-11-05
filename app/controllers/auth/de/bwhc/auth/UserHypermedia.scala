@@ -45,7 +45,7 @@ trait UserHypermedia
 
   private val Login       = Relation("login")
   private val Logout      = Relation("logout")
-  private val UpdateRoles = Relation("updateRoles")
+  private val UpdateRoles = Relation("update-roles")
 
   private val schemaMap =
     Map(
@@ -95,15 +95,21 @@ trait UserHypermedia
 
     user =>
 
-      val User.Id(id) = user.id
+      val id = user.id.value
 
       user.withActions(
-        Self                    -> Action(s"$baseUrl/user/${id}",       GET),
-        Update                  -> Action(s"$baseUrl/user/${id}",       PUT),
-        UpdateRoles             -> Action(s"$baseUrl/user/${id}/roles", PUT),
-        Delete                  -> Action(s"$baseUrl/user/${id}",       DELETE),
-        Login                   -> Action(s"$baseUrl/login",            POST),
-        Logout                  -> Action(s"$baseUrl/logout",           POST)
+        Self        -> Action(s"$baseUrl/user/$id",       GET),
+        Update      -> Action(s"$baseUrl/user/$id",       PUT)
+                         .withFormats(
+                           JSON -> Format("application/json",s"$baseUrl/schema/${Update.name}")
+                         ),
+        UpdateRoles -> Action(s"$baseUrl/user/$id/roles", PUT)
+                         .withFormats(
+                           JSON -> Format("application/json",s"$baseUrl/schema/${UpdateRoles.name}")
+                         ),
+        Delete      -> Action(s"$baseUrl/user/$id",       DELETE),
+        Login       -> Action(s"$baseUrl/login",          POST),
+        Logout      -> Action(s"$baseUrl/logout",         POST)
       )
 
   }

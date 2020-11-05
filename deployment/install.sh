@@ -19,14 +19,11 @@ fi
 
 
 if [ ! -d "$TARGET_DIR" ]; then
-
   mkdir -p "$TARGET_DIR"
-
 fi
 
 
-
-BWHC_APP_DIR="bwhc-rest-api-gateway-1.0-SNAPSHOT"
+BWHC_APP_DIR="BWHCAPPPLACEHOLDER"
 
 BWHC_ZIP="$BWHC_APP_DIR.zip"
 
