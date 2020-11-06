@@ -61,7 +61,7 @@ trait UserHypermedia
 
   val userApiActions =
     CPHL.empty[User](
-      Self        -> Action(s"$baseUrl",        GET),
+      Base        -> Action(s"$baseUrl",        GET),
 
       Create      -> Action(s"$baseUrl/user",   POST)
                        .withFormats(

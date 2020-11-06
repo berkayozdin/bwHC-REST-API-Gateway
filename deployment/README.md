@@ -4,33 +4,28 @@
 -----
 ## Installation:
 
-#### 1. Unzip application package
+* Unzip application package
+
+* Change into unpacked application directory __bwhc-backend__
+
+* Run installation script with target directory as parameter
 
 ```
 > foo@bar: unzip bwhc-backend.zip
-```
-
-#### 2. Change into unpacked application directory "bwhc-backend":
-```
+...
 > foo@bar: cd bwhc-backend/
-```
-
-#### 3. Run installation script with target directory as parameter:
-
-```
 > foo@bar: ./install.sh /path/to/target/dir
 ```
 
 The target directory is created if non-existent.
 
-This step copies all necessary files to the target directory.
-In case that an installation is already present, the previous configuration files are __NOT__ overwritten.
+The installation script copies all necessary files to the target directory. In case that an installation is already present, the previous configuration files are __NOT__ overwritten.
 
 
-
+--------
 ## Configuration/Setup: 
 
-
+--------
 ### Backend Application Parameters: 
 
 In Bash-script __config__, set the parameters marked with TODO
@@ -41,10 +36,10 @@ In Bash-script __config__, set the parameters marked with TODO
 export BASE_DIR=$(pwd)            # Optional: Adapt BASE_DIR
                                   
 export BWHC_PORT=9000             # Optional: Adapt HTTP Port
-                                  
-export ZPM_SITE=...               # TODO: Local ZPM Site name
 
 export BWHC_CONNECTOR_CONFIG=$BASE_DIR/bwhcConnectorConfig.xml
+                                  
+export ZPM_SITE=...               # TODO: Set local ZPM Site name
 
 export BWHC_USER_DB_DIR=...       # TODO: Set absolute path to dir where User Service stores data
 
@@ -54,11 +49,12 @@ export BWHC_QUERY_DATA_DIR=...    # TODO: Set absolute path to dir where Query/R
 
 ```
 
+-------
+### HTTP/Communication Settings:
 
-### HTTP Settings:
+#### Backend HTTP Service:
 
-
-In __production.conf__ 
+In __production.conf__ configure hosts allowed to access the Backend REST API:
 
 ```
   filters {
@@ -69,13 +65,25 @@ In __production.conf__
   }
 ```
 
+#### bwHC Node Peer-to-Peer Communication:
 
+URLs of other bwHC Nodes to used for peer-to-peer operations are configured in __bwhcConnectorConfig.xml__:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<bwHC>
+  <ZPM site="Freiburg"   baseURL="TODO"/>
+  <ZPM site="Heidelberg" baseURL="TODO"/>
+  <ZPM site="Tübingen"   baseURL="TODO"/>
+  <ZPM site="Ulm"        baseURL="TODO"/>
+</bwHC>
+```
 
 
 ### Logging (SLF4J):
 
-In __logback.xml__, set property LOG_DIR to the desired logging output dir.
-Also uncomment the FILE logging appender and appender-ref.
+In __logback.xml__, set property __LOG_DIR__ to the desired logging output dir.
+Also uncomment the __FILE__ logging __appender__ and __appender-ref__.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -117,23 +125,22 @@ Also uncomment the FILE logging appender and appender-ref.
 </configuration>
 
 ```
-Optionally also adjust the logging level: TRACE, DEBUG, INFO, WARN, ERROR, ...
+Optionally also adjust the __logging level__: TRACE, DEBUG, INFO, WARN, ERROR, ...
 
-See SLF4J reference for details.
+See SLF4J/Logback reference for details.
 
 
-
+------
 ### Random Data Generation Config:
 
 For test purposes, the system can be configured to be filled with randomly generated MTBFiles,
-_in case that no real data is present upon startup_.
+in case that no real data is present upon startup.
 
-In Bash-script __bwhc-backend-service__, uncomment variable 'N_RANDOM_FILES' and optionally adjust number N of MTBFiles to be generated.
-Also uncomment JVM-parameter 'bwhc.query.data.generate' setting and include in application startup command, as indented below:
+In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ and optionally adjust the number of MTBFiles to be generated
+Also uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as indented below:
 
 ```
   N_RANDOM_FILES=50    
-  
   ...
   
   $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
@@ -143,19 +150,18 @@ Also uncomment JVM-parameter 'bwhc.query.data.generate' setting and include in a
     -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
     -Dbwhc.user.data.dir=$BWHC_USER_DB_DIR \
     -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG \
-  -Dbwhc.query.data.generate=$N_RANDOM_FILES \           #This command is commented in default bwhc-backend-service
+  -Dbwhc.query.data.generate=$N_RANDOM_FILES \        #This command is commented in default bwhc-backend-service
     -Dhttp.port=$BWHC_PORT &
 
   ...
 ```
 
-
+-------
 ## Operation:
 
 Start/stop the backend service via Bash-script __bwhc-backend-service__
 ```
 > foo@bar: ./bwhc-backend-service start
-...
 ...
 > foo@bar: ./bwhc-backend-service stop
 ```

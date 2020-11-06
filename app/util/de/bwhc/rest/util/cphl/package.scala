@@ -12,7 +12,7 @@ package object cphl {
 /*
  * A few experimental utilities to provide hypermedia support based on CPHL:
  *
- * cd Work/Software/bwHC/bwhc-rest-api-gateway/
+ * https://github.com/mikestowe/CPHL
  *
  */
 
@@ -51,6 +51,7 @@ object Relations
   val Last     = Relation("last")
   val Prev     = Relation("prev")
   val Next     = Relation("next")
+  val Base     = Relation("base")
 
 }
 

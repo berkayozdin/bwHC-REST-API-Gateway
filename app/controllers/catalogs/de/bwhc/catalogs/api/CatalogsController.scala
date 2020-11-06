@@ -94,7 +94,7 @@ trait CatalogHypermedia
   val baseUrl = "/bwhc/catalogs/api"
 
   private val links =
-    (Self -> Action(s"$baseUrl/", GET)) +:
+    (Base -> Action(s"$baseUrl/", GET)) +:
     (
       Seq("icd-10-gm","icd-o-3-t","icd-o-3-m","hgnc","atc")
         .map(sys => Relation(s"catalog-$sys") -> Action(s"$baseUrl/Coding?system=$sys" , GET)) ++
