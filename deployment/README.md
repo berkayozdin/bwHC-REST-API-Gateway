@@ -11,10 +11,10 @@
 * Run installation script with target directory as parameter
 
 ```
-> foo@bar: unzip bwhc-backend.zip
+foo@bar: unzip bwhc-backend.zip
 ...
-> foo@bar: cd bwhc-backend/
-> foo@bar: ./install.sh /path/to/target/dir
+foo@bar: cd bwhc-backend/
+foo@bar: ./install.sh /path/to/target/dir
 ```
 
 The target directory is created if non-existent.
@@ -67,10 +67,10 @@ In __production.conf__ configure hosts allowed to access the Backend REST API:
 
 #### bwHC Node Peer-to-Peer Communication:
 
-URLs of other bwHC Nodes to used for peer-to-peer operations are configured in __bwhcConnectorConfig.xml__:
+URLs of other bwHC Nodes for peer-to-peer operations are configured in __bwhcConnectorConfig.xml__:
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <bwHC>
   <ZPM site="Freiburg"   baseURL="TODO"/>
   <ZPM site="Heidelberg" baseURL="TODO"/>
@@ -82,8 +82,8 @@ URLs of other bwHC Nodes to used for peer-to-peer operations are configured in _
 
 ### Logging (SLF4J):
 
-In __logback.xml__, set property __LOG_DIR__ to the desired logging output dir.
-Also uncomment the __FILE__ logging __appender__ and __appender-ref__.
+In __logback.xml__, set property __LOG_DIR__ to the desired logging output directory.
+Also uncomment the __FILE__ logging __appender__ and __appender-ref__. This activates logging to a daily changing log file.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -136,11 +136,14 @@ See SLF4J/Logback reference for details.
 For test purposes, the system can be configured to be filled with randomly generated MTBFiles,
 in case that no real data is present upon startup.
 
-In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ and optionally adjust the number of MTBFiles to be generated
-Also uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as indented below:
+In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ and optionally adjust the pre-defined value.
+Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as shown below (indented command):
 
 ```
-  N_RANDOM_FILES=50    
+#!/bin/bash
+  ...
+  
+  N_RANDOM_FILES=50
   ...
   
   $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
@@ -161,8 +164,8 @@ Also uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and incl
 
 Start/stop the backend service via Bash-script __bwhc-backend-service__
 ```
-> foo@bar: ./bwhc-backend-service start
+foo@bar: ./bwhc-backend-service start
 ...
-> foo@bar: ./bwhc-backend-service stop
+foo@bar: ./bwhc-backend-service stop
 ```
 
