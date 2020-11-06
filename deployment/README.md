@@ -55,7 +55,7 @@ export BWHC_QUERY_DATA_DIR=...    # TODO: Set absolute path to dir where Query/R
 
 Hosts allowed to access the Backend REST API can/must be configured in __production.conf__ :
 
-```nginx
+```
   filters {
     ...
     hosts {
@@ -63,6 +63,9 @@ Hosts allowed to access the Backend REST API can/must be configured in __product
     }
   }
 ```
+
+See the [Play Framework Docs](https://www.playframework.com/documentation/2.8.x/AllowedHostsFilter#Allowed-hosts-filter) for details.
+
 
 #### bwHC Node Peer-to-Peer Communication:
 
@@ -78,8 +81,7 @@ URLs of other bwHC Nodes are configured in __bwhcConnectorConfig.xml__:
 </bwHC>
 ```
 
-#### Settin up HTTPS / Securing Backend API Access: 
-
+#### Setting up HTTPS / Securing Backend API Access: 
 
 
 ##### Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
@@ -87,14 +89,16 @@ URLs of other bwHC Nodes are configured in __bwhcConnectorConfig.xml__:
 Here's a sample configuration to set up NGINX as reverse proxy to handle SSL-Termination for the bwHC Backend:
 
 ```nginx
+http {
   ...
+
   ssl_certificate      /path/to/server_cert.pem;
   ssl_certificate_key  /path/to/server_key.key;
 
   server {
 
     listen                   443 ssl;
-    server_name              ...;          # TODO
+    server_name              xxxxx;          # TODO
 
     #IP-Filter
 #    allow                    127.0.0.1;   # Activate as required
@@ -104,20 +108,24 @@ Here's a sample configuration to set up NGINX as reverse proxy to handle SSL-Ter
     location /bwhc {
       proxy_pass http://localhost:9000;    # Adapt Host/Port as required
     }
-
+  }
+  
+}
 ```
 
-IMPORTANT NOTE/SUGGESTION: In this set-up, the Reverse Proxy should be set as sole "allowed host" for the Backend API in __production.conf__.
+__IMPORTANT NOTE/SUGGESTION__: In this set-up, the Reverse Proxy should be set as sole "allowed host" for the Backend API in production.conf.
 
 See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed reference.
 
 
 ##### Set up NGINX as Proxy for bwHC peers:
 
-Here's a sample config to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
+Here's a sample configuration to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
 
 ```nginx
+http {
   ...
+
   server {
  
     listen 127.0.0.1:8080;   # Adapt as required
@@ -145,7 +153,7 @@ Here's a sample config to set up a virtual NGINX server to act as proxy "into th
 
     ...
   }
-
+}
 ```
 
 The corresponding settings in __bwhcConnectorConfig.xml__ would then be:
