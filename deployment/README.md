@@ -30,8 +30,7 @@ The installation script copies all necessary files to the target directory. In c
 
 In Bash-script __config__, set the parameters marked with TODO
 
-```
-#!/bin/bash
+```bash
 
 export BASE_DIR=$(pwd)            # Optional: Adapt BASE_DIR
                                   
@@ -50,13 +49,13 @@ export BWHC_QUERY_DATA_DIR=...    # TODO: Set absolute path to dir where Query/R
 ```
 
 -------
-### HTTP/Communication Settings:
+### HTTP(S)/Communication Setup:
 
-#### Backend HTTP Service:
+#### Backend API Access:
 
-In __production.conf__ configure hosts allowed to access the Backend REST API:
+Hosts allowed to access the Backend REST API can/must be configured in __production.conf__ :
 
-```
+```nginx
   filters {
     ...
     hosts {
@@ -67,7 +66,7 @@ In __production.conf__ configure hosts allowed to access the Backend REST API:
 
 #### bwHC Node Peer-to-Peer Communication:
 
-URLs of other bwHC Nodes for peer-to-peer operations are configured in __bwhcConnectorConfig.xml__:
+URLs of other bwHC Nodes are configured in __bwhcConnectorConfig.xml__:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -79,7 +78,90 @@ URLs of other bwHC Nodes for peer-to-peer operations are configured in __bwhcCon
 </bwHC>
 ```
 
+#### Settin up HTTPS / Securing Backend API Access: 
 
+
+
+##### Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
+
+Here's a sample configuration to set up NGINX as reverse proxy to handle SSL-Termination for the bwHC Backend:
+
+```nginx
+  ...
+  ssl_certificate      /path/to/server_cert.pem;
+  ssl_certificate_key  /path/to/server_key.key;
+
+  server {
+
+    listen                   443 ssl;
+    server_name              ...;          # TODO
+
+    #IP-Filter
+#    allow                    127.0.0.1;   # Activate as required
+#    deny                     all;         # Activate as required
+
+    # This proxies all requests to the backend service
+    location /bwhc {
+      proxy_pass http://localhost:9000;    # Adapt Host/Port as required
+    }
+
+```
+
+IMPORTANT NOTE/SUGGESTION: In this set-up, the Reverse Proxy should be set as sole "allowed host" for the Backend API in __production.conf__.
+
+See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed reference.
+
+
+##### Set up NGINX as Proxy for bwHC peers:
+
+Here's a sample config to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
+
+```nginx
+  ...
+  server {
+ 
+    listen 127.0.0.1:8080;   # Adapt as required
+
+    #IP-Filter
+    allow  127.0.0.1;        # This proxy should only accept requests from local bwHC backend
+    deny   all;
+
+#    proxy_ssl_certificate        /path/to/client.pem;
+#    proxy_ssl_certificate_key    /path/to/client.key;
+#    proxy_ssl_session_reuse      on;
+
+    # TO CHECK: add trusted CA root certificate?
+    # proxy_ssl_trusted_certificate  /path/to/trusted_ca_cert.pem;
+    # proxy_ssl_verify               on;
+    # proxy_ssl_verify_depth         2;
+
+    location /Freiburg {
+      proxy_pass  http://HOST:PORT/bwhc/system/api;  # TODO: Adapt Host/PORT
+    }
+
+    location /Heidelberg {
+      # ... adapt above
+    }
+
+    ...
+  }
+
+```
+
+The corresponding settings in __bwhcConnectorConfig.xml__ would then be:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<bwHC>
+  <ZPM site="Freiburg"   baseURL="http://localhost:8080/Freiburg"/>
+  <ZPM site="Heidelberg" baseURL="http://localhost:8080/Heidelberg"/>
+  <!--
+     TODO: Other sites...
+   -->
+</bwHC>
+```
+
+------
 ### Logging (SLF4J):
 
 In __logback.xml__, set property __LOG_DIR__ to the desired logging output directory.
@@ -125,7 +207,7 @@ Also uncomment the __FILE__ logging __appender__ and __appender-ref__. This acti
 </configuration>
 
 ```
-Optionally also adjust the __logging level__: TRACE, DEBUG, INFO, WARN, ERROR, ...
+Optionally also adjust the __logging level__: TRACE, DEBUG, INFO, WARN, ERROR
 
 See SLF4J/Logback reference for details.
 
@@ -139,8 +221,7 @@ in case that no real data is present upon startup.
 In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ and optionally adjust the pre-defined value.
 Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as shown below (indented command):
 
-```
-#!/bin/bash
+```bash
   ...
   
   N_RANDOM_FILES=50
