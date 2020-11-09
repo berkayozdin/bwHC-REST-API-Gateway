@@ -1,12 +1,106 @@
 # bwHealthCloud Backend REST API
 
 
+## Preliminaries:
+
+The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) for easier usability and "discoverability" of API functions.
+[Cross-Platform Hypertext Language](https://github.com/mikestowe/CPHL) (CPHL) was chosen as a syntactical specification for hypermedia content.
+
+Sub-APIs now have a "hypermedia base" endpoint which returns URIs and HTTP methods of possible API actions ("links"), together with -- where appropriate -- references to JSON Schemas of corresponding JSON request bodies. 
+
+For example, retrieval of the Catalogs API Hypermedia base at
+
+GET http://HOST:PORT/bwhc/catalogs/api/
+
+returns Hypermedia "links" to actual resources from the API:
+
+```javascript
+{
+  "_links": {
+    "base": {                        
+      "href": "/bwhc/catalogs/api/",                   // self-reference to API base
+      "methods": [
+          "GET"
+      ]
+    },
+    "catalog-hgnc": {
+      "href": "/bwhc/catalogs/api/Coding?system=hgnc", // URI of HGNC catalog
+      "methods": [
+          "GET"
+      ]
+    },
+    // Further links...
+  }
+}
+```
+
+As another example: A call to the API endpoint to list Patients for which data curation is required
+
+GET http://HOST:PORT/bwhc/mtb/api/data/qc/Patient
+
+returns an entry set of Patient resources extended by hypermedia links to actions pertaining to the respective Patient:
+
+```javascript
+{
+  "entries": [
+    {
+      // Patient attributes...
+      "birthDate": "1980-12-02",
+      "gender": "male",
+      "id": "2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
+      "managingZPM": "Tübingen",
+      //Hypermedia links:
+      "_links": {
+        "get-data-quality-report": {   // Action: Get the Patient's DataQualityReport
+          "formats": {
+            "json": {
+              "mimeType": "application/json",
+              "schema": "/bwhc/mtb/api/data/schema/get-data-quality-report"  // Link to DataQualityReport JSON Schema
+            }
+          },
+          "href": "/bwhc/mtb/api/data/DataQualityReport/2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
+          "methods": [
+            "GET"
+          ]
+        },
+        "get-mtbfile": {   // Action: Get the Patient's MTBFile 
+          "formats": {
+            "json": {
+              "mimeType": "application/json",
+              "schema": "/bwhc/mtb/api/data/schema/get-mtbfile"   // Link to DataQualityReport JSON Schema
+            }
+          },
+          "href": "/bwhc/mtb/api/data/MTBFile/2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
+          "methods": [
+            "GET"
+          ]
+        },
+        "delete": {
+          "href": "/bwhc/mtb/api/data/Patient/2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
+          "methods": [
+            "DELETE"
+          ]
+        }
+      }
+    }
+  ],
+  "total": 1
+}
+```
+
+-------
+## Synthetic Data Examples API
+
+Request a random-generated MTBFile JSON example
+
+__GET__ http://HOST:PORT/bwhc/fake/data/api/MTBFile
+
+
+
 -------
 ## Data Upload/Management and Evidence Query API
 
-
 IMPORTANT NOTICE:
-
 
 * See the ["shared spreadsheet"](
 https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5ZMw/edit?usp=sharing
@@ -14,19 +108,12 @@ https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5
 
 
 
-
--------
-#### Random Data Examples API
-
-Request a random-generated MTBFile JSON example
-
-
-__GET__ http://HOST:PORT/bwhc/fake/data/api/MTBFile
-
-
-
 -------
 ### Data Upload/Validation/Management API
+
+__GET__ http://HOST:PORT/bwhc/system/api/data/
+
+
 
 -------
 #### Upload MTBFile
@@ -39,12 +126,10 @@ __Response__:
 
 | Case | Status Code [and response payload] |
 | ---- | ----- |
-| Invalid JSON | __400 Bad Request__ with list of syntax errors | 
-| Fatal data quality issues | __422 Unprocessable Entity__ with DataQualityReport |
+| Invalid JSON                  | __400 Bad Request__ with list of syntax errors | 
+| Fatal data quality issues     | __422 Unprocessable Entity__ with DataQualityReport |
 | Non-fatal Data quality issues | __201 Created__ with 'Location' of created DataQualityReport |
-| No data quality issues | __200 Ok__ with 'Location' of MTBFile entry |
-
-
+| No data quality issues        | __200 Ok__ with 'Location' of MTBFile entry |
 
 
 -------
@@ -159,7 +244,7 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}
 
 | Resource | URL |
 |----------|--------|
-| Patients                      |__GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}/Patient   |
+| Patients |__GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}/Patient   |
 
 __TODO TODO TODO__
 
