@@ -108,7 +108,8 @@ trait CatalogHypermedia
     )
 
   val apiCPHL =
-    CPHL.empty[JsObject](links: _*)
+    CPHL(links: _*)
+//    CPHL.empty[JsObject](links: _*)
 
 }
 

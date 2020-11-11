@@ -4,7 +4,7 @@
 ## Preliminaries:
 
 The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) for easier usability and "discoverability" of API functions.
-[Cross-Platform Hypertext Language](https://github.com/mikestowe/CPHL) (CPHL) was chosen as a syntactical specification for hypermedia content.
+[Cross-Platform Hypertext Language](https://github.com/mikestowe/CPHL) (CPHL) -- an extension of [HAL](https://en.wikipedia.org/wiki/Hypertext_Application_Language) -- was chosen as syntactical specification for hypermedia content.
 
 Sub-APIs now have a "hypermedia base" endpoint which returns URIs and HTTP methods of possible API actions ("links"), together with -- where appropriate -- references to JSON Schemas of corresponding JSON request bodies. 
 

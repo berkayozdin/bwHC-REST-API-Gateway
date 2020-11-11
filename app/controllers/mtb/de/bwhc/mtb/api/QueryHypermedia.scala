@@ -108,9 +108,9 @@ trait QueryHypermedia
 
 
   implicit val apiActions =
-    CPHL.empty[Query](
-      Base                      -> Action(s"$baseUrl/"                        , GET),
-      SubmitQuery               -> Action(s"$baseUrl/"                        , POST)
+    CPHL(
+      Base                      -> Action(s"$baseUrl/" , GET),
+      SubmitQuery               -> Action(s"$baseUrl"  , POST)
                                      .withFormats(
                                        JSON -> Format("application/json",s"$baseUrl/schema/${SubmitQuery.name}") 
                                      ),

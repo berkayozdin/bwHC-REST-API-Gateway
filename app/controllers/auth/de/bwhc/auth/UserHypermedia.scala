@@ -60,7 +60,8 @@ trait UserHypermedia
 
 
   val userApiActions =
-    CPHL.empty[User](
+//    CPHL.empty[User](
+    CPHL(
       Base        -> Action(s"$baseUrl",        GET),
 
       Create      -> Action(s"$baseUrl/user",   POST)
@@ -68,17 +69,17 @@ trait UserHypermedia
                          JSON -> Format("application/json",s"$baseUrl/schema/${Create.name}")
                        ),
 
-      Update      -> Action(s"$baseUrl/user/ID", PUT)
+      Update      -> Action(s"$baseUrl/user/{id}", PUT)
                        .withFormats(
                          JSON -> Format("application/json",s"$baseUrl/schema/${Update.name}")
                        ),
 
-      UpdateRoles -> Action(s"$baseUrl/user/ID/roles", PUT)
+      UpdateRoles -> Action(s"$baseUrl/user/{id}/roles", PUT)
                        .withFormats(
                          JSON -> Format("application/json",s"$baseUrl/schema/${UpdateRoles.name}")
                        ),
 
-      Delete      -> Action(s"$baseUrl/user/ID", DELETE),
+      Delete      -> Action(s"$baseUrl/user/{id}", DELETE),
 
       Search      -> Action(s"$baseUrl/user",   GET),
 

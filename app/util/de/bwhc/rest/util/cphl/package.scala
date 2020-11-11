@@ -60,7 +60,7 @@ case class Action
 (
   title: Option[String] = None,
   description: Option[String] = None,
-  href: URI,
+  href: String,
   methods: Set[Method.Value],
   formats: Map[Action.Format.Name,Action.Format] = Map.empty[Action.Format.Name,Action.Format]
 /*
@@ -78,7 +78,7 @@ object Action
 {
 
   def apply(
-    href: URI,
+    href: String,
     methods: Set[Method.Value]
   ): Action =
     Action(None,None,href,methods)
@@ -88,7 +88,7 @@ object Action
     href: String,
     methods: Method.Value*
   ): Action =
-    Action(None,None,URI.create(href),methods.toSet)
+    Action(None,None,href,methods.toSet)
 
   def apply(
     title: String,
@@ -97,7 +97,7 @@ object Action
     method: Method.Value,
     formats: (Action.Format.Name,Action.Format)*
   ): Action = 
-    Action(Some(title),Some(description),URI.create(href),Set(method),formats.toMap)
+    Action(Some(title),Some(description),href,Set(method),formats.toMap)
 
 
   final case class Format(
@@ -149,7 +149,7 @@ case class CPHL[T <: Product]
 )
 {
   def withLinks(newLinks: (Relation,Action)*): CPHL[T] =
-    CPHL(state, links ++ newLinks.toMap)
+    copy(links = links ++ newLinks.toMap)
 }
 
 object CPHL
@@ -161,7 +161,7 @@ object CPHL
   def apply[T <: Product](t: Option[T], links: (Relation,Action)*): CPHL[T] =
     CPHL(t,links.toMap)
 
-  def empty[T <: Product](links: (Relation,Action)*): CPHL[T] =
+  def apply(links: (Relation,Action)*): CPHL[JsObject] =
     CPHL(None,links.toMap)
 
 

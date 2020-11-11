@@ -68,7 +68,7 @@ trait DataManagementHypermedia
 
 
   val apiActions =
-    CPHL.empty[JsObject](
+    CPHL(
       Base                  -> Action(s"$baseUrl/"          , GET),
       GetPatientsWithStatus -> Action(s"$baseUrl/Patient"   , GET)
                                  .withFormats(
