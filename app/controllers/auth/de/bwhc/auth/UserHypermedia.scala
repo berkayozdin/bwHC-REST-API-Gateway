@@ -36,7 +36,7 @@ trait Schemas
 object Schemas extends Schemas
 
 
-trait UserHypermedia
+trait UserCPHL
 {
 
   import Schemas._
@@ -60,7 +60,6 @@ trait UserHypermedia
 
 
   val userApiActions =
-//    CPHL.empty[User](
     CPHL(
       Base        -> Action(s"$baseUrl",        GET),
 
@@ -116,6 +115,57 @@ trait UserHypermedia
   }
 
 }
-object UserHypermedia extends UserHypermedia
+object UserCPHL extends UserCPHL
 
+
+
+
+import play.api.libs.json.Json.toJson
+import de.bwhc.rest.util.siren
+import de.bwhc.rest.util.siren._
+import de.bwhc.rest.util.siren.json._
+
+trait UserSIREN
+{
+
+  import siren.Method._
+  import siren.MediaType._
+  import siren.Relations._
+
+  import Schemas._
+
+  val baseUrl = "/bwhc/user/api"
+
+
+  val Login =
+    siren.Action("Login",POST,s"$baseUrl/login")
+//      .withName("login")
+      .withType(MediaType.JSON)
+
+
+  private val schemaMap =
+    Map(
+      Login.name       -> JsValueSchema[Credentials],
+//      Create      -> JsValueSchema[UserCommand.Create],
+//      Update      -> JsValueSchema[UserCommand.Update],
+//      UpdateRoles -> JsValueSchema[UserCommand.UpdateRoles]
+    )
+
+  def schemaFor(rel: String): Option[JsValue] =
+    schemaMap.get(rel)
+
+
+  val apiBase =
+    toJson(
+    Entity
+      .withLinks(
+        Link(Self,baseUrl).withType(SIREN_JSON),
+        Link("create-schema",s"$baseUrl/schema/${Login.name}").withType(JSON_SCHEMA)
+      )
+      .withActions(
+        Login
+      )
+   )
+}
+object UserSIREN extends UserSIREN
 

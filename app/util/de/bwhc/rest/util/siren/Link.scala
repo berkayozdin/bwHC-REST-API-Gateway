@@ -6,8 +6,8 @@ import play.api.libs.json.Json
 
 case class Link
 (
-  rel: String,
 //  rel: Array[String],
+  rel: String,
   href: String,
   title: Option[String] = None,
   `type`: Option[MediaType] = None
@@ -26,13 +26,15 @@ case class Link
 
 object Link
 {
-/*
-  def apply(
-    rel: String,
-    href: String
+
+  import scala.language.implicitConversions
+
+  implicit def fromPair(
+    l: (String,String)
   ): Link =
-    Link(Array(rel), href)
-*/
+    Link(l._1,l._2)
+
+
 
   implicit val format = Json.format[Link]
 

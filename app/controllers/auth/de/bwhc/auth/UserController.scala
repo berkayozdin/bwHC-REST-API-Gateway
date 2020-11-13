@@ -104,7 +104,7 @@ with AuthenticationOps[UserWithRoles]
 with UserManagementPermissions
 {
 
-  import UserHypermedia._
+  import UserCPHL._
 
 
   implicit val authService = sessionManager.instance

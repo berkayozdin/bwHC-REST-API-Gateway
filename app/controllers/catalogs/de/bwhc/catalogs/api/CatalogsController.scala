@@ -88,7 +88,7 @@ import de.bwhc.rest.util.cphl.syntax._
 import de.bwhc.rest.util.cphl.Relations._
 import de.bwhc.rest.util.cphl.Method._
 
-trait CatalogHypermedia
+trait CatalogCPHL
 {
 
   val baseUrl = "/bwhc/catalogs/api"
@@ -109,9 +109,10 @@ trait CatalogHypermedia
 
   val apiCPHL =
     CPHL(links: _*)
-//    CPHL.empty[JsObject](links: _*)
 
 }
+object CatalogCPHL extends CatalogCPHL
+
 
 
 class CatalogsController @Inject()(
@@ -120,10 +121,10 @@ class CatalogsController @Inject()(
   implicit ec: ExecutionContext
 )
 extends BaseController
-with CatalogHypermedia
 {
 
   import Catalogs._ 
+  import CatalogCPHL._
 
 
   def apiHypermedia: Action[AnyContent] =

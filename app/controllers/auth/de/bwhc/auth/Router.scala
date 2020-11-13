@@ -9,7 +9,7 @@ import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
-
+//import play.api.libs.json.Json.toJson
 
 import de.bwhc.user.api.User
 
@@ -35,14 +35,22 @@ extends SimpleRouter
     // User management 
     //-------------------------------------------------------------------------
     case GET(p"/")                 => userController.apiHypermedia
+
+
+    case GET(p"/siren")            => userController.Action {
+                                        Results.Ok(UserSIREN.apiBase)
+                                      }
+
+//    case GET(p"/users")            => userController.getAll
+
+
  
     case GET(p"/schema/$rel")      => userController.Action {
-                                        UserHypermedia.schemaFor(rel)
+                                        UserCPHL.schemaFor(rel)
                                           .map(Results.Ok(_))
                                           .getOrElse(Results.NotFound)
                                       }
 
-    case GET(p"/user")             => userController.getAll
 
     case GET(p"/user")             => userController.getAll
     case GET(p"/user/$id")         => userController.get(User.Id(id))
