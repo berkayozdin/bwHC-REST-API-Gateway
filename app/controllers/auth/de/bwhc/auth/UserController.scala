@@ -174,14 +174,16 @@ with UserManagementPermissions
         errorsOrJson[UserCommand.Create] thenApply process
       }
 
+  import de.bwhc.rest.util.scapphyre.playjson._
 
   def getAll =
     AuthenticatedAction( GetAllUserRights ).async {
       for {
-        users      <- userService.instance.getAll
-        hyperUsers =  users.map(_.withHypermedia) 
-        userSet    =  SearchSet(hyperUsers)
-        result     =  toJson(userSet)
+        users      <- userService.instance.getAll      
+//        hyperUsers =  users.map(_.withHypermedia) 
+//        userSet    =  SearchSet(hyperUsers)
+//        result     =  toJson(userSet)
+        result = toJson(UserResources.HyperUsers(users))  
       } yield Ok(result)
     }
 

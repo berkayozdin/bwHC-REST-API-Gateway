@@ -41,7 +41,7 @@ extends SimpleRouter
                                         Results.Ok(UserSIREN.apiBase)
                                       }
 
-//    case GET(p"/users")            => userController.getAll
+    case GET(p"/users")            => userController.getAll
 
 
  
