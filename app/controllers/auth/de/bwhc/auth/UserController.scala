@@ -174,7 +174,7 @@ with UserManagementPermissions
         errorsOrJson[UserCommand.Create] thenApply process
       }
 
-  import de.bwhc.rest.util.scapphyre.playjson._
+  import de.bwhc.rest.util.sapphyre.playjson._
 
   def getAll =
     AuthenticatedAction( GetAllUserRights ).async {

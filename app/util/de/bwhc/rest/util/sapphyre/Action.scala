@@ -1,4 +1,4 @@
-package de.bwhc.rest.util.scapphyre
+package de.bwhc.rest.util.sapphyre
 
 
 

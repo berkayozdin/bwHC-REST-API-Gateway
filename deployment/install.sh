@@ -23,7 +23,8 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 
-BWHC_APP_DIR="BWHCAPPPLACEHOLDER"
+BWHC_APP_DIR="BWHCAPPPLACEHOLDER"  # Value 'BWHCAPPPLACEHOLDER' in this script template
+                                   # is replaced by actual value upon packaging
 
 BWHC_ZIP="$BWHC_APP_DIR.zip"
 
@@ -49,6 +50,8 @@ cp $SERVICE_SCRIPT "$TARGET_DIR/"
 
 if [ ! -f "$TARGET_DIR/$CONFIG" ]; then
 
+  echo "Copying $CONFIG ..."
+
   cp $CONFIG "$TARGET_DIR/"
 
 fi
@@ -56,12 +59,16 @@ fi
 
 if [ ! -f "$TARGET_DIR/$BWHC_CONNECTOR_CONFIG" ]; then
 
+  echo "Copying $BWHC_CONNECTOR_CONFIG ..."
+
   cp $BWHC_CONNECTOR_CONFIG "$TARGET_DIR/"
 
 fi
 
 
 if [ ! -f "$TARGET_DIR/$LOGBACK" ]; then
+  
+  echo "Copying $LOGBACK ..."
 
   cp $LOGBACK "$TARGET_DIR/"
 
@@ -74,9 +81,7 @@ cd "$TARGET_DIR"
 
 if [ -d "$BWHC_APP_DIR" ]; then
 
-  echo "-------------------------------------------------------------------------"
-  echo " Removing previous bwHC service installation"
-  echo "-------------------------------------------------------------------------"
+  echo " Removing previous bwHC backend app"
 
   rm -r $BWHC_APP_DIR
 

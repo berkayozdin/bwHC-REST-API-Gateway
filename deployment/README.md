@@ -101,17 +101,18 @@ http {
 
   server {
 
-    listen                   443 ssl;
-    server_name              xxxxx;          # TODO
+    listen       443 ssl;
+    server_name  ssl_proxy;
 
     #IP-Filter
-#    allow                    127.0.0.1;   # Activate as required
-#    deny                     all;         # Activate as required
+#    allow        127.0.0.1;   # Activate as required
+#    deny         all;         # Activate as required
 
-    # Forward requests for .../bwhc/... to the backend service
+    # Forward requests for /bwhc/... to the backend service
     location /bwhc {
       proxy_pass http://localhost:9000;    # Adapt Host/Port as required
     }
+
   }
   
 }
@@ -122,12 +123,95 @@ __IMPORTANT NOTE/SUGGESTION__: In this set-up, the Reverse Proxy should be set a
 See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed reference.
 
 
+##### 2.2.3.2 Set up NGINX for Client Certificate Authentication (mutual SSL)
+
+There are 2 possible ways to configure Nginx to secure the bwHC System API endpoints via mutual SSL.
+
+###### Variant 1:
+
+In config from 2.2.3.1, add a 'location' to perform client verification specifically for calls to System API URI:
+
+```nginx
+http {
+  #... 
+  server {
+
+    # ...
+
+    ssl_client_certificate  /path/to/ca-cert.pem;  # Path to trusted CA certificate
+                                                   # from which client certificates originate
+
+    ssl_verify_client       optional;              # Required only in location below
+    ssl_verify_depth        2;
+
+    # Require successful client certificate verification
+    # for all calls to system-agent API
+    location =/bwhc/system/api/ {
+      if ($ssl_client_verify != "SUCCESS"){
+         return 403;
+      }
+      proxy_pass http://localhost:9000;
+    }
+
+    # ...
+  }
+}
+```
+
+###### Variant 2:
+
+Use a separate virtual server to handle client verification, in combination with re-direction of all calls to the System API to this reverse proxy:
+ 
+
+```nginx
+http {
+  #...
+
+  server {
+
+    listen        8443 ssl;
+    server_name   mutual_ssl_proxy;
+
+    # ...
+
+    # Setting ssl_trusted_certificate seems more fitting than ssl_client_certificate below,
+    # but throws an error
+    #ssl_trusted_certificate  /path/to/ca-cert.pem;  # Path to trusted CA certificate
+    ssl_client_certificate   /path/to/ca-cert.pem;   # Path to trusted CA certificate
+    ssl_verify_client        on;
+    ssl_verify_depth         2;
+
+    location /bwhc/system/api/ {
+      proxy_pass http://localhost:9000;
+    }
+
+  }
+
+  server {
+
+    server_name  ssl_proxy;
+
+    # ...
+
+    # Ensure that all calls to System API endpoints
+    # are directed to mutual SSL reverse proxy above
+    location /bwhc/system/api {
+      return 308 https://localhost:8443/bwhc/system/api;
+    }
+
+    # ...
+  }
+}
+```
+
+
 ##### 2.2.3.3 Set up NGINX as Proxy for bwHC peers:
 
 Here's a sample configuration to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
 
 ```nginx
 http {
+
   #...
 
   server {
@@ -139,17 +223,17 @@ http {
     deny   all;
 
     # Configuration of client certificate to use for mutual SSL:
-    # proxy_ssl_certificate        /path/to/client.pem;
-    # proxy_ssl_certificate_key    /path/to/client.key;
-    # proxy_ssl_session_reuse      on;
+    proxy_ssl_certificate        /path/to/client_cert.pem;
+    proxy_ssl_certificate_key    /path/to/client.key;
+    proxy_ssl_session_reuse      on;
 
-    # TODO: CHECK IF REQUIRED: Trusted CA root certificate?
-    # proxy_ssl_trusted_certificate  /path/to/trusted_ca_cert.pem;
-    # proxy_ssl_verify               on;
+    # Remote server certificate verification
+    proxy_ssl_verify               off;   # Deactivated 
+    # proxy_ssl_trusted_certificate  /path/to/ca_cert_chain.pem;
     # proxy_ssl_verify_depth         2;
 
     location /Freiburg {
-      proxy_pass  http://HOST:PORT/bwhc/system/api;  # TODO: Adapt HOST/PORT
+      proxy_pass  https://HOST:PORT/bwhc/system/api;  # TODO: Adapt HOST/PORT
     }
 
     location /Heidelberg {
@@ -226,7 +310,7 @@ See [SLF4J/Logback](http://logback.qos.ch/manual/configuration.html) reference f
 
 For test purposes, the system can be configured to be filled with randomly generated MTBFiles.
 
-__NOTE__: This setting only takes effect in case that __no real data__ is present upon startup.
+__NOTE__: This setting only takes effect in case that __no persisted data__ is present upon startup.
 
 In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ and optionally adjust the pre-defined value.
 Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as shown below (indented command):

@@ -22,27 +22,28 @@ libraryDependencies ++= Seq(
   guice,
   "org.scalatestplus.play" %% "scalatestplus-play"              % "5.0.0" % "test",
 
-//  "com.github.andyglow"    %% "scala-jsonschema"                % "0.5.0",
-//  "com.github.andyglow"    %% "scala-jsonschema-cats"           % "0.5.0",
-
   "de.bwhc"                %% "authentication-api"              % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
 //  "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
 
+  // User Service dependencies
   "de.bwhc"                %% "user-service-api"                % "1.0-SNAPSHOT",
   "de.bwhc"                %% "user-service-impl"               % "1.0-SNAPSHOT",
   "de.bwhc"                %% "user-service-fs-repos"           % "1.0-SNAPSHOT",
 
+  // Data Entry/Validation Service dependencies
   "de.bwhc"                %% "data-entry-service-api"          % "1.0-SNAPSHOT",
   "de.bwhc"                %% "data-entry-service-impl"         % "1.0-SNAPSHOT",
   "de.bwhc"                %% "data-entry-service-dependencies" % "1.0-SNAPSHOT",
   "de.bwhc"                %% "mtb-dto-generators"              % "1.0-SNAPSHOT",
 
+  // Query Service dependencies
   "de.bwhc"                %% "query-service-api"               % "1.0-SNAPSHOT",
   "de.bwhc"                %% "query-service-impl"              % "1.0-SNAPSHOT",
   "de.bwhc"                %% "bwhc-connector"                  % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fs-mtbfile-db"                   % "1.0-SNAPSHOT",
 
+  // Catalog dependencies
   "de.bwhc"                %% "hgnc-api"                        % "1.0-SNAPSHOT",
   "de.bwhc"                %% "hgnc-impl"                       % "1.0-SNAPSHOT",
   "de.bwhc"                %% "icd-catalogs-api"                % "1.0-SNAPSHOT",

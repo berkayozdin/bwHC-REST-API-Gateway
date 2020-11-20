@@ -6,12 +6,16 @@ import shapeless.{
 }
 
 
-package object scapphyre
+package object sapphyre
 {
 
 
 @annotation.implicitNotFound("${T} is not in ${C}")
-trait IsIn[T, C <: Coproduct] extends DepFn1[C]{ type Out = Boolean }
+trait IsIn[T, C <: Coproduct] extends DepFn1[C]
+{
+  type Out = Boolean
+}
+
 object IsIn
 {
 
@@ -44,8 +48,8 @@ object IsIn
 
   type Embeddable =
     Link :+:
-    Resource[_,_,_] :+:
     Iterable[Link] :+:
+    Resource[_,_,_] :+:
     Iterable[Resource[_,_,_]] :+:
     CNil
 

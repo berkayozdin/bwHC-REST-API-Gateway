@@ -18,12 +18,16 @@ trait QueryModePermissions
 
 
   val LocalQCAccessRight =
+    Authorization[UserWithRoles](
+      _ hasAnyOf Set(GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator)
+    )
+/*
     Authorization[UserWithRoles](user =>
       (user hasRole LocalZPMCoordinator) ||
       (user hasRole GlobalZPMCoordinator) ||
       (user hasRole MTBCoordinator)
     )
-
+*/
 
   val GlobalQCAccessRight =
     Authorization[UserWithRoles](_ hasRole GlobalZPMCoordinator)

@@ -14,10 +14,8 @@ __POST__ http://HOST:PORT/bwhc/user/api/user
 {
   "username" : "test_user",
   "password" : "top-secret",
-  "humanName" : {
-    "given" : "Ute",
-    "family" : "Musterfrau"
-  },
+  "givenName" : "Ute",
+  "familyName" : "Musterfrau",
   "roles" : [
      "Admin",
      "Documentarist",
@@ -35,10 +33,8 @@ __Response__: Created User (w/o password)
 {
   "id" : "fb53eb3b-27a5-4045-acdc-f31ff514bf9a",
   "username" : "test_user",
-  "humanName" : {
-    "given" : "Ute",
-    "family" : "Musterfrau"
-  },
+  "givenName" : "Ute",
+  "familyName" : "Musterfrau",
   "status" : "Active",
   "roles" : [
      "Admin",
@@ -88,10 +84,8 @@ __PUT__ http://HOST:PORT/bwhc/user/api/user/{UserID}
   "id" : "fb53eb3b-27a5-4045-acdc-f31ff514bf9a",
   "username" : "test_user",            // Optional
   "password" : "new-top-secret",       // Optional
-  "humanName" : {                      // Optional
-    "given" : "Ute",
-    "family" : "Musterfrau"
-  }
+  "givenName" : "Ute",                 // Optional
+  "familyName" : "Musterfrau"          // Optional
 }
 ```
 
