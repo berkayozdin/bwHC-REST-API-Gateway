@@ -50,6 +50,8 @@ import de.bwhc.auth.core._
 import de.bwhc.auth.api._
 import de.bwhc.services.{WrappedSessionManager,WrappedUserService}
 
+import de.bwhc.rest.util.sapphyre.playjson._
+
 
 case class Credentials
 (
@@ -60,33 +62,6 @@ case class Credentials
 object Credentials
 {
   implicit val reads = Json.reads[Credentials]
-}
-
-
-trait UserManagementPermissions
-{
-
-  import Role._
-
-  private val AdminRights =
-    Authorization[UserWithRoles](_ hasRole Admin)
-
-
-  val CreateUserRights = AdminRights
-
-  def ReadUserRights(id: User.Id) =
-    Authorization[UserWithRoles](user =>
-      (user.userId == id) || (user hasRole Admin) 
-    )
-
-  def UpdateUserRights(id: User.Id) = ReadUserRights(id)
-
-  val UpdateUserRolesRights = AdminRights
-
-  val DeleteUserRights = AdminRights
-
-  val GetAllUserRights = AdminRights
-
 }
 
 
@@ -101,18 +76,22 @@ class UserController @Inject()(
 extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
-with UserManagementPermissions
 {
 
-  import UserCPHL._
+  import UserManagementPermissions._
+  import UserHypermedia._
 
 
   implicit val authService = sessionManager.instance
 
 
   def apiHypermedia: Action[AnyContent] = 
-    Action {
-      Ok(Json.toJson(userApiActions))
+    AuthenticatedAction.async {
+      req =>
+
+      ApiResource(req.user)
+        .map(toJson(_))
+        .map(Ok(_))
     }
 
 
@@ -168,96 +147,107 @@ with UserManagementPermissions
     AuthenticatedAction.async { authService.logout(_) }
 
 
-  def create = 
+  def create: Action[AnyContent] = 
     AuthenticatedAction( CreateUserRights )
       .async {
-        errorsOrJson[UserCommand.Create] thenApply process
+        req =>
+
+        (errorsOrJson[UserCommand.Create] thenApply (process(_)(req.user) )).apply(req)
+//        errorsOrJson[UserCommand.Create] thenApply process
       }
 
   import de.bwhc.rest.util.sapphyre.playjson._
 
-  def getAll =
+  def getAll: Action[AnyContent] =
     AuthenticatedAction( GetAllUserRights ).async {
+      req =>
+
       for {
-        users      <- userService.instance.getAll      
-//        hyperUsers =  users.map(_.withHypermedia) 
-//        userSet    =  SearchSet(hyperUsers)
-//        result     =  toJson(userSet)
-        result = toJson(UserResources.HyperUsers(users))  
+        users   <- userService.instance.getAll      
+        result  <- UsersResource(users)(req.user)
+                     .map(toJson(_))  
       } yield Ok(result)
+
     }
 
 
-  def get(id: User.Id) =
+  def get(id: User.Id): Action[AnyContent] =
     AuthenticatedAction( ReadUserRights(id) )
       .async {
+
+        req =>
+
         for {
           user   <- userService.instance.get(id)
-          result =  user.map(_.withHypermedia)
-                      .map(toJson(_))
-                      .map(Ok(_))
-                      .getOrElse(NotFound(s"Invalid UserId $id"))
+          result <- user.map(
+                      UserResource(_)(req.user)
+                        .map(toJson(_))
+                        .map(Ok(_))
+                     )
+                     .getOrElse(Future.successful(NotFound(s"Invalid UserId $id")))
         } yield result
       }
 
 
-  def update =
+  def update: Action[AnyContent] =
     AuthenticatedAction.async {
 
       request => 
 
-      val user = request.user
+      val agent = request.user
 
       errorsOrJson[UserCommand.Update].apply(request)
         .fold(
           Future.successful,
-
           update => 
             for {
-
-              allowed <- user has UpdateUserRights(update.id)
-
-              result <- if (allowed) process(update)
+              allowed <- agent has UpdateUserRights(update.id)
+              result <- if (allowed) process(update)(agent)
                         else Future.successful(Forbidden)
-
             } yield result
         )
     }
 
 
-  def updateRoles =
+  def updateRoles: Action[AnyContent] =
     AuthenticatedAction( UpdateUserRolesRights )
       .async {
-        errorsOrJson[UserCommand.UpdateRoles] thenApply process
+        req =>
+        (errorsOrJson[UserCommand.UpdateRoles] thenApply (process(_)(req.user))).apply(req)
       }
 
 
-  def delete(id: User.Id) =
+  def delete(id: User.Id): Action[AnyContent] =
     AuthenticatedAction( DeleteUserRights )
-      .async {
-        process(UserCommand.Delete(id))
+      .async { req => 
+        process(UserCommand.Delete(id))(req.user)
       }
 
 
   private def process(
     cmd: UserCommand
+  )(
+    agent: UserWithRoles
   ): Future[Result] =
     for {
       response <- userService.instance ! cmd
-      result =
+      result <-
         response.fold(
-          errs => UnprocessableEntity(toJson(Outcome.fromErrors(errs.toList))),
+          errs => Future.successful(UnprocessableEntity(toJson(Outcome.fromErrors(errs.toList)))),
           {
-            case UserEvent.Created(user,_) => Created(toJson(user.withHypermedia))
+            case UserEvent.Created(user,_)   => UserResource(user)(agent)
+                                                  .map(toJson(_))
+                                                  .map(Created(_))
+                                             
+            case UserEvent.Updated(user,_)   => UserResource(user)(agent)
+                                                  .map(toJson(_))
+                                                  .map(Ok(_))
 
-            case UserEvent.Updated(user,_) => Ok(toJson(user.withHypermedia))
-
-            case UserEvent.Deleted(userId,_) => Ok
+            case UserEvent.Deleted(userId,_) => Future.successful(Ok)
 
           }
         )
     } yield result
-
 
 
 }

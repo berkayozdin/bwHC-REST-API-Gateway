@@ -23,8 +23,8 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play"              % "5.0.0" % "test",
 
   "de.bwhc"                %% "authentication-api"              % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
-//  "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
+//  "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
 
   // User Service dependencies
   "de.bwhc"                %% "user-service-api"                % "1.0-SNAPSHOT",

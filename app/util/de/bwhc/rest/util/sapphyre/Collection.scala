@@ -14,13 +14,12 @@ object Collection
 
   object Properties
   {
-
     def apply[T, C[X] <: Iterable[X]](ts: C[T]): Properties =
       Properties(ts.size)
-
   }
 
 
+/*
   def apply[T, C[X] <: Iterable[X]](
     rel: String, ts: C[T]
   )(
@@ -28,6 +27,7 @@ object Collection
   ): Resource[Collection.Properties, HNil, (String,C[T]) :: HNil] =
     Resource(Properties(ts))
       .withEmbedded(rel,ts)
+*/
 
 
   def apply[T, C[X] <: Iterable[X]](
@@ -35,7 +35,9 @@ object Collection
   )(
     implicit emb: C[T] IsIn Embeddable
   ): Resource[Collection.Properties, HNil, (String,C[T]) :: HNil] =
-    apply("items",ts)
+    Resource(Properties(ts))
+      .withEmbedded("items",ts)
+//    apply("items",ts)
 
 
 }

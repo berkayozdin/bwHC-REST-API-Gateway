@@ -1,174 +1,142 @@
 package de.bwhc.rest.auth
 
 
+
+import scala.concurrent.{ExecutionContext,Future}
+
 import de.bwhc.user.api.User
 
-import de.bwhc.rest.util.cphl._
-import de.bwhc.rest.util.cphl.Relations._
-import de.bwhc.rest.util.cphl.Method._
-import de.bwhc.rest.util.cphl.Action.Format
-import de.bwhc.rest.util.cphl.Action.Format._
-import de.bwhc.rest.util.cphl.syntax._
+import de.bwhc.auth.api.UserWithRoles
 
-import play.api.libs.json.JsValue
 
-import json._
-import de.bwhc.util.json.schema._
-
-import de.bwhc.user.api.{
-  User,
-  Role,
-  UserCommand
-}
-
-trait Schemas
+trait UserHypermedia
 {
 
-  import de.bwhc.util.json.schema.workarounds._
+  import de.bwhc.rest.util.sapphyre._
+  import Method._
+  import Relations._
 
-  implicit val userSchema        = Json.schema[User]  
-  implicit val createUserSchema  = Json.schema[UserCommand.Create]  
-  implicit val updateUserSchema  = Json.schema[UserCommand.Update]  
-  implicit val updateRolesSchema = Json.schema[UserCommand.UpdateRoles]  
-  implicit val loginSchema       = Json.schema[Credentials]  
+  import UserManagementPermissions._
 
-}
-object Schemas extends Schemas
-
-
-trait UserCPHL
-{
-
-  import Schemas._
 
   val baseUrl = "/bwhc/user/api"
 
-  private val Login       = Relation("login")
-  private val Logout      = Relation("logout")
-  private val UpdateRoles = Relation("update-roles")
 
-  private val schemaMap =
-    Map(
-      Login       -> JsValueSchema[Credentials],
-      Create      -> JsValueSchema[UserCommand.Create],
-      Update      -> JsValueSchema[UserCommand.Update],
-      UpdateRoles -> JsValueSchema[UserCommand.UpdateRoles]
+  def ApiResource(
+    agent: UserWithRoles
+  )(
+    implicit
+    ec: ExecutionContext
+  ) = {
+
+    for {
+      api <-
+        Future.successful(
+          Resource.empty
+            .withLinks(
+              Self       -> Link(s"$baseUrl/"),
+              "user" -> Link(s"$baseUrl/users/${agent.userId.value}")
+            )
+            .withActions(
+              "login"  -> Action(POST, s"$baseUrl/login"),
+              "logout" -> Action(POST, s"$baseUrl/logout")
+            )
+        )
+/*      
+      canGetAllUsers <- agent has GetAllUserRights
+      
+      result =
+        if (canGetAllUsers) api.withLinks("users" -> Link(s"$baseUrl/users")) else api
+*/      
+      result <- (agent has GetAllUserRights)
+                  .map(if (_) api.withLinks("users" -> Link(s"$baseUrl/users")) else api)
+    } yield result
+
+  }
+
+
+  import de.bwhc.util.syntax.piping._  
+
+  def UserResource(
+    user: User
+  )(
+    agent: UserWithRoles
+  )(
+    implicit
+    ec: ExecutionContext
+  ) = {
+
+    val id = user.id.value
+
+    val resource =
+      Resource(user)
+        .withLinks(Self -> Link(s"$baseUrl/users/$id"))
+
+    for {
+      canUpdate      <- agent has UpdateUserRights(user.id)
+      canUpdateRoles <- agent has UpdateUserRolesRights
+      canDelete      <- agent has DeleteUserRights
+
+      actions =
+        Seq.empty[(String,Action)] |
+        (as => if (canUpdate)      as :+ (Update         -> Action(PUT,    s"$baseUrl/users/$id"))       else as) |
+        (as => if (canUpdateRoles) as :+ ("update-roles" -> Action(PUT,    s"$baseUrl/users/$id/roles")) else as) |
+        (as => if (canDelete)      as :+ (Delete         -> Action(DELETE, s"$baseUrl/users/$id"))       else as) 
+
+      result =
+        resource.withActions(actions: _*)
+
+    } yield result
+
+  }
+
+
+  implicit val userHeader: Table.Header[User] =
+    Table.Header[User](
+      "id"           -> "ID",
+      "username"     -> "Username",
+      "humanName"    -> "Name",
+      "status"       -> "Status",
+      "roles"        -> "Roles",
+      "registeredOn" -> "Registration Date"
     )
 
-  def schemaFor(rel: String): Option[JsValue] =
-    schemaMap.get(Relation(rel))
-
-
-  val userApiActions =
-    CPHL(
-      Base        -> Action(s"$baseUrl",        GET),
-
-      Create      -> Action(s"$baseUrl/user",   POST)
-                       .withFormats(
-                         JSON -> Format("application/json",s"$baseUrl/schema/${Create.name}")
-                       ),
-
-      Update      -> Action(s"$baseUrl/user/{id}", PUT)
-                       .withFormats(
-                         JSON -> Format("application/json",s"$baseUrl/schema/${Update.name}")
-                       ),
-
-      UpdateRoles -> Action(s"$baseUrl/user/{id}/roles", PUT)
-                       .withFormats(
-                         JSON -> Format("application/json",s"$baseUrl/schema/${UpdateRoles.name}")
-                       ),
-
-      Delete      -> Action(s"$baseUrl/user/{id}", DELETE),
-
-      Search      -> Action(s"$baseUrl/user",   GET),
-
-      Login       -> Action(s"$baseUrl/login",  POST)
-                       .withFormats(
-                         JSON -> Format("application/json",s"$baseUrl/schema/${Login.name}")
-                       ),
-
-      Logout      -> Action(s"$baseUrl/logout", POST)
+/*
+  implicit val userHeader: Table.Header[User] =
+    Table.Header[User](
+      Symbol("id")           -> "ID",
+      Symbol("username")     -> "Username",
+      Symbol("humanName")    -> "Name",
+      Symbol("status")       -> "Status",
+      Symbol("roles")        -> "Roles",
+      Symbol("registeredOn") -> "Registration Date"
     )
+*/
 
 
-  implicit val userAsCPHL: User => CPHL[User] = {
+  def UsersResource[C[X] <: Iterable[X]](
+    users: C[User]
+  )(
+    agent: UserWithRoles
+  )(
+    implicit ec: ExecutionContext
+  ) = {
 
-    user =>
+    for {
+      items <-
+        Future.sequence(users.map(UserResource(_)(agent)))
 
-      val id = user.id.value
-
-      user.withActions(
-        Self        -> Action(s"$baseUrl/user/$id",       GET),
-        Update      -> Action(s"$baseUrl/user/$id",       PUT)
-                         .withFormats(
-                           JSON -> Format("application/json",s"$baseUrl/schema/${Update.name}")
-                         ),
-        UpdateRoles -> Action(s"$baseUrl/user/$id/roles", PUT)
-                         .withFormats(
-                           JSON -> Format("application/json",s"$baseUrl/schema/${UpdateRoles.name}")
-                         ),
-        Delete      -> Action(s"$baseUrl/user/$id",       DELETE),
-        Login       -> Action(s"$baseUrl/login",          POST),
-        Logout      -> Action(s"$baseUrl/logout",         POST)
-      )
+      table = 
+        Table(items)
+          .withLinks(
+            Self -> Link(s"$baseUrl/users")
+          )
+          .withActions(
+            Create -> Action(POST,s"$baseUrl/users")
+          )
+     } yield table
 
   }
 
 }
-object UserCPHL extends UserCPHL
-
-
-
-
-import play.api.libs.json.Json.toJson
-import de.bwhc.rest.util.siren
-import de.bwhc.rest.util.siren._
-import de.bwhc.rest.util.siren.json._
-
-trait UserSIREN
-{
-
-  import siren.Method._
-  import siren.MediaType._
-  import siren.Relations._
-
-  import Schemas._
-
-  val baseUrl = "/bwhc/user/api"
-
-
-  val Login =
-    siren.Action("Login",POST,s"$baseUrl/login")
-//      .withName("login")
-      .withType(MediaType.JSON)
-
-
-  private val schemaMap =
-    Map(
-      Login.name       -> JsValueSchema[Credentials],
-//      Create      -> JsValueSchema[UserCommand.Create],
-//      Update      -> JsValueSchema[UserCommand.Update],
-//      UpdateRoles -> JsValueSchema[UserCommand.UpdateRoles]
-    )
-
-  def schemaFor(rel: String): Option[JsValue] =
-    schemaMap.get(rel)
-
-
-  val apiBase =
-    toJson(
-    Entity
-      .withLinks(
-        Link(Self,baseUrl).withType(SIREN_JSON),
-        Link("create-schema",s"$baseUrl/schema/${Login.name}").withType(JSON_SCHEMA)
-      )
-      .withActions(
-        Login
-      )
-   )
-}
-object UserSIREN extends UserSIREN
-
-
-
-
+object UserHypermedia extends UserHypermedia

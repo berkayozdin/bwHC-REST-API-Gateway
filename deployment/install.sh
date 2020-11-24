@@ -40,7 +40,6 @@ LOGBACK="logback.xml"
 
 
 
-cp $PRODUCTION_CONF "$TARGET_DIR/"
 
 cp $BWHC_ZIP "$TARGET_DIR/"
 
@@ -53,6 +52,15 @@ if [ ! -f "$TARGET_DIR/$CONFIG" ]; then
   echo "Copying $CONFIG ..."
 
   cp $CONFIG "$TARGET_DIR/"
+
+fi
+
+
+if [ ! -f "$TARGET_DIR/$PRODUCTION_CONF" ]; then
+
+  echo "Copying $PRODUCTION_CONF ..."
+
+  cp $PRODUCTION_CONF "$TARGET_DIR/"
 
 fi
 

@@ -14,9 +14,9 @@ object Table
 
   case class ColumnMapping
   (
-    field: String,
+    value: String,
 //    field: Symbol,
-    column: String
+    text: String
   )
 
 
