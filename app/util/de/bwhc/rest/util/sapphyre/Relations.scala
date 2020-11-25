@@ -5,16 +5,16 @@ package de.bwhc.rest.util.sapphyre
 object Relations
 {
 
-  val Self     = "self"
-  val Create   = "create"
-  val Read     = "read"
-  val Update   = "update"
-  val Delete   = "delete"
-  val Search   = "search"
-  val First    = "first"
-  val Last     = "last"
-  val Prev     = "prev"
-  val Next     = "next"
-  val Base     = "base"
+  val SELF     = "self"
+  val CREATE   = "create"
+  val READ     = "read"
+  val UPDATE   = "update"
+  val DELETE   = "delete"
+  val SEARCH   = "search"
+  val FIRST    = "first"
+  val LAST     = "last"
+  val PREV     = "prev"
+  val NEXT     = "next"
+  val BASE     = "base"
 
 }

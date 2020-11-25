@@ -12,6 +12,7 @@ import de.bwhc.auth.api.UserWithRoles
 trait UserHypermedia
 {
 
+  import de.bwhc.rest.util.Table
   import de.bwhc.rest.util.sapphyre._
   import Method._
   import Relations._
@@ -22,37 +23,43 @@ trait UserHypermedia
   val baseUrl = "/bwhc/user/api"
 
 
-  def ApiResource(
-    agent: UserWithRoles
-  )(
-    implicit
-    ec: ExecutionContext
-  ) = {
+  val LOGIN        = "login"
+  val LOGOUT       = "logout"
+  val WHOAMI       = "whoami"
+  val USER         = "user"
+  val USERS        = "users"
+  val UPDATE_ROLES = "update-roles"
 
+
+  def ApiResource(
+    implicit
+    agent: UserWithRoles,
+    ec: ExecutionContext
+  ) = 
     for {
       api <-
         Future.successful(
           Resource.empty
             .withLinks(
-              Self       -> Link(s"$baseUrl/"),
-              "user" -> Link(s"$baseUrl/users/${agent.userId.value}")
+              SELF -> Link(s"$baseUrl/"),
+              USER -> Link(s"$baseUrl/$USER/${agent.userId.value}")
             )
             .withActions(
-              "login"  -> Action(POST, s"$baseUrl/login"),
-              "logout" -> Action(POST, s"$baseUrl/logout")
+              LOGIN  -> Action(POST -> s"$baseUrl/$LOGIN")
+                          .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$LOGIN")),
+              LOGOUT -> Action(POST -> s"$baseUrl/$LOGOUT"),
+              WHOAMI -> Action(GET  -> s"$baseUrl/$WHOAMI")
             )
         )
-/*      
-      canGetAllUsers <- agent has GetAllUserRights
+
+      canGetUsers <- agent has GetAllUserRights
       
       result =
-        if (canGetAllUsers) api.withLinks("users" -> Link(s"$baseUrl/users")) else api
-*/      
-      result <- (agent has GetAllUserRights)
-                  .map(if (_) api.withLinks("users" -> Link(s"$baseUrl/users")) else api)
+        if (canGetUsers) api.withLinks(USERS -> Link(s"$baseUrl/$USERS"))
+        else api
+
     } yield result
 
-  }
 
 
   import de.bwhc.util.syntax.piping._  
@@ -60,9 +67,8 @@ trait UserHypermedia
   def UserResource(
     user: User
   )(
-    agent: UserWithRoles
-  )(
     implicit
+    agent: UserWithRoles,
     ec: ExecutionContext
   ) = {
 
@@ -70,7 +76,10 @@ trait UserHypermedia
 
     val resource =
       Resource(user)
-        .withLinks(Self -> Link(s"$baseUrl/users/$id"))
+        .withLinks(
+          BASE -> Link(s"$baseUrl/"),
+          SELF -> Link(s"$baseUrl/$USERS/$id")
+        )
 
     for {
       canUpdate      <- agent has UpdateUserRights(user.id)
@@ -79,9 +88,12 @@ trait UserHypermedia
 
       actions =
         Seq.empty[(String,Action)] |
-        (as => if (canUpdate)      as :+ (Update         -> Action(PUT,    s"$baseUrl/users/$id"))       else as) |
-        (as => if (canUpdateRoles) as :+ ("update-roles" -> Action(PUT,    s"$baseUrl/users/$id/roles")) else as) |
-        (as => if (canDelete)      as :+ (Delete         -> Action(DELETE, s"$baseUrl/users/$id"))       else as) 
+        (as => if (canUpdate)      as :+ (UPDATE           -> Action(PUT           -> s"$baseUrl/$USERS/$id"))
+               else as) |
+        (as => if (canUpdateRoles) as :+ (UPDATE_ROLES     -> Action(PUT           -> s"$baseUrl/$USERS/$id/roles"))
+               else as) |
+        (as => if (canDelete)      as :+ (Relations.DELETE -> Action(Method.DELETE -> s"$baseUrl/$USERS/$id"))
+               else as) 
 
       result =
         resource.withActions(actions: _*)
@@ -95,44 +107,35 @@ trait UserHypermedia
     Table.Header[User](
       "id"           -> "ID",
       "username"     -> "Username",
-      "humanName"    -> "Name",
+      "givenName"    -> "Surname",
+      "familyName"   -> "Name",
       "status"       -> "Status",
       "roles"        -> "Roles",
       "registeredOn" -> "Registration Date"
     )
 
-/*
-  implicit val userHeader: Table.Header[User] =
-    Table.Header[User](
-      Symbol("id")           -> "ID",
-      Symbol("username")     -> "Username",
-      Symbol("humanName")    -> "Name",
-      Symbol("status")       -> "Status",
-      Symbol("roles")        -> "Roles",
-      Symbol("registeredOn") -> "Registration Date"
-    )
-*/
-
 
   def UsersResource[C[X] <: Iterable[X]](
     users: C[User]
   )(
-    agent: UserWithRoles
-  )(
-    implicit ec: ExecutionContext
+    implicit
+    agent: UserWithRoles,
+    ec: ExecutionContext
   ) = {
 
     for {
       items <-
-        Future.sequence(users.map(UserResource(_)(agent)))
+        Future.sequence(users.map(UserResource(_)))
 
       table = 
-        Table(items)
+        Resource(Table(items))
           .withLinks(
-            Self -> Link(s"$baseUrl/users")
+            BASE -> Link(s"$baseUrl/"),
+            SELF -> Link(s"$baseUrl/$USERS")
           )
           .withActions(
-            Create -> Action(POST,s"$baseUrl/users")
+            CREATE -> Action(POST -> s"$baseUrl/$USERS")
+                        .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$CREATE"))
           )
      } yield table
 

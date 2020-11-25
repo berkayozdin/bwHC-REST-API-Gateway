@@ -79,12 +79,12 @@ object playjson
     Json.writes[Collection.Properties]
 
 
-  implicit val writesColumnMapping =
-    Json.writes[Table.ColumnMapping]
+//  implicit val writesColumnMapping =
+//    Json.writes[Table.ColumnMapping]
 
 
-  implicit val writesTableMeta =
-    Json.writes[Table.Meta]
+//  implicit val writesTableMeta =
+//    Json.writes[Table.Meta]
 
 
 

@@ -1,14 +1,14 @@
 package de.bwhc.rest.auth
 
 
-import de.bwhc.user.api.User
-
+/*
 import de.bwhc.rest.util.cphl._
 import de.bwhc.rest.util.cphl.Relations._
 import de.bwhc.rest.util.cphl.Method._
 import de.bwhc.rest.util.cphl.Action.Format
 import de.bwhc.rest.util.cphl.Action.Format._
 import de.bwhc.rest.util.cphl.syntax._
+*/
 
 import play.api.libs.json.JsValue
 
@@ -26,16 +26,35 @@ trait Schemas
 
   import de.bwhc.util.json.schema.workarounds._
 
+  import de.bwhc.rest.util.sapphyre.Relations._
+  import UserHypermedia._
+
+
   implicit val userSchema        = Json.schema[User]  
   implicit val createUserSchema  = Json.schema[UserCommand.Create]  
   implicit val updateUserSchema  = Json.schema[UserCommand.Update]  
   implicit val updateRolesSchema = Json.schema[UserCommand.UpdateRoles]  
   implicit val loginSchema       = Json.schema[Credentials]  
 
+
+
+  private val schemaMap =
+    Map(
+      LOGIN        -> JsValueSchema[Credentials],
+      CREATE       -> JsValueSchema[UserCommand.Create],
+      UPDATE       -> JsValueSchema[UserCommand.Update],
+      UPDATE_ROLES -> JsValueSchema[UserCommand.UpdateRoles]
+    )
+
+  def forRelation(rel: String): Option[JsValue] =
+    schemaMap.get(rel)
+
 }
 object Schemas extends Schemas
 
 
+
+/*
 trait UserCPHL
 {
 
@@ -116,7 +135,7 @@ trait UserCPHL
 
 }
 object UserCPHL extends UserCPHL
-
+*/
 
 
 /*

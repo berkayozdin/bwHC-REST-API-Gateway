@@ -1,4 +1,4 @@
-package de.bwhc.rest.util.sapphyre
+package de.bwhc.rest.util
 
 
 
@@ -6,41 +6,37 @@ import shapeless.{
   HList, HNil, ::,
   Lazy, <:!<
 }
-import shapeless.labelled.FieldType
+
+import play.api.libs.json._
+
+
+
+case class Table[T] private (
+  header: Seq[Table.ColumnMapping],
+  entries: Seq[T]
+)
+{
+  lazy val total = entries.size
+}
+
 
 
 object Table
 {
 
+  import de.bwhc.rest.util.sapphyre.Resource
+
+
   case class ColumnMapping
   (
     value: String,
-//    field: Symbol,
     text: String
   )
 
-
   sealed abstract class Header[T](val mappings: Seq[ColumnMapping])
-
-/*
-  sealed abstract class Header[T, Ms <: HList]
-  (
-    val mappings: Ms
-  )
-*/
 
   object Header 
   {
-
-    class Builder[T](private val dummy: Boolean) extends AnyVal {
-
-      def apply[Ms <: HList](
-        mappings: Ms
-//      ): Header[T,Ms] = ??? 
-      ): Header[T] = ??? 
-
-    }  
-
 
     def apply[T](
       implicit
@@ -55,8 +51,8 @@ object Table
       ht.asInstanceOf[Header[R]]
 
 
-    def apply[T](ms: (String,String)*): Header[T] =
 //    def apply[T](ms: (Symbol,String)*): Header[T] =
+    def apply[T](ms: (String,String)*): Header[T] =
       new Header[T](
         ms.toSeq.map { case (f,c) => ColumnMapping(f,c) }
       ){}
@@ -64,21 +60,29 @@ object Table
   }
 
 
-  case class Meta private (
-    header: Seq[ColumnMapping]
-  )
+  implicit val formatColumnMapping = Json.format[ColumnMapping]
+  implicit def format[T: Writes]: Writes[Table[T]] =
+    Writes(
+      table => 
+        Json.obj(
+          "header"  -> Json.toJson(table.header),
+          "entries" -> Json.toJson(table.entries),
+          "total"   -> table.total
+        )
+    )
+
 
 
   def apply[T, C[X] <: Iterable[X]](
     ts: C[T]
   )(
     implicit
-    emb: C[T] IsIn Embeddable,
     header: Header[T]
-  ) =
-    Collection(ts)
-      .withMeta(Table.Meta(header.mappings))
-
+  ): Table[T] =
+    Table(
+      header.mappings,
+      ts.toSeq
+    )
 
 
 }

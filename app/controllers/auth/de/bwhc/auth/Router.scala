@@ -27,6 +27,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     case POST(p"/login")           => userController.login
     case POST(p"/logout")          => userController.logout
+    case GET(p"/whoami")           => userController.whoAmI
 
 
     //-------------------------------------------------------------------------
@@ -34,13 +35,13 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     case GET(p"/")                 => userController.apiHypermedia
 
-/* 
+ 
     case GET(p"/schema/$rel")      => userController.Action {
-                                        UserCPHL.schemaFor(rel)
+                                        Schemas.forRelation(rel)
                                           .map(Results.Ok(_))
                                           .getOrElse(Results.NotFound)
                                       }
-*/
+
 
     case GET(p"/users")             => userController.getAll
     case GET(p"/users/$id")         => userController.get(User.Id(id))

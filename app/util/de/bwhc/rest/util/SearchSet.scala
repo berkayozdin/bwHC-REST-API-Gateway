@@ -10,7 +10,7 @@ case class SearchSet[T]
   entries: Iterable[T]
 )
 {
-  val total: Int = entries.size
+  lazy val total: Int = entries.size
 }
 
 
@@ -20,8 +20,7 @@ object SearchSet
   implicit def format[T: Format]: Format[SearchSet[T]] = 
     Format[SearchSet[T]](
       Reads(
-        js =>
-          (js \ "entries").validate[Iterable[T]].map(SearchSet(_))
+        js => (js \ "entries").validate[Iterable[T]].map(SearchSet(_))
       ),
       Writes(
         s => 

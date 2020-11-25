@@ -53,6 +53,7 @@ import de.bwhc.services.{WrappedSessionManager,WrappedUserService}
 import de.bwhc.rest.util.sapphyre.playjson._
 
 
+
 case class Credentials
 (
   username: User.Name,
@@ -89,7 +90,9 @@ with AuthenticationOps[UserWithRoles]
     AuthenticatedAction.async {
       req =>
 
-      ApiResource(req.user)
+      implicit val agent = req.user
+
+      ApiResource
         .map(toJson(_))
         .map(Ok(_))
     }
@@ -147,6 +150,26 @@ with AuthenticationOps[UserWithRoles]
     AuthenticatedAction.async { authService.logout(_) }
 
 
+  def whoAmI: Action[AnyContent] =
+    AuthenticatedAction.async {
+      req =>
+
+      implicit val agent = req.user
+
+      for {
+        optUser <- userService.instance.get(req.user.userId)
+        result  <-  optUser.fold(
+                       Future.successful(NotFound(s"Invalid User"))
+                     )(
+                       UserResource(_)
+                         .map(toJson(_))
+                         .map(Ok(_))
+                     )
+      } yield result
+
+    }
+
+
   def create: Action[AnyContent] = 
     AuthenticatedAction( CreateUserRights )
       .async {
@@ -156,15 +179,15 @@ with AuthenticationOps[UserWithRoles]
 //        errorsOrJson[UserCommand.Create] thenApply process
       }
 
-  import de.bwhc.rest.util.sapphyre.playjson._
-
   def getAll: Action[AnyContent] =
     AuthenticatedAction( GetAllUserRights ).async {
       req =>
 
+      implicit val agent = req.user
+
       for {
         users   <- userService.instance.getAll      
-        result  <- UsersResource(users)(req.user)
+        result  <- UsersResource(users)
                      .map(toJson(_))  
       } yield Ok(result)
 
@@ -172,19 +195,20 @@ with AuthenticationOps[UserWithRoles]
 
 
   def get(id: User.Id): Action[AnyContent] =
-    AuthenticatedAction( ReadUserRights(id) )
-      .async {
+    AuthenticatedAction( ReadUserRights(id) ).async {
+      req =>
 
-        req =>
+      implicit val agent = req.user
 
         for {
           user   <- userService.instance.get(id)
-          result <- user.map(
-                      UserResource(_)(req.user)
+          result <- user.fold(
+                      Future.successful(NotFound(s"Invalid UserId $id"))
+                    )(
+                      UserResource(_)
                         .map(toJson(_))
                         .map(Ok(_))
-                     )
-                     .getOrElse(Future.successful(NotFound(s"Invalid UserId $id")))
+                    )
         } yield result
       }
 
@@ -194,7 +218,7 @@ with AuthenticationOps[UserWithRoles]
 
       request => 
 
-      val agent = request.user
+      implicit val agent = request.user
 
       errorsOrJson[UserCommand.Update].apply(request)
         .fold(
@@ -227,7 +251,7 @@ with AuthenticationOps[UserWithRoles]
   private def process(
     cmd: UserCommand
   )(
-    agent: UserWithRoles
+    implicit agent: UserWithRoles
   ): Future[Result] =
     for {
       response <- userService.instance ! cmd
@@ -235,11 +259,11 @@ with AuthenticationOps[UserWithRoles]
         response.fold(
           errs => Future.successful(UnprocessableEntity(toJson(Outcome.fromErrors(errs.toList)))),
           {
-            case UserEvent.Created(user,_)   => UserResource(user)(agent)
+            case UserEvent.Created(user,_)   => UserResource(user)
                                                   .map(toJson(_))
                                                   .map(Created(_))
                                              
-            case UserEvent.Updated(user,_)   => UserResource(user)(agent)
+            case UserEvent.Updated(user,_)   => UserResource(user)
                                                   .map(toJson(_))
                                                   .map(Ok(_))
 
