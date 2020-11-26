@@ -18,8 +18,9 @@ import play.api.mvc.{
   Result
 }
 import play.api.libs.json.{
-  Json, Format, Writes
+  Json, Format
 }
+import Json.toJson
 
 import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
@@ -45,6 +46,8 @@ import de.bwhc.auth.core._
 
 import de.bwhc.services.{WrappedQueryService,WrappedSessionManager}
 
+import de.bwhc.rest.util.sapphyre.playjson._
+
 
 
 final case class QueryForm(
@@ -68,16 +71,29 @@ class QueryController @Inject()(
 extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
-with QueryModePermissions
 {
 
   import QueryHypermedia._
+  import QueryPermissions._
 
 
   implicit val authService = sessionManager.instance
 
-  protected val service = queryService.instance
+  implicit val service = queryService.instance
 
+
+  def ReportingApi: Action[AnyContent] =
+    AuthenticatedAction.async {
+      request =>
+      
+      implicit val user = request.user
+
+      for {
+        api    <- ReportingHypermedia.ApiResource
+        result =  Ok(toJson(api))
+      } yield result
+
+    }
 
   def getLocalQCReport: Action[AnyContent] = 
     AuthenticatedAction( LocalQCAccessRight ).async {
@@ -87,7 +103,7 @@ with QueryModePermissions
       val querier = Querier(request.user.userId.value)
 
       //TODO: get originating ZPM from request/session
-      val origin  = ZPM("TODO")
+      val origin  = ZPM("Local")
 
       for {
         qc      <- service.getLocalQCReportFor(origin,querier)
@@ -120,6 +136,7 @@ with QueryModePermissions
   //---------------------------------------------------------------------------
 
   import QueryOps.Command
+  import QueryHyperResources._
 
 
   def submit: Action[AnyContent] =
@@ -144,7 +161,7 @@ with QueryModePermissions
                       resp    <- service ! Command.Submit(Querier(user.userId.value),mode,params)
                       outcome =  resp.bimap(
                                    errs => Outcome.fromErrors(errs.toList),
-                                   _.withHypermedia
+                                   HyperQuery(_)
                                  )
                       result  =  outcome.toJsonResult
                     } yield result
@@ -181,7 +198,7 @@ with QueryModePermissions
                     resp    <- service ! update
                     outcome =  resp.bimap(
                                  errs => Outcome.fromErrors(errs.toList),
-                                 _.withHypermedia
+                                 HyperQuery(_)
                                )
                     result  =  outcome.toJsonResult
                   } yield result
@@ -212,7 +229,7 @@ with QueryModePermissions
                 resp    <- service ! applyFilter
                 outcome =  resp.bimap(
                              errs => Outcome.fromErrors(errs.toList),
-                             _.withHypermedia
+                             HyperQuery(_)
                            )
                 result  =  outcome.toJsonResult
               } yield result
@@ -225,6 +242,19 @@ with QueryModePermissions
   // Query data access queries
   //---------------------------------------------------------------------------
 
+  def QueryApi: Action[AnyContent] =
+    AuthenticatedAction.async {
+      request =>
+      
+      implicit val user = request.user
+
+      for {
+        api    <- QueryHyperResources.Api
+        result =  Ok(toJson(api))
+      } yield result
+
+    }
+
 
   def query(
     queryId: Query.Id
@@ -232,7 +262,7 @@ with QueryModePermissions
     AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
       .async {
         OptionT(service get queryId)
-          .map(_.withHypermedia)
+          .map(HyperQuery(_))
           .map(Json.toJson(_))
           .fold(
             NotFound(s"Invalid Query ID ${queryId.value}")
@@ -261,8 +291,16 @@ with QueryModePermissions
     queryId: Query.Id
   ): Action[AnyContent] = 
     AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
-      .async {
-        resultOf(service patientsFrom queryId)(queryId)
+      .async {        
+        OptionT(service patientsFrom queryId)
+          .map(_.map(HyperPatient(_)(queryId)))
+          .map(SearchSet(_))
+          .map(Json.toJson(_))
+          .fold(
+            NotFound(s"Invalid Query ID ${queryId.value}")
+          )(       
+            Ok(_)
+          )      
       }
 
 

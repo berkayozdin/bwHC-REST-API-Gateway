@@ -42,6 +42,8 @@ import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
 import de.bwhc.rest.util.cphl.syntax._
 
+import de.bwhc.rest.util.sapphyre.playjson._
+
 import de.bwhc.auth.core._
 import de.bwhc.auth.api._
 
@@ -99,25 +101,20 @@ class DataManagementController @Inject()(
 extends BaseController
 with RequestOps
 with AuthenticationOps[UserWithRoles]
-with DataManagementPermissions
 {
 
-  import DataManagementHypermedia._
+  import DataManagementPermissions._
+  import DataQualityHypermedia._
 
   import MTBDataService.Command._
   import MTBDataService.Response._
   import MTBDataService.Error._
 
+
   implicit val authService = sessionManager.instance
 
+
 /*
-  def apiHypermedia: Action[AnyContent] = 
-    Action {
-      Ok(Json.toJson(apiActions))
-    }
-*/
-
-
   import DataStatus._
   import de.bwhc.util.mapping.syntax._
 
@@ -141,17 +138,16 @@ with DataManagementPermissions
 
         } yield Ok(json)
       }
-
+*/
 
 
   def patientsForQC: Action[AnyContent] =
     AuthenticatedAction( DataQualityAccessRights )
       .async {
         for {
-          pats   <- dataService.instance.patientsWithIncompleteData 
-          hyperPats = pats.map(_.withHypermedia)
-          set  =  SearchSet(hyperPats)
-          json =  toJson(set)   
+          pats      <- dataService.instance.patientsWithIncompleteData 
+          hyperPats =  HyperPatients(pats)
+          json      =  toJson(hyperPats)   
         } yield Ok(json)
       }
 
@@ -160,8 +156,14 @@ with DataManagementPermissions
   def mtbfile(id: String): Action[AnyContent] =
     AuthenticatedAction(DataQualityAccessRights).async {
 
-      dataService.instance.mtbfile(Patient.Id(id))
-        .map(_ toJsonOrElse (s"Invalid Patient ID $id"))
+      dataService.instance
+        .mtbfile(Patient.Id(id))
+        .map(
+          _.map(HyperMTBFile(_)) 
+           .map(toJson(_))
+           .map(Ok(_))
+           .getOrElse(NotFound(s"Invalid Patient ID $id"))
+        )
 
     }
 
@@ -169,16 +171,21 @@ with DataManagementPermissions
   def dataQualityReport(id: String): Action[AnyContent] =
     AuthenticatedAction(DataQualityAccessRights).async {
 
-      dataService.instance.dataQualityReport(Patient.Id(id))
-        .map(_ toJsonOrElse (s"Invalid Patient ID $id"))
+      dataService.instance
+        .dataQualityReport(Patient.Id(id))
+        .map(
+          _.map(HyperDataQualityReport(_)) 
+           .map(toJson(_))
+           .map(Ok(_))
+           .getOrElse(NotFound(s"Invalid Patient ID $id"))
+        )
 
     }
 
 
 
   def delete(id: String): Action[AnyContent] =
-    AuthenticatedAction( DataQualityAccessRights )
-      .async {
+    AuthenticatedAction( DataQualityAccessRights ).async {
 
       (dataService.instance ! Delete(Patient.Id(id)))
         .map(

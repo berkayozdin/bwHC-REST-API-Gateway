@@ -14,6 +14,7 @@ trait UserHypermedia
 
   import de.bwhc.rest.util.Table
   import de.bwhc.rest.util.sapphyre._
+  import de.bwhc.rest.util.sapphyre.syntax._
   import Method._
   import Relations._
 
@@ -74,17 +75,17 @@ trait UserHypermedia
 
     val id = user.id.value
 
-    val resource =
-      Resource(user)
-        .withLinks(
-          BASE -> Link(s"$baseUrl/"),
-          SELF -> Link(s"$baseUrl/$USERS/$id")
-        )
+    val hyperUser =
+      user.withLinks(
+        BASE -> Link(s"$baseUrl/"),
+        SELF -> Link(s"$baseUrl/$USERS/$id")
+      )
 
     for {
       canUpdate      <- agent has UpdateUserRights(user.id)
       canUpdateRoles <- agent has UpdateUserRolesRights
       canDelete      <- agent has DeleteUserRights
+      canGetUsers    <- agent has GetAllUserRights
 
       actions =
         Seq.empty[(String,Action)] |
@@ -96,9 +97,9 @@ trait UserHypermedia
                else as) 
 
       result =
-        resource.withActions(actions: _*)
-
-    } yield result
+        hyperUser.withActions(actions: _*)
+     
+    } yield if (canGetUsers) result.withLinks(COLLECTION -> Link(s"$baseUrl/$USERS")) else result
 
   }
 
@@ -127,8 +128,8 @@ trait UserHypermedia
       items <-
         Future.sequence(users.map(UserResource(_)))
 
-      table = 
-        Resource(Table(items))
+      hyperTable = 
+        Table(items)
           .withLinks(
             BASE -> Link(s"$baseUrl/"),
             SELF -> Link(s"$baseUrl/$USERS")
@@ -137,7 +138,7 @@ trait UserHypermedia
             CREATE -> Action(POST -> s"$baseUrl/$USERS")
                         .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$CREATE"))
           )
-     } yield table
+     } yield hyperTable
 
   }
 

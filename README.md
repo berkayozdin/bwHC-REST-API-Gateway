@@ -109,11 +109,7 @@ https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5
 
 
 -------
-### Data Upload/Validation/Management API
-
-__GET__ http://HOST:PORT/bwhc/system/api/data/
-
-
+### Data Upload/Deletion API for external Systems
 
 -------
 #### Upload MTBFile
@@ -131,6 +127,17 @@ __Response__:
 | Non-fatal Data quality issues | __201 Created__ with 'Location' of created DataQualityReport |
 | No data quality issues        | __200 Ok__ with 'Location' of MTBFile entry |
 
+
+-------
+#### Delete a Patient's data
+
+__DELETE__ http://HOST:PORT/bwhc/system/api/data/Patient/{PatientID}
+
+
+
+
+-------
+### Data Quality Feedback API
 
 -------
 #### Get Patients with Data Quality Issue reports
@@ -151,9 +158,11 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/data/DataQualityReport/{PatientID}
 
 
 -------
-#### Delete all of a Patient's data
+#### Delete a Patient's data
 
 __DELETE__ http://HOST:PORT/bwhc/mtb/api/data/Patient/{PatientID}
+
+
 
 
 
@@ -247,8 +256,6 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}
 | Patients |__GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}/Patient   |
 
 __TODO TODO TODO__
-
-
 
 
 

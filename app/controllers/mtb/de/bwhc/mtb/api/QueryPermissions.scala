@@ -11,27 +11,30 @@ import de.bwhc.auth.core.Authorization._
 
 
 
-trait QueryModePermissions
+trait QueryPermissions
 {
 
   import de.bwhc.user.api.Role._
 
+  //---------------------------------------------------------------------------
+  // ZPM QC Reporting
+  //---------------------------------------------------------------------------
 
   val LocalQCAccessRight =
     Authorization[UserWithRoles](
       _ hasAnyOf Set(GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator)
     )
-/*
-    Authorization[UserWithRoles](user =>
-      (user hasRole LocalZPMCoordinator) ||
-      (user hasRole GlobalZPMCoordinator) ||
-      (user hasRole MTBCoordinator)
-    )
-*/
 
   val GlobalQCAccessRight =
     Authorization[UserWithRoles](_ hasRole GlobalZPMCoordinator)
 
+
+  val QCAccessRight = LocalQCAccessRight
+
+
+  //---------------------------------------------------------------------------
+  // Evidence Queries
+  //---------------------------------------------------------------------------
 
   val FederatedEvidenceQueryRight =
     Authorization[UserWithRoles](
@@ -54,13 +57,13 @@ trait QueryModePermissions
     else LocalEvidenceQueryRight
  
 
-  protected val service: QueryService
-
 
   def AccessRightFor(
     queryId: Query.Id
   )(
-    implicit ec: ExecutionContext
+    implicit
+    service: QueryService,
+    ec: ExecutionContext
   ): Authorization[UserWithRoles] = Authorization.async{
 
     case UserWithRoles(userId,_) =>
@@ -71,6 +74,5 @@ trait QueryModePermissions
       } yield ok
   }
 
-
 }
-
+object QueryPermissions extends QueryPermissions

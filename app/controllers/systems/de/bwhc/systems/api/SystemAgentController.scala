@@ -26,6 +26,7 @@ import de.bwhc.mtb.data.entry.dtos.{
   Patient,
   ZPM
 }
+import de.bwhc.mtb.data.entry.dtos.Patient
 import de.bwhc.mtb.data.entry.api.MTBDataService
 import de.bwhc.mtb.query.api._
 
@@ -68,7 +69,7 @@ with RequestOps
   def processUpload: Action[AnyContent] =
     JsonAction[MTBFile]{ mtbfile =>
 
-      (dataService.instance ! MTBDataService.Command.Upload(mtbfile))
+      (dataService.instance ! Upload(mtbfile))
         .map(
           _.fold(
             {
@@ -92,6 +93,28 @@ with RequestOps
           )
         )
     }
+
+
+  def delete(patId: String): Action[AnyContent] = {
+     Action.async {
+       (dataService.instance ! Delete(Patient.Id(patId)))
+         .map(
+           _.fold(
+             {
+               case UnspecificError(msg) =>
+                 BadRequest(toJson(Outcome.fromErrors(List(msg))))
+         
+               case _ => InternalServerError
+             },
+             {
+               case Deleted(_,_) => Ok
+         
+               case _ => InternalServerError
+             }
+           )
+         )
+     }
+  }
 
 
   //---------------------------------------------------------------------------

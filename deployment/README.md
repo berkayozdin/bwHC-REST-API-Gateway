@@ -53,13 +53,13 @@ export BWHC_QUERY_DATA_DIR=...    # TODO: Set absolute path to dir where Query/R
 
 #### 2.2.1 Backend API Access:
 
-Hosts allowed to access the Backend REST API can/must be configured in __production.conf__ :
+Valid hosts for the Backend REST API can/must be configured in __production.conf__ :
 
 ```
   filters {
     ...
     hosts {
-      allowed = ["localhost"]     # TODO
+      allowed = ["localhost",...] # TODO: Add IP and/or domain name of host VM
     }
   }
 ```
@@ -102,7 +102,7 @@ http {
   server {
 
     listen       443 ssl;
-    server_name  ssl_proxy;
+    server_name  _______;  #TODO
 
     #IP-Filter
 #    allow        127.0.0.1;   # Activate as required
@@ -110,15 +110,13 @@ http {
 
     # Forward requests for /bwhc/... to the backend service
     location /bwhc {
-      proxy_pass http://localhost:9000;    # Adapt Host/Port as required
+      proxy_pass http://BACKEND_HOST:9000;    # Adapt Host/Port as required
     }
 
   }
   
 }
 ```
-
-__IMPORTANT NOTE/SUGGESTION__: In this set-up, the Reverse Proxy should be set as sole "allowed host" for the Backend API in production.conf.
 
 See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed reference.
 
@@ -145,15 +143,16 @@ http {
     ssl_verify_depth        2;
 
     # Require successful client certificate verification
-    # for all calls to system-agent API
+    # for all calls to System API
     location =/bwhc/system/api/ {
       if ($ssl_client_verify != "SUCCESS"){
          return 403;
       }
-      proxy_pass http://localhost:9000;
+      proxy_pass http://BACKEND_HOST:9000;
     }
 
-    # ...
+    # ... Rest from config from 2.2.3.1
+    
   }
 }
 ```
@@ -169,8 +168,8 @@ http {
 
   server {
 
-    listen        8443 ssl;
-    server_name   mutual_ssl_proxy;
+    listen       8443 ssl;
+    server_name  _______;  #TODO
 
     # ...
 
@@ -181,8 +180,8 @@ http {
     ssl_verify_client        on;
     ssl_verify_depth         2;
 
-    location /bwhc/system/api/ {
-      proxy_pass http://localhost:9000;
+    location =/bwhc/system/api/ {
+      proxy_pass http://BACKEND_HOST:9000;
     }
 
   }
@@ -259,7 +258,7 @@ The corresponding URL settings in __bwhcConnectorConfig.xml__ would then be:
 ```
 
 ------
-### 2.3 Logging (SLF4J):
+### 2.3 Logging Configuration (SLF4J):
 
 In __logback.xml__, set property __LOG_DIR__ to the desired logging output directory.
 Also uncomment the __FILE__ logging __appender__ and __appender-ref__. This activates logging to a daily changing log file.
@@ -337,7 +336,7 @@ Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and incl
 -------
 ## 3. Operation:
 
-Start/stop the backend service via Bash-script __bwhc-backend-service__
+Start/stop the backend service via Bash script __bwhc-backend-service__
 ```
 foo@bar: ./bwhc-backend-service start
 ...

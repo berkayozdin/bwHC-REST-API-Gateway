@@ -17,6 +17,16 @@ case class SearchSet[T]
 object SearchSet
 {
 
+  implicit def writes[T: Writes]: Writes[SearchSet[T]] = 
+    Writes(
+      s => 
+        Json.obj(
+          "entries" -> Json.toJson(s.entries),
+          "total"   -> s.total
+        )
+    )
+
+/*
   implicit def format[T: Format]: Format[SearchSet[T]] = 
     Format[SearchSet[T]](
       Reads(
@@ -30,5 +40,6 @@ object SearchSet
           )
       )
     )
+*/
 
 }

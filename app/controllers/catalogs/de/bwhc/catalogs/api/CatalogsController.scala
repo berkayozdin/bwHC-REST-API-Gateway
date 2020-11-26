@@ -51,7 +51,6 @@ object Catalogs
   lazy val medications = MedicationCatalog.getInstance.get
 
 
-
   object ToJson extends Poly1
   {
 
@@ -61,7 +60,6 @@ object Catalogs
       at(Json.toJson(_))
 
   }
-
 
   implicit class ProductOps[T <: Product](val t: T) extends AnyVal
   {
@@ -83,37 +81,6 @@ object Catalogs
 }
 
 
-import de.bwhc.rest.util.cphl._
-import de.bwhc.rest.util.cphl.syntax._
-import de.bwhc.rest.util.cphl.Relations._
-import de.bwhc.rest.util.cphl.Method._
-
-trait CatalogCPHL
-{
-
-  val baseUrl = "/bwhc/catalogs/api"
-
-  private val links =
-    (Base -> Action(s"$baseUrl/", GET)) +:
-    (
-      Seq("icd-10-gm","icd-o-3-t","icd-o-3-m","hgnc","atc")
-        .map(sys => Relation(s"catalog-$sys") -> Action(s"$baseUrl/Coding?system=$sys" , GET)) ++
-      (
-
-        (Relation("valuesets") -> Action(s"$baseUrl/ValueSet" , GET)) +:
-
-        Catalogs.jsonValueSets.keys 
-          .map(vs => Relation(s"valueset-$vs") -> Action(s"$baseUrl/ValueSet?name=$vs" , GET)).toSeq
-      )
-    )
-
-  val apiCPHL =
-    CPHL(links: _*)
-
-}
-object CatalogCPHL extends CatalogCPHL
-
-
 
 class CatalogsController @Inject()(
   val controllerComponents: ControllerComponents
@@ -124,13 +91,6 @@ extends BaseController
 {
 
   import Catalogs._ 
-  import CatalogCPHL._
-
-
-  def apiHypermedia: Action[AnyContent] =
-    Action {
-      Ok(Json.toJson(apiCPHL))
-    }
 
 
   def coding(

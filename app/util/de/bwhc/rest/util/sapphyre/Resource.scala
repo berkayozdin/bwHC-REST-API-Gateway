@@ -5,13 +5,8 @@ import shapeless.{
   HList, HNil, ::
 }
 
-//import play.api.libs.json.Json
-//import play.api.libs.json.{
-//  JsObject, Json
-//}
 
 import cats.data.NonEmptyList
-
 
 
 sealed trait Document extends Linked
@@ -58,7 +53,6 @@ object Resource
   val empty: Resource[HNil,HNil,HNil] =
     Resource(
       data = HNil,
-//      data = JsObject.empty,
       embedded = HNil
     )
 

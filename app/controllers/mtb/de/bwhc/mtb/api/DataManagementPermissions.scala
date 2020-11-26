@@ -1,11 +1,8 @@
 package de.bwhc.mtb.api
 
 
-
-
 import de.bwhc.auth.core._
 import de.bwhc.auth.api.UserWithRoles
-
 
 
 trait DataManagementPermissions
@@ -27,6 +24,6 @@ trait DataManagementPermissions
 
   val DataQualityAccessRights = DocumentaristRights
 
-
 }
+object DataManagementPermissions extends DataManagementPermissions
 
