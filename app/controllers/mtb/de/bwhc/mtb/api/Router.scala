@@ -93,7 +93,7 @@ extends SimpleRouter
     case GET(p"/query/$id/molecular-therapies")     => queryController.molecularTherapiesFrom(Query.Id(id))
     case GET(p"/query/$id/ngs-summaries")           => queryController.ngsSummariesFrom(Query.Id(id))
 //    case GET(p"/query/$id/patients/$patId/mtbfile") => queryController.mtbfileFrom(Query.Id(id),patId)
-    case GET(p"/query/$id/mtbfile/$patId")          => queryController.mtbfileFrom(Query.Id(id),patId)
+    case GET(p"/query/$id/mtbfiles/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
 
 
     //----------------------

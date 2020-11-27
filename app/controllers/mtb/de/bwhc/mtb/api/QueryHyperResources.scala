@@ -10,6 +10,7 @@ import de.bwhc.auth.api.UserWithRoles
 import de.bwhc.util.syntax.piping._
 
 import de.bwhc.mtb.query.api.{Query,PatientView}
+import de.bwhc.mtb.data.entry.dtos.Patient
 
 
 trait QueryHyperResources
@@ -41,33 +42,36 @@ trait QueryHyperResources
 
 
   private val LocalQueryAction =
-    Action(POST -> BASE_URI)
+    LOCAL_QUERY -> Action(POST -> BASE_URI)
 
   private val FederatedQueryAction =
-    Action(POST -> BASE_URI)
+    FEDERATED_QUERY -> Action(POST -> BASE_URI)
 
   private def UpdateAction(queryId: Query.Id) =
-    Action(POST -> s"$BASE_URI/${queryId.value}")
+    UPDATE -> Action(POST -> s"$BASE_URI/${queryId.value}")
 
   private def ApplyFilterAction(queryId: Query.Id) =
-    Action(POST -> s"$BASE_URI/${queryId.value}/filter")
+    APPLY_FILTER -> Action(POST -> s"$BASE_URI/${queryId.value}/filter")
 
 
   private def QueryLink(queryId: Query.Id) =
     Link(s"$BASE_URI/${queryId.value}")
 
   private def PatientsLink(queryId: Query.Id) =
-    Link(s"$BASE_URI/${queryId.value}/Patient")
+    Link(s"$BASE_URI/${queryId.value}/patients")
 
   private def NGSSummariesLink(queryId: Query.Id) =
-    Link(s"$BASE_URI/${queryId.value}/NGSSummary")
+    Link(s"$BASE_URI/${queryId.value}/ngs-summaries")
 
   private def RecommendationsLink(queryId: Query.Id) =
-    Link(s"$BASE_URI/${queryId.value}/TherapyRecommendation")
+    Link(s"$BASE_URI/${queryId.value}/therapy-recommendations")
 
   private def TherapiesLink(queryId: Query.Id) =
-    Link(s"$BASE_URI/${queryId.value}/MolecularTherapy")
+    Link(s"$BASE_URI/${queryId.value}/molecular-therapies")
 
+  private def MTBFileLink(queryId: Query.Id, patId: Patient.Id) = 
+    Link(s"$BASE_URI/${queryId.value}/mtbfiles/${patId.value}")
+//    Link(s"${QueryLink(queryId).href}/patients/${patId.value}/mtbfile")
 
 
   def Api(
@@ -85,8 +89,8 @@ trait QueryHyperResources
 
       result =
         api |
-        (r => if (localQueryRights)     r.withActions(LOCAL_QUERY     -> LocalQueryAction)     else r) |
-        (r => if (federatedQueryRights) r.withActions(FEDERATED_QUERY -> FederatedQueryAction) else r)
+        (r => if (localQueryRights)     r.withActions(LocalQueryAction)     else r) |
+        (r => if (federatedQueryRights) r.withActions(FederatedQueryAction) else r)
 
     } yield result
   }
@@ -104,8 +108,8 @@ trait QueryHyperResources
       THERAPIES       -> TherapiesLink(query.id)
     )
     .withActions(
-      UPDATE       -> UpdateAction(query.id),
-      APPLY_FILTER -> ApplyFilterAction(query.id)
+      UpdateAction(query.id),
+      ApplyFilterAction(query.id)
     )
 
   }

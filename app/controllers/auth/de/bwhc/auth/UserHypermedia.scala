@@ -31,6 +31,16 @@ trait UserHypermedia
   val USERS        = "users"
   val UPDATE_ROLES = "update-roles"
 
+  val LoginAction =
+    LOGIN -> Action(POST -> s"$baseUrl/$LOGIN")
+               .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$LOGIN"))
+
+  val LogoutAction =
+    LOGOUT -> Action(POST -> s"$baseUrl/$LOGOUT")
+
+  val WhoAmIAction =
+    WHOAMI -> Action(GET  -> s"$baseUrl/$WHOAMI")
+
 
   def ApiResource(
     implicit
@@ -46,10 +56,13 @@ trait UserHypermedia
               USER -> Link(s"$baseUrl/$USER/${agent.userId.value}")
             )
             .withActions(
-              LOGIN  -> Action(POST -> s"$baseUrl/$LOGIN")
-                          .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$LOGIN")),
-              LOGOUT -> Action(POST -> s"$baseUrl/$LOGOUT"),
-              WHOAMI -> Action(GET  -> s"$baseUrl/$WHOAMI")
+              LoginAction,
+              LogoutAction,
+              WhoAmIAction
+//              LOGIN  -> Action(POST -> s"$baseUrl/$LOGIN")
+//                          .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$LOGIN")),
+//              LOGOUT -> Action(POST -> s"$baseUrl/$LOGOUT"),
+//              WHOAMI -> Action(GET  -> s"$baseUrl/$WHOAMI")
             )
         )
 

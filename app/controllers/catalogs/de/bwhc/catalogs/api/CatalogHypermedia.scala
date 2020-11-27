@@ -63,7 +63,7 @@ trait CatalogHypermedia
   import sapphyre.Relations._
 
 
-  private val BASE_URI = "/bwhc/catalogs/api"
+  val BASE_URI = "/bwhc/catalogs/api"
 
   private val catalogLinks =
     List(

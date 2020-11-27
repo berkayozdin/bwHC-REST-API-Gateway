@@ -1,6 +1,8 @@
 
 # Unsecured endpoints
 
+GET     /bwhc                   de.bwhc.apibase.APIBaseController.ApiBase 
+
 ->      /bwhc/fake/data/api/    de.bwhc.fake.data.Router
 
 ->      /bwhc/catalogs/api/     de.bwhc.catalogs.api.Router
