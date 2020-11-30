@@ -4,8 +4,6 @@ package de.bwhc.rest.util.sapphyre
 import shapeless.{
   HList, HNil, ::
 }
-
-
 import cats.data.NonEmptyList
 
 

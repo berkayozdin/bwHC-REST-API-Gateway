@@ -13,19 +13,6 @@ import cats.data.NonEmptyList
 object playjson
 {
 
-/*
-  implicit def formatNel[T: Reads: Writes](
-    implicit
-    reads: Reads[List[T]],
-    writes: Writes[List[T]]
-  ): Format[NonEmptyList[T]] =
-    Format[NonEmptyList[T]](
-      reads
-        .filterNot(JsonValidationError("Found empty list where non-empty list expected"))(_.isEmpty)
-        .map(NonEmptyList.fromListUnsafe),
-      writes.contramap(_.toList)
-    )
-*/
 
   implicit def writesNel[T: Writes](
     implicit
@@ -79,14 +66,6 @@ object playjson
     Json.writes[Collection.Properties]
 
 
-//  implicit val writesColumnMapping =
-//    Json.writes[Table.ColumnMapping]
-
-
-//  implicit val writesTableMeta =
-//    Json.writes[Table.Meta]
-
-
 
   import de.bwhc.util.syntax.piping._
 
@@ -99,7 +78,11 @@ object playjson
     Writes {
       case Resource(data,meta,links,actions,embedded) =>
  
-        (Json.toJson(data).as[JsObject] + ("_embedded" -> Json.toJson(embedded)) ) |
+        Json.toJson(data).as[JsObject] | 
+          (js => embedded match {
+                   case HNil => js
+                   case _    => js + ("_embedded" -> Json.toJson(embedded))
+                 }) |
           (js => meta.fold              (js)(m => js + ("_meta"    -> Json.toJson(m)))) |
           (js => links.headOption.fold  (js)(h => js + ("_links"   -> Json.toJson(links)))) |
           (js => actions.headOption.fold(js)(h => js + ("_actions" -> Json.toJson(actions)))) 

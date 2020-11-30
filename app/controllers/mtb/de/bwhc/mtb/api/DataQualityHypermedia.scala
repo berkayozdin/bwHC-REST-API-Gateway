@@ -19,24 +19,24 @@ trait DataQualityHypermedia
   import de.bwhc.rest.util.sapphyre.Relations._
 
 
-  private val baseUrl = "/bwhc/mtb/api/data-quality"
+  private val BASE_URI = "/bwhc/mtb/api/data-quality"
 
   private val PATIENTS            = "patients"
   private val MTBFILE             = "mtbfile"
   private val DATA_QUALITY_REPORT = "data-quality-report"
 
         
-  private val ApiBaseLink =
-    Link(s"$baseUrl/")
+  val ApiBaseLink =
+    Link(s"$BASE_URI/")
 
   private val PatientsLink =
-    Link(s"$baseUrl/$PATIENTS")
+    Link(s"$BASE_URI/$PATIENTS")
 
   private def MTBFileLink(id: Patient.Id) =
-    Link(s"$baseUrl/$PATIENTS/${id.value}/$MTBFILE")
+    Link(s"$BASE_URI/$PATIENTS/${id.value}/$MTBFILE")
      
   private def DataQualityReportLink(id: Patient.Id) =
-    Link(s"$baseUrl/$PATIENTS/${id.value}/$DATA_QUALITY_REPORT")
+    Link(s"$BASE_URI/$PATIENTS/${id.value}/$DATA_QUALITY_REPORT")
      
 
 

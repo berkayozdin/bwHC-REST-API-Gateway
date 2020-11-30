@@ -3,90 +3,69 @@
 
 ## Preliminaries:
 
-The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) for easier usability and "discoverability" of API functions.
-[Cross-Platform Hypertext Language](https://github.com/mikestowe/CPHL) (CPHL) -- an extension of [HAL](https://en.wikipedia.org/wiki/Hypertext_Application_Language) -- was chosen as syntactical specification for hypermedia content.
+The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) for easier discoverability and usage of API functions.
+The used representation for hypermedia content is essentially [Hypertext Application Language](https://en.wikipedia.org/wiki/Hypertext_Application_Language) (HAL) with
+custom extensions inspired from [SIREN](https://github.com/kevinswiber/siren) and [CPHL](https://github.com/mikestowe/CPHL) to allow specifying _actions_ on resources in addition to just links/relations.
 
-Sub-APIs now have a "hypermedia base" endpoint which returns URIs and HTTP methods of possible API actions ("links"), together with -- where appropriate -- references to JSON Schemas of corresponding JSON request bodies. 
+The backend now has a "hypermedia API entry point"
 
-For example, retrieval of the Catalogs API Hypermedia base at
+__GET__ http://HOST:PORT/bwhc
 
-GET http://HOST:PORT/bwhc/catalogs/api/
-
-returns Hypermedia "links" to actual resources from the API:
+from where hypermedia links to the various accessible sub-APIs can be followed:
 
 ```javascript
 {
+  "_actions": {                            // Possible Actions:
+    "logout": {                            // Logout
+        "method": "POST",                  // HTTP Method
+        "href": "/bwhc/user/api/logout"    // URI (relative)
+    },
+    ...
+  },
   "_links": {
-    "base": {                        
-      "href": "/bwhc/catalogs/api/",                   // self-reference to API base
-      "methods": [
-          "GET"
-      ]
+    "catalogs-api": {                     
+        "href": "/bwhc/catalogs/api/"      // URI (relative) to Catalogs API
     },
-    "catalog-hgnc": {
-      "href": "/bwhc/catalogs/api/Coding?system=hgnc", // URI of HGNC catalog
-      "methods": [
-          "GET"
-      ]
-    },
-    // Further links...
+    ...
+    "systems-api": {
+        "href": "/bwhc/system/api/"        // URI (relative) to Systems API
+    }
   }
 }
 ```
 
-As another example: A call to the API endpoint to list Patients for which data curation is required
+For instance, following the link to the "__systems-api__"
 
-GET http://HOST:PORT/bwhc/mtb/api/data/qc/Patient
+__GET__ http://HOST:PORT/bwhc/system/api/
 
-returns an entry set of Patient resources extended by hypermedia links to actions pertaining to the respective Patient:
+returns a description of Links/Actions available for this sub-API:
 
 ```javascript
 {
-  "entries": [
-    {
-      // Patient attributes...
-      "birthDate": "1980-12-02",
-      "gender": "male",
-      "id": "2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
-      "managingZPM": "Tübingen",
-      //Hypermedia links:
-      "_links": {
-        "get-data-quality-report": {   // Action: Get the Patient's DataQualityReport
-          "formats": {
-            "json": {
-              "mimeType": "application/json",
-              "schema": "/bwhc/mtb/api/data/schema/get-data-quality-report"  // Link to DataQualityReport JSON Schema
-            }
-          },
-          "href": "/bwhc/mtb/api/data/DataQualityReport/2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
-          "methods": [
-            "GET"
-          ]
-        },
-        "get-mtbfile": {   // Action: Get the Patient's MTBFile 
-          "formats": {
-            "json": {
-              "mimeType": "application/json",
-              "schema": "/bwhc/mtb/api/data/schema/get-mtbfile"   // Link to DataQualityReport JSON Schema
-            }
-          },
-          "href": "/bwhc/mtb/api/data/MTBFile/2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
-          "methods": [
-            "GET"
-          ]
-        },
-        "delete": {
-          "href": "/bwhc/mtb/api/data/Patient/2c1fb8b3-3ac0-4dfd-a56f-714cf024934a",
-          "methods": [
-            "DELETE"
-          ]
+  "_actions": {
+    "upload-mtbfile": {                                           // Action: Upload MTBFile
+      "method": "POST"                                            // HTTP Method
+      "href": "/bwhc/system/api/data/upload",                     // URI (relative)
+
+      "formats": {                                                // Format specifications of request payloads for the Action
+        "application/json": {
+          "href": "/bwhc/system/api/schema/upload-mtbfile"        // Link to JSON Schema specification for Content-Type 'application/json'
         }
-      }
-    }
-  ],
-  "total": 1
+      },
+    },
+    ...
+    "delete-patient": {                                           // Action: Delete a Patient's data
+      "method": "DELETE",
+      "href": "/bwhc/system/api/data/Patient/{id}"
+    },
+  },
+  "_links": {
+    ...
+  }
 }
 ```
+
+
 
 -------
 ## Synthetic Data Examples API

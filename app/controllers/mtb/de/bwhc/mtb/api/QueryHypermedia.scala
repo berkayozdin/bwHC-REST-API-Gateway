@@ -104,6 +104,7 @@ trait QueryHypermedia
   def schemaFor(rel: String): Option[JsValue] =
     schemaMap.get(Relation(rel)) 
 
+/*
   private val QueryIdPlaceholder = "QUERY_ID"
 
 
@@ -174,7 +175,7 @@ trait QueryHypermedia
                                        )
       )
   }
-
+*/
 
 }
 object QueryHypermedia extends QueryHypermedia

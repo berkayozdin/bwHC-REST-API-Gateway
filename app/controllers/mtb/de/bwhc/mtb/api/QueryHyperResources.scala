@@ -36,8 +36,8 @@ trait QueryHyperResources
   private val MTBFILE         = "mtbfile"
 
 
-  private val ApiBaseLink =
-    Link(s"$BASE_URI")
+  val ApiBaseLink =
+    Link(s"$BASE_URI/")
 
 
 
@@ -71,7 +71,6 @@ trait QueryHyperResources
 
   private def MTBFileLink(queryId: Query.Id, patId: Patient.Id) = 
     Link(s"$BASE_URI/${queryId.value}/mtbfiles/${patId.value}")
-//    Link(s"${QueryLink(queryId).href}/patients/${patId.value}/mtbfile")
 
 
   def Api(

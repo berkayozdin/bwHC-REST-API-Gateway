@@ -37,4 +37,6 @@ object Action
   def apply(ml: (Method.Value,String)): Action = 
     Action(ml._1,ml._2)
     
+  def apply(m: Method.Value, l: Link): Action = 
+    Action(m,l.href)
 }

@@ -26,7 +26,7 @@ import de.bwhc.services.WrappedSessionManager
 import de.bwhc.rest.util.sapphyre._
 import de.bwhc.rest.util.sapphyre.playjson._
 
-
+import de.bwhc.util.syntax.piping._
 
 
 class APIBaseController @Inject()
@@ -38,6 +38,8 @@ class APIBaseController @Inject()
 )
 extends BaseController
 {
+
+  import de.bwhc.systems.api.SystemHypermedia
   import de.bwhc.rest.auth.UserHypermedia
   import de.bwhc.catalogs.api.CatalogHypermedia
   import de.bwhc.mtb.api.DataManagementPermissions.DataQualityAccessRights
@@ -45,48 +47,82 @@ extends BaseController
     QCAccessRight,
     EvidenceQueryRight
   }
+  import de.bwhc.mtb.api.{
+    ReportingHypermedia,
+    DataQualityHypermedia,
+    QueryHyperResources  //TODO: clean up
+  }
 
   import Relations.SELF
 
 
   private val BASE_URI = "/bwhc"
 
+  private val DATA_QC_API   = "data-quality-api"
+  private val REPORTING_API = "reporting-api"   
+  private val QUERY_API     = "query-api"       
+
+  private val api =
+    Resource.empty
+      .withLinks(
+        SELF             -> Link(BASE_URI),
+        "synthetic-data" -> Link("/bwhc/fake/data/api/MTBFile"),  //TODO: clean up
+        "catalogs-api"   -> CatalogHypermedia.ApiBaseLink,
+        "systems-api"    -> SystemHypermedia.ApiBaseLink
+      )
+
+
   def ApiBase: Action[AnyContent] =
     Action.async {
       request =>
-
-        val apiBase =
-          Resource.empty
-            .withLinks(
-              SELF             -> Link(BASE_URI),
-              "synthetic-data" -> Link("/bwhc/fake/data/api/MTBFile"),  //TODO: clean up
-              "catalogs"       -> Link(CatalogHypermedia.BASE_URI)
-            )
 
         for {
           optUser <-
             sessionManager.instance authenticate request
 
-          api =
+          apiDef <-
             optUser match {
 
               case None =>
-                apiBase.withActions(UserHypermedia.LoginAction) 
+                Future.successful(
+                  api.withActions(UserHypermedia.LoginAction)
+                ) 
 
               case Some(user) => {
-                apiBase.withActions(
-                  UserHypermedia.WhoAmIAction,
-                  UserHypermedia.LogoutAction
-                ) 
-              }
 
+                for {
+
+                  dataQCAccess    <- user has DataQualityAccessRights
+                  reportingAccess <- user has QCAccessRight
+                  queryAccess     <- user has EvidenceQueryRight
+
+                  result =
+                    api.withActions(
+                      UserHypermedia.WhoAmIAction,
+                      UserHypermedia.LogoutAction
+                    )
+                    .withLinks("user-api" -> UserHypermedia.ApiBaseLink) |
+                    (r => if (dataQCAccess)
+                             r.withLinks(DATA_QC_API   -> DataQualityHypermedia.ApiBaseLink)
+                          else r) |
+                    (r => if (reportingAccess)
+                             r.withLinks(REPORTING_API -> ReportingHypermedia.ApiBaseLink)
+                          else r) |  
+                    (r => if (queryAccess)  
+                             r.withLinks(QUERY_API     -> QueryHyperResources.ApiBaseLink)
+                          else r)   
+                   
+                } yield result
+
+              }
             }
 
-          result = Ok(toJson(api))
+          result = Ok(toJson(apiDef))
 
         } yield result
 
     }
+
 
 
 }

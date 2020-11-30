@@ -39,7 +39,7 @@ extends SimpleRouter
 
     case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
 
-    case GET(p"/data-quality/")                    => dataController.Action {
+    case GET(p"/data-quality")                     => dataController.Action {
                                                         Ok(toJson(DataQualityHypermedia.ApiResource))
                                                       }
 
@@ -58,7 +58,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // ZPM QC Reports                                                          
     //-------------------------------------------------------------------------
-    case GET(p"/reporting/")                       => queryController.ReportingApi
+    case GET(p"/reporting")                        => queryController.ReportingApi
     case GET(p"/reporting/LocalQCReport")          => queryController.getLocalQCReport
     case GET(p"/reporting/GlobalQCReport")         => queryController.getGlobalQCReport
 
@@ -92,7 +92,6 @@ extends SimpleRouter
     case GET(p"/query/$id/therapy-recommendations") => queryController.therapyRecommendationsFrom(Query.Id(id))
     case GET(p"/query/$id/molecular-therapies")     => queryController.molecularTherapiesFrom(Query.Id(id))
     case GET(p"/query/$id/ngs-summaries")           => queryController.ngsSummariesFrom(Query.Id(id))
-//    case GET(p"/query/$id/patients/$patId/mtbfile") => queryController.mtbfileFrom(Query.Id(id),patId)
     case GET(p"/query/$id/mtbfiles/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
 
 

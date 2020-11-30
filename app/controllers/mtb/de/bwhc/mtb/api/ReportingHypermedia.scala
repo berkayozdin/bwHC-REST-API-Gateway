@@ -18,10 +18,10 @@ trait ReportingHypermedia
   import de.bwhc.rest.util.sapphyre.Relations._
 
 
-  private val BASE_URI            = "/bwhc/mtb/api/reporting"
+  private val BASE_URI       = "/bwhc/mtb/api/reporting"
 
-  private val LOCAL_REPORT        = "LocalQCReport"
-  private val GLOBAL_REPORT       = "GlobalQCReport"
+  private val LOCAL_REPORT   = "local-qc-report"
+  private val GLOBAL_REPORT  = "global-qc-report"
 
 
   private object Scope extends Enumeration
@@ -31,7 +31,7 @@ trait ReportingHypermedia
   }
 
 
-  private val ApiBaseLink =
+  val ApiBaseLink =
     Link(s"$BASE_URI/")
 
 
@@ -52,11 +52,10 @@ trait ReportingHypermedia
 
       api = Resource.empty.withLinks(SELF -> ApiBaseLink)
 
-      result = api |
-               (r => if (canGetLocalReport) r.withLinks(LOCAL_REPORT -> ReportLink(Scope.Local))
-                     else r) |
-               (r => if (canGetGlobalReport) r.withLinks(GLOBAL_REPORT -> ReportLink(Scope.Global))
-                     else r)
+      result =
+        api |
+        (r => if (canGetLocalReport)  r.withLinks(LOCAL_REPORT  -> ReportLink(Scope.Local)) else r) |
+        (r => if (canGetGlobalReport) r.withLinks(GLOBAL_REPORT -> ReportLink(Scope.Global)) else r)
 
     } yield result
   }

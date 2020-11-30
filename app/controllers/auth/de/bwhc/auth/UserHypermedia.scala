@@ -21,7 +21,7 @@ trait UserHypermedia
   import UserManagementPermissions._
 
 
-  val baseUrl = "/bwhc/user/api"
+  private val BASE_URI = "/bwhc/user/api"
 
 
   val LOGIN        = "login"
@@ -31,15 +31,40 @@ trait UserHypermedia
   val USERS        = "users"
   val UPDATE_ROLES = "update-roles"
 
+
+  val ApiBaseLink =
+   Link(s"$BASE_URI/")
+
+  val UsersLink =
+    Link(s"$BASE_URI/$USERS")
+
+  def UserLink(id: User.Id) =
+    Link(s"$BASE_URI/$USERS/${id.value}")
+
   val LoginAction =
-    LOGIN -> Action(POST -> s"$baseUrl/$LOGIN")
-               .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$LOGIN"))
+    LOGIN -> Action(POST -> s"$BASE_URI/$LOGIN")
+               .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$LOGIN"))
 
   val LogoutAction =
-    LOGOUT -> Action(POST -> s"$baseUrl/$LOGOUT")
+    LOGOUT -> Action(POST -> s"$BASE_URI/$LOGOUT")
 
   val WhoAmIAction =
-    WHOAMI -> Action(GET  -> s"$baseUrl/$WHOAMI")
+    WHOAMI -> Action(GET  -> s"$BASE_URI/$WHOAMI")
+
+
+  val CreateUserAction =
+    CREATE -> Action(POST -> UsersLink.href)
+                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$CREATE"))
+  
+  def UpdateUserAction(id: User.Id) = 
+    UPDATE -> Action(PUT, UserLink(id))
+        
+  def UpdateRolesAction(id: User.Id) =
+    UPDATE_ROLES -> Action(PUT -> s"${UserLink(id).href}/roles")
+        
+  def DeleteUserAction(id: User.Id) =
+    Relations.DELETE -> Action(Method.DELETE, UserLink(id))
+
 
 
   def ApiResource(
@@ -52,24 +77,20 @@ trait UserHypermedia
         Future.successful(
           Resource.empty
             .withLinks(
-              SELF -> Link(s"$baseUrl/"),
-              USER -> Link(s"$baseUrl/$USER/${agent.userId.value}")
+              SELF -> ApiBaseLink,
+              USER -> UserLink(agent.userId)
             )
             .withActions(
               LoginAction,
               LogoutAction,
               WhoAmIAction
-//              LOGIN  -> Action(POST -> s"$baseUrl/$LOGIN")
-//                          .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$LOGIN")),
-//              LOGOUT -> Action(POST -> s"$baseUrl/$LOGOUT"),
-//              WHOAMI -> Action(GET  -> s"$baseUrl/$WHOAMI")
             )
         )
 
       canGetUsers <- agent has GetAllUserRights
       
       result =
-        if (canGetUsers) api.withLinks(USERS -> Link(s"$baseUrl/$USERS"))
+        if (canGetUsers) api.withLinks(USERS -> UsersLink)
         else api
 
     } yield result
@@ -86,12 +107,10 @@ trait UserHypermedia
     ec: ExecutionContext
   ) = {
 
-    val id = user.id.value
-
     val hyperUser =
       user.withLinks(
-        BASE -> Link(s"$baseUrl/"),
-        SELF -> Link(s"$baseUrl/$USERS/$id")
+        BASE -> ApiBaseLink,
+        SELF -> UserLink(user.id)
       )
 
     for {
@@ -102,17 +121,17 @@ trait UserHypermedia
 
       actions =
         Seq.empty[(String,Action)] |
-        (as => if (canUpdate)      as :+ (UPDATE           -> Action(PUT           -> s"$baseUrl/$USERS/$id"))
+        (as => if (canUpdate)      as :+ UpdateUserAction(user.id) 
                else as) |
-        (as => if (canUpdateRoles) as :+ (UPDATE_ROLES     -> Action(PUT           -> s"$baseUrl/$USERS/$id/roles"))
+        (as => if (canUpdateRoles) as :+ UpdateRolesAction(user.id) 
                else as) |
-        (as => if (canDelete)      as :+ (Relations.DELETE -> Action(Method.DELETE -> s"$baseUrl/$USERS/$id"))
+        (as => if (canDelete)      as :+ DeleteUserAction(user.id)
                else as) 
 
       result =
         hyperUser.withActions(actions: _*)
      
-    } yield if (canGetUsers) result.withLinks(COLLECTION -> Link(s"$baseUrl/$USERS")) else result
+    } yield if (canGetUsers) result.withLinks(COLLECTION -> UsersLink) else result
 
   }
 
@@ -144,12 +163,11 @@ trait UserHypermedia
       hyperTable = 
         Table(items)
           .withLinks(
-            BASE -> Link(s"$baseUrl/"),
-            SELF -> Link(s"$baseUrl/$USERS")
+            BASE -> ApiBaseLink,
+            SELF -> UsersLink
           )
           .withActions(
-            CREATE -> Action(POST -> s"$baseUrl/$USERS")
-                        .withFormats(MediaType.APPLICATION_JSON -> Link(s"$baseUrl/schema/$CREATE"))
+            CreateUserAction
           )
      } yield hyperTable
 

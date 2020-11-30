@@ -24,11 +24,10 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // Catalogs / ValueSets
     //-------------------------------------------------------------------------
-    //
+    
     case GET(p"/") =>
-      catalogs.Action { 
-        Ok(toJson(CatalogHypermedia.ApiResource))
-      }
+      catalogs.Action { Ok(toJson(CatalogHypermedia.ApiResource)) }
+  
 
     case GET(p"/Coding/$system"?q_o"pattern=$pattern"?q_o"version=$v") =>
       catalogs.coding(system,pattern,v)
@@ -43,6 +42,5 @@ extends SimpleRouter
     case GET(p"/ValueSet")                 => catalogs.valueSets
 
   }
-
 
 }
