@@ -19,7 +19,7 @@ foo@bar: ./install.sh /path/to/target/dir
 
 The target directory is created if non-existent.
 
-The installation script copies all necessary files to the target directory. In case that an installation is already present, the previous configuration files are __NOT__ overwritten.
+The installation script copies all necessary files to the target directory. In case that configuration files from a previous installation are already present, the previous files are __NOT__ overwritten.
 
 
 --------
@@ -102,7 +102,7 @@ http {
   server {
 
     listen       443 ssl;
-    server_name  _______;  #TODO
+    server_name  xxxxxxx;  #TODO
 
     #IP-Filter
 #    allow        127.0.0.1;   # Activate as required
@@ -110,7 +110,7 @@ http {
 
     # Forward requests for /bwhc/... to the backend service
     location /bwhc {
-      proxy_pass http://BACKEND_HOST:9000;    # Adapt Host/Port as required
+      proxy_pass http://BACKEND_HOST:PORT;    # Adapt Host/Port as required
     }
 
   }
@@ -123,9 +123,9 @@ See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed 
 
 ##### 2.2.3.2 Set up NGINX for Client Certificate Authentication (mutual SSL)
 
-There are 2 possible ways to configure Nginx to secure the bwHC System API endpoints via mutual SSL.
+There are __2 possible ways__ to configure Nginx to secure the bwHC System API endpoints via mutual SSL.
 
-###### Variant 1:
+##### Variant 1:
 
 In config from 2.2.3.1, add a 'location' to perform client verification specifically for calls to System API URI:
 
@@ -148,7 +148,7 @@ http {
       if ($ssl_client_verify != "SUCCESS"){
          return 403;
       }
-      proxy_pass http://BACKEND_HOST:9000;
+      proxy_pass http://BACKEND_HOST:PORT;
     }
 
     # ... Rest from config from 2.2.3.1
@@ -157,7 +157,7 @@ http {
 }
 ```
 
-###### Variant 2:
+##### Variant 2:
 
 Use a separate virtual server to handle client verification, in combination with re-direction of all calls to the System API to this reverse proxy:
  
@@ -168,8 +168,8 @@ http {
 
   server {
 
-    listen       8443 ssl;
-    server_name  _______;  #TODO
+    listen       443 ssl;
+    server_name  yyyyyy;  #TODO
 
     # ...
 
@@ -181,7 +181,7 @@ http {
     ssl_verify_depth         2;
 
     location =/bwhc/system/api/ {
-      proxy_pass http://BACKEND_HOST:9000;
+      proxy_pass http://BACKEND_HOST:PORT;
     }
 
   }
@@ -195,7 +195,7 @@ http {
     # Ensure that all calls to System API endpoints
     # are directed to mutual SSL reverse proxy above
     location /bwhc/system/api {
-      return 308 https://localhost:8443/bwhc/system/api;
+      return 308 https://localhost:443/bwhc/system/api;
     }
 
     # ...

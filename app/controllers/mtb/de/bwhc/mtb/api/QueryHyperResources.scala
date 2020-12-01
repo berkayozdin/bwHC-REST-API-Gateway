@@ -9,8 +9,14 @@ import de.bwhc.auth.api.UserWithRoles
 
 import de.bwhc.util.syntax.piping._
 
-import de.bwhc.mtb.query.api.{Query,PatientView}
-import de.bwhc.mtb.data.entry.dtos.Patient
+import de.bwhc.mtb.query.api.{
+  PatientView,
+  Query
+}
+import de.bwhc.mtb.data.entry.dtos.{
+  MTBFile,
+  Patient
+}
 
 
 trait QueryHyperResources
@@ -24,8 +30,8 @@ trait QueryHyperResources
   private val BASE_URI = "/bwhc/mtb/api/query"
 
   
-  private val LOCAL_QUERY     = "submit-local-query"
-  private val FEDERATED_QUERY = "submit-federated-query"
+  private val SUBMIT_LOCAL_QUERY = "submit-local-query"
+  private val SUBMIT_FEDERATED_QUERY = "submit-federated-query"
   private val APPLY_FILTER    = "apply-filter"
 
   private val QUERY           = "query"
@@ -40,12 +46,11 @@ trait QueryHyperResources
     Link(s"$BASE_URI/")
 
 
-
   private val LocalQueryAction =
-    LOCAL_QUERY -> Action(POST -> BASE_URI)
+    SUBMIT_LOCAL_QUERY -> Action(POST -> BASE_URI)
 
   private val FederatedQueryAction =
-    FEDERATED_QUERY -> Action(POST -> BASE_URI)
+    SUBMIT_FEDERATED_QUERY -> Action(POST -> BASE_URI)
 
   private def UpdateAction(queryId: Query.Id) =
     UPDATE -> Action(POST -> s"$BASE_URI/${queryId.value}")
@@ -123,9 +128,22 @@ trait QueryHyperResources
       BASE       -> ApiBaseLink,
       QUERY      -> QueryLink(queryId),
       COLLECTION -> PatientsLink(queryId),
-      MTBFILE    -> Link(s"${QueryLink(queryId).href}/mtbfile/${patient.id.value}")
+      MTBFILE    -> MTBFileLink(queryId,patient.id)
     )
 
+  }
+
+
+  def HyperMTBFile(
+    mtbfile: MTBFile
+  )(
+    queryId: Query.Id
+  ) = {
+    mtbfile.withLinks(
+      BASE  -> ApiBaseLink,
+      SELF  -> MTBFileLink(queryId,mtbfile.patient.id),
+      QUERY -> QueryLink(queryId)
+    )
   }
 
 

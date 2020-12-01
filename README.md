@@ -1,13 +1,23 @@
 # bwHealthCloud Backend REST API
 
 
-## Preliminaries:
+## 1. Preliminaries:
 
-The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) for easier discoverability and usage of API functions.
+
+### 1.1 MTBFile Model:
+
+See the ["shared spreadsheet"](
+https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5ZMw/edit?usp=sharing
+) of MTB File parameters and their currently defined multiplicities and JSON representation.
+
+
+### 1.2 Hypermedia
+
+The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) to be truly RESTful, i.e. to allow easier discoverability and usage of API functions.
 The used representation for hypermedia content is essentially [Hypertext Application Language](https://en.wikipedia.org/wiki/Hypertext_Application_Language) (HAL) with
 custom extensions inspired from [SIREN](https://github.com/kevinswiber/siren) and [CPHL](https://github.com/mikestowe/CPHL) to allow specifying _actions_ on resources in addition to just links/relations.
 
-The backend now has a "hypermedia API entry point"
+The backend now has a "__hypermedia API entry point__":
 
 __GET__ http://HOST:PORT/bwhc
 
@@ -33,7 +43,6 @@ from where hypermedia links to the various accessible sub-APIs can be followed:
   }
 }
 ```
-
 For instance, following the link to the "__systems-api__"
 
 __GET__ http://HOST:PORT/bwhc/system/api/
@@ -66,9 +75,8 @@ returns a description of Links/Actions available for this sub-API:
 ```
 
 
-
 -------
-## Synthetic Data Examples API
+## 2. Synthetic Data Examples API
 
 Request a random-generated MTBFile JSON example
 
@@ -77,21 +85,13 @@ __GET__ http://HOST:PORT/bwhc/fake/data/api/MTBFile
 
 
 -------
-## Data Upload/Management and Evidence Query API
-
-IMPORTANT NOTICE:
-
-* See the ["shared spreadsheet"](
-https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5ZMw/edit?usp=sharing
-) of MTB File parameters and their currently assumed multiplicities
-
-
+## 3. Data Upload/Management and Evidence Query API
 
 -------
-### Data Upload/Deletion API for external Systems
+### 3.1 Data Upload/Deletion API for external Systems
 
 -------
-#### Upload MTBFile
+#### 3.1.1 Upload MTBFile
 
 Required header: "Content-Type: application/json"
 
@@ -103,12 +103,12 @@ __Response__:
 | ---- | ----- |
 | Invalid JSON                  | __400 Bad Request__ with list of syntax errors | 
 | Fatal data quality issues     | __422 Unprocessable Entity__ with DataQualityReport |
-| Non-fatal Data quality issues | __201 Created__ with 'Location' of created DataQualityReport |
-| No data quality issues        | __200 Ok__ with 'Location' of MTBFile entry |
+| Non-fatal Data quality issues | __201 Created__ |
+| No data quality issues        | __200 Ok__ |
 
 
 -------
-#### Delete a Patient's data
+#### 3.1.2 Delete a Patient's data
 
 __DELETE__ http://HOST:PORT/bwhc/system/api/data/Patient/{PatientID}
 
@@ -116,57 +116,61 @@ __DELETE__ http://HOST:PORT/bwhc/system/api/data/Patient/{PatientID}
 
 
 -------
-### Data Quality Feedback API
+### 3.2 Data Quality Feedback API
 
 -------
-#### Get Patients with Data Quality Issue reports
+#### 3.2.1 Get Patients with Data Quality Issue reports
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/data/Patient
 
 
 -------
-#### Get a Patient's MTBFile
+#### 3.2.2 Get a Patient's MTBFile
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/data/MTBFile/{PatientID}
 
 
 -------
-#### Get DataQualityReport for a given Patient's MTBFile
+#### 3.2.3 Get DataQualityReport for a given Patient's MTBFile
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/data/DataQualityReport/{PatientID}
 
 
 -------
-#### Delete a Patient's data
+#### 3.2.4 Delete a Patient's data
 
 __DELETE__ http://HOST:PORT/bwhc/mtb/api/data/Patient/{PatientID}
 
 
 
 
-
 -------
-## Reporting/Query API
+## 4. ZPM-QC-Reporting / Query API
 
+### 4.1 Reporting 
 -------
-#### Get LocalQCReport (from local ZPM site)
+#### 4.1.1 Get LocalQCReport (from local ZPM site)
+
+__GET__ http://HOST:PORT/bwhc/mtb/api/reporting/QCReport?scope=local
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/reporting/LocalQCReport
 
 
 -------
-#### Get GlobalQCReport (combined LocalQCReport of all ZPM sites)
+#### 4.1.2 Get GlobalQCReport (combined LocalQCReport of all ZPM sites)
+
+__GET__ http://HOST:PORT/bwhc/mtb/api/reporting/QCReport?scope=global
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/reporting/GlobalQCReport
 
 
 
 -------
-### Evidence Querying API
+### 4.2 Evidence Querying API
 
 
 -------
-#### Query Submission
+#### 4.2.1 Query Submission
 
 __POST__ http://HOST:PORT/bwhc/mtb/api/query
 
@@ -221,14 +225,14 @@ __Response__: Created Query Object
 ```
 
 -------
-#### Get Query Object by ID
+#### 4.2.2 Get Query Object by ID
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}
 
 
 
 -------
-#### Access to contents from Query ResultSet
+#### 4.2.3 Access to contents from Query ResultSet
 
 | Resource | URL |
 |----------|--------|
@@ -240,10 +244,10 @@ __TODO TODO TODO__
 
 
 -------
-## Catalogs and ValueSet API
+## 5 Catalogs and ValueSet API
 
 -------
-#### Coding Systems (Catalogs)
+### 5.1 Coding Systems (Catalogs)
 
 __GET__ http://HOST:PORT/bwhc/catalogs/api/Coding/SYSTEM[?pattern=CHARS][?version=VERSION]
 
@@ -265,12 +269,11 @@ Optional Parameter "version" indicated requested catalog version (only different
 
 
 -------
-#### ValueSets
+### 5.2 ValueSets
 
 __GET__ http://HOST:PORT/bwhc/catalogs/api/ValueSet
 
-
-##### Fetch a given ValueSet NAME
+#### 5.2.1 Fetch a given ValueSet NAME
 
 __GET__ http://HOST:PORT/bwhc/catalogs/api/ValueSet/NAME
 
