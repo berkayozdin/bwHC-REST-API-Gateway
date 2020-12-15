@@ -2,13 +2,78 @@
 
 -------
 
+
+-------
+## Authentication API
+
+#### Login
+
+__POST__ http://HOST:PORT/bwhc/user/api/login
+
+with Credentials either as Form payload (x-www-form-urlencoded):
+
+```javascript
+username=...
+password=...
+```
+
+OR
+
+Json payload (application/json)
+
+```javascript
+{
+  "username" : "...",
+  "password" : "..."
+}
+```
+
+__Response__: OAuth 2.0 Bearer token
+
+```javascript
+{
+  "access_token": "9e7f6d00-4e1a-4f7f-8bb0-188fb1a23818",
+  "created_at": 1608031839297,
+  "expires_in": 3600,
+  "scope": "bwhc",
+  "token_type": "Bearer"
+}
+```
+
+#### Who am I?
+
+__GET__ http://HOST:PORT/bwhc/user/api/whoami
+
+with Header: 'Authorization: Bearer _access_token_'
+
+
+__Response__: User in session
+
+```javascript
+{
+  "id" : "fb53eb3b-27a5-4045-acdc-f31ff514bf9a",
+  "username" : "test_user",
+  ...,
+  "lastUpdate" : "2020-10-21T07:43:24.213325Z"
+}
+```
+
+
+#### Logout
+
+__POST__ http://HOST:PORT/bwhc/user/api/logout
+
+with Header: 'Authorization: Bearer _access_token_'
+
+
+
 -------
 ## User API
 
 -------
 #### User Creation (Admin only)
 
-__POST__ http://HOST:PORT/bwhc/user/api/user
+__POST__ http://HOST:PORT/bwhc/user/api/users
 
 ```javascript
 {
@@ -65,19 +130,19 @@ __Response__: Created User (w/o password)
 -------
 #### Get List of all Users (Admin only)
 
-__GET__ http://HOST:PORT/bwhc/user/api/user
+__GET__ http://HOST:PORT/bwhc/user/api/users
 
 
 -------
 #### Get User by ID (User her-/himself and Admin)
 
-__GET__ http://HOST:PORT/bwhc/user/api/user/{UserID}
+__GET__ http://HOST:PORT/bwhc/user/api/users/{UserID}
 
 
 -------
 #### Update User Data (User her-/himself and Admin)
 
-__PUT__ http://HOST:PORT/bwhc/user/api/user/{UserID}
+__PUT__ http://HOST:PORT/bwhc/user/api/users/{UserID}
 
 ```javascript
 {
@@ -93,7 +158,7 @@ __PUT__ http://HOST:PORT/bwhc/user/api/user/{UserID}
 -------
 #### Update a User's Roles (Admin only)
 
-__PUT__ http://HOST:PORT/bwhc/user/api/user/{UserID}/roles
+__PUT__ http://HOST:PORT/bwhc/user/api/users/{UserID}/roles
 
 ```javascript
 {
@@ -106,47 +171,5 @@ __PUT__ http://HOST:PORT/bwhc/user/api/user/{UserID}/roles
   ]
 }
 ```
-
-
-
--------
-## Authentication API
-
-
-#### Login
-
-__POST__ http://HOST:PORT/bwhc/user/api/login
-
-with Credentials either as Form payload (x-www-form-urlencoded):
-
-```javascript
-username=...
-password=...
-```
-
-OR
-
-Json payload (application/json)
-
-```javascript
-{
-  "username" : "...",
-  "password" : "..."
-}
-```
-
-TODO: Session token
-
-
-
-#### Logout
-
-__POST__ http://HOST:PORT/bwhc/user/api/logout
-
-
-
-
-
-
 
 
