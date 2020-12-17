@@ -35,8 +35,6 @@ extends SimpleRouter
                                                           .getOrElse(NotFound)
                                                       }
 
-//    case GET(p"/data/Patient")                     => dataController.patientsWithStatus
-
     case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
 
     case GET(p"/data-quality")                     => dataController.Action {
@@ -78,7 +76,7 @@ extends SimpleRouter
     case GET(p"/query")                            => queryController.QueryApi
 
     case GET(p"/query/schema/$rel")                => queryController.Action {
-                                                        QueryHypermedia.schemaFor(rel)
+                                                        QueryHyperResources.schema(rel)
                                                           .map(Ok(_))
                                                           .getOrElse(NotFound)
                                                       }

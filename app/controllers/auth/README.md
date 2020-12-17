@@ -172,4 +172,8 @@ __PUT__ http://HOST:PORT/bwhc/user/api/users/{UserID}/roles
 }
 ```
 
+-------
+#### Delete a User (Admin only)
+
+__DELETE__ http://HOST:PORT/bwhc/user/api/users/{UserID}
 

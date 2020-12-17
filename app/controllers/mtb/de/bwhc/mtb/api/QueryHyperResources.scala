@@ -3,6 +3,9 @@ package de.bwhc.mtb.api
 
 import scala.concurrent.{ExecutionContext,Future}
 
+import play.api.libs.json.JsValue
+
+import de.bwhc.util.json.schema._
 import de.bwhc.rest.util.sapphyre._
 
 import de.bwhc.auth.api.UserWithRoles
@@ -11,12 +14,15 @@ import de.bwhc.util.syntax.piping._
 
 import de.bwhc.mtb.query.api.{
   PatientView,
-  Query
+  Query,
+  QueryOps
 }
 import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
   Patient
 }
+
+
 
 
 trait QueryHyperResources
@@ -25,6 +31,7 @@ trait QueryHyperResources
   import syntax._
   import Method._
   import Relations._
+  import QuerySchemas._
 
 
   private val BASE_URI = "/bwhc/mtb/api/query"
@@ -48,15 +55,19 @@ trait QueryHyperResources
 
   private val LocalQueryAction =
     SUBMIT_LOCAL_QUERY -> Action(POST -> BASE_URI)
+                            .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$QUERY"))
 
   private val FederatedQueryAction =
     SUBMIT_FEDERATED_QUERY -> Action(POST -> BASE_URI)
+                                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$QUERY"))
 
   private def UpdateAction(queryId: Query.Id) =
     UPDATE -> Action(POST -> s"$BASE_URI/${queryId.value}")
+                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$UPDATE"))
 
   private def ApplyFilterAction(queryId: Query.Id) =
     APPLY_FILTER -> Action(POST -> s"$BASE_URI/${queryId.value}/filter")
+                      .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$APPLY_FILTER"))
 
 
   private def QueryLink(queryId: Query.Id) =
@@ -76,6 +87,26 @@ trait QueryHyperResources
 
   private def MTBFileLink(queryId: Query.Id, patId: Patient.Id) = 
     Link(s"$BASE_URI/${queryId.value}/mtbfiles/${patId.value}")
+
+
+
+  private val schemas =
+    Map(
+      QUERY        -> JsValueSchema[QueryForm],
+      UPDATE       -> JsValueSchema[QueryOps.Command.Update],
+      APPLY_FILTER -> JsValueSchema[QueryOps.Command.ApplyFilter],
+      PATIENTS     -> JsValueSchema[PatientView],
+/*
+       -> JsValueSchema[NGSSummary],
+       -> JsValueSchema[TherapyRecommendation],
+       -> JsValueSchema[MolecularTherapyView] 
+*/
+    )
+
+
+  def schema(rel: String): Option[JsValue] =
+    schemas.get(rel) 
+
 
 
   def Api(

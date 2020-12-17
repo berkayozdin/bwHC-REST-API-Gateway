@@ -3,13 +3,6 @@ package de.bwhc.mtb.api
 
 import de.bwhc.mtb.data.entry.dtos._
 import de.bwhc.mtb.query.api._
-  
-import de.bwhc.rest.util.cphl._
-import de.bwhc.rest.util.cphl.syntax._
-import de.bwhc.rest.util.cphl.Method._
-import de.bwhc.rest.util.cphl.Relations._
-import de.bwhc.rest.util.cphl.Action.Format
-import de.bwhc.rest.util.cphl.Action.Format._
 
 import json.{Schema,Json}
 import de.bwhc.util.json.schema._
@@ -21,6 +14,9 @@ object DTOSchemas
 
   implicit val icd10gmSchema = Json.schema[ICD10GM]("icd-10-code")
   implicit val geneSchema    = Json.schema[Variant.Gene]("gene-symbol")
+
+//  implicit val medUsageSchema = Json.schema[Query.MedicationWithUsage]("medication-with-usage")
+//  implicit val parametersSchema = Json.schema[Query.Parameters]("parameters")
 
 
   implicit def codingSystemSchema[T](
@@ -70,40 +66,4 @@ trait QuerySchemas
 }
 object QuerySchemas extends QuerySchemas
 
-
-
-trait QueryHypermedia
-{
-
-  import QuerySchemas._
-
-
-  private val baseUrl = "/bwhc/mtb/api/query"
-
-  val SubmitQuery               = Relation("submit-query")
-  val UpdateQuery               = Relation("update-query")
-  val ApplyFilter               = Relation("filter-query")
-  val GetPatients               = Relation("get-patients-from-query")
-  val GetNGSSummaries           = Relation("get-ngs-summaries-from-query")
-  val GetTherapyRecommendations = Relation("get-therapy-recommendations-from-query")
-  val GetMolecularTherapies     = Relation("get-molecular-therapies-from-query")
-
-
-  private val schemaMap =
-    Map(
-      SubmitQuery               -> JsValueSchema[QueryForm],
-      UpdateQuery               -> JsValueSchema[QueryOps.Command.Update],
-      ApplyFilter               -> JsValueSchema[QueryOps.Command.ApplyFilter],
-      GetPatients               -> JsValueSchema[PatientView],
-      GetNGSSummaries           -> JsValueSchema[NGSSummary],
-      GetTherapyRecommendations -> JsValueSchema[TherapyRecommendation],
-      GetMolecularTherapies     -> JsValueSchema[MolecularTherapyView] 
-    )
-
-
-  def schemaFor(rel: String): Option[JsValue] =
-    schemaMap.get(Relation(rel)) 
-
-}
-object QueryHypermedia extends QueryHypermedia
 
