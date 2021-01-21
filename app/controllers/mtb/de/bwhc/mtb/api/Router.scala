@@ -43,6 +43,7 @@ extends SimpleRouter
 
     case GET(p"/data-quality/patients")                         => dataController.patientsForQC
     case GET(p"/data-quality/patients/$id/mtbfile")             => dataController.mtbfile(id)
+    case GET(p"/data-quality/patients/$id/mtbfileview")         => dataController.mtbfileView(id)
     case GET(p"/data-quality/patients/$id/data-quality-report") => dataController.dataQualityReport(id)
 
     //----------------------

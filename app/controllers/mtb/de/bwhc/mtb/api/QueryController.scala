@@ -18,7 +18,7 @@ import play.api.mvc.{
   Result
 }
 import play.api.libs.json.{
-  Json, Format
+  Json, Format, Writes
 }
 import Json.toJson
 
@@ -272,7 +272,8 @@ with AuthenticationOps[UserWithRoles]
       }
 
 
-  private def resultOf[T: Format](
+  private def resultOf[T: Writes](
+//  private def resultOf[T: Format](
     rs: Future[Option[Iterable[T]]]
   )(
     queryId: Query.Id

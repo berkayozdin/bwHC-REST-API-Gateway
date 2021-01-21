@@ -51,7 +51,6 @@ object Table
       ht.asInstanceOf[Header[R]]
 
 
-//    def apply[T](ms: (Symbol,String)*): Header[T] =
     def apply[T](ms: (String,String)*): Header[T] =
       new Header[T](
         ms.toSeq.map { case (f,c) => ColumnMapping(f,c) }

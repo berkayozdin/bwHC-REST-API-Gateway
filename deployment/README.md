@@ -312,6 +312,9 @@ For test purposes, the system can be configured to be filled with randomly gener
 __NOTE__: This setting only takes effect in case that __no persisted data__ is present upon startup.
 
 In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ and optionally adjust the pre-defined value.
+
+__WARNING__: The random generated data will all be kept in memory, so avoid excessively large numbers!
+
 Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as shown below (indented command):
 
 ```bash

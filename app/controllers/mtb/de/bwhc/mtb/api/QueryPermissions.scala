@@ -64,7 +64,7 @@ trait QueryPermissions
     implicit
     service: QueryService,
     ec: ExecutionContext
-  ): Authorization[UserWithRoles] = Authorization.async{
+  ): Authorization[UserWithRoles] = Authorization.async {
 
     case UserWithRoles(userId,_) =>
 

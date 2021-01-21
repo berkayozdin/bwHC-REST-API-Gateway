@@ -9,10 +9,8 @@ GET     /bwhc                   de.bwhc.apibase.APIBaseController.ApiBase
 
 
 
-
 # MUST be secured via mutual SSL!
 ->      /bwhc/system/api/       de.bwhc.systems.api.Router
-
 
 
 
@@ -21,5 +19,4 @@ GET     /bwhc                   de.bwhc.apibase.APIBaseController.ApiBase
 ->      /bwhc/user/api/         de.bwhc.rest.auth.Router
 
 ->      /bwhc/mtb/api/          de.bwhc.mtb.api.Router
-
 

@@ -2,6 +2,7 @@ package de.bwhc.mtb.api
 
 
 import de.bwhc.mtb.data.entry.dtos._
+import de.bwhc.mtb.data.entry.views.MolecularTherapyView
 import de.bwhc.mtb.query.api._
 
 import json.{Schema,Json}

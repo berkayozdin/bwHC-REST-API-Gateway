@@ -35,6 +35,7 @@ import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
   Patient
 }
+import de.bwhc.mtb.data.entry.views.MTBFileView
 
 import de.bwhc.mtb.data.entry.api.MTBDataService
 
@@ -152,7 +153,7 @@ with AuthenticationOps[UserWithRoles]
       }
 
 
-
+  
   def mtbfile(id: String): Action[AnyContent] =
     AuthenticatedAction(DataQualityAccessRights).async {
 
@@ -161,6 +162,20 @@ with AuthenticationOps[UserWithRoles]
         .map(
           _.map(HyperMTBFile(_)) 
            .map(toJson(_))
+           .map(Ok(_))
+           .getOrElse(NotFound(s"Invalid Patient ID $id"))
+        )
+
+    }
+
+
+  def mtbfileView(id: String): Action[AnyContent] =
+    AuthenticatedAction(DataQualityAccessRights).async {
+
+      dataService.instance
+        .mtbfileView(Patient.Id(id))
+        .map(
+          _.map(toJson(_))
            .map(Ok(_))
            .getOrElse(NotFound(s"Invalid Patient ID $id"))
         )
