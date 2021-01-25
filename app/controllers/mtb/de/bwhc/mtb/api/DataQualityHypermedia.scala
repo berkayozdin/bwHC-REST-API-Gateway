@@ -7,7 +7,7 @@ import de.bwhc.rest.util.Table
 import de.bwhc.rest.util.sapphyre._
 
 import de.bwhc.mtb.data.entry.dtos.{Patient,MTBFile}
-import de.bwhc.mtb.data.entry.api.DataQualityReport
+import de.bwhc.mtb.data.entry.api.{DataQualityReport,PatientDataInfo}
 
 import de.bwhc.auth.api.UserWithRoles
 
@@ -49,7 +49,8 @@ trait DataQualityHypermedia
 
 
   def HyperPatient(
-    pat: Patient
+    pat: PatientDataInfo
+//    pat: Patient
   ) = 
     pat.withLinks(
       COLLECTION          -> PatientsLink,
@@ -80,17 +81,19 @@ trait DataQualityHypermedia
   
   
   implicit val patientHeader =
-    Table.Header[Patient](
-      "id"          -> "ID",
-      "birthDate"   -> "Birthdate",
-      "gender"      -> "Gender",
-      "dateOfDeath" -> "Date of death"
+//    Table.Header[Patient](
+    Table.Header[PatientDataInfo](
+      "id"             -> "ID",
+      "birthDate"      -> "Birthdate",
+      "gender"         -> "Gender",
+      "numberOfIssues" -> "Number of Issues"
     )
 
 
 
   def HyperPatients[C[X] <: Iterable[X]](
-    pats: C[Patient]
+//    pats: C[Patient]
+    pats: C[PatientDataInfo]
   ) =
     Table(pats.map(HyperPatient))
       .withLinks(

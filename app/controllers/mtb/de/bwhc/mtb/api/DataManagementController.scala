@@ -115,31 +115,6 @@ with AuthenticationOps[UserWithRoles]
   implicit val authService = sessionManager.instance
 
 
-/*
-  import DataStatus._
-  import de.bwhc.util.mapping.syntax._
-
-  def patientsWithStatus: Action[AnyContent] =
-    AuthenticatedAction( PatientStatusAccessRights )
-      .async {
-        for {
-          patsForQC       <- dataService.instance.patientsWithIncompleteData
-
-          patIDsForQc     =  patsForQC.map(_.id).toList
-
-          patsInReporting <- queryService.instance.patients
-         
-          allPats         = patsForQC.map(_.mapTo(PatientWithStatus(CurationRequired))) ++
-                              patsInReporting.filter(!patIDsForQc.contains(_))
-                                .map(_.mapTo(PatientWithStatus(ReadyForReporting)))
-
-          set  =  SearchSet(allPats.map(_.withHypermedia))
-
-          json =  toJson(set)   
-
-        } yield Ok(json)
-      }
-*/
 
 
   def patientsForQC: Action[AnyContent] =

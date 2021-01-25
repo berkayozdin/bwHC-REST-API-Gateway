@@ -30,7 +30,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     
     case GET(p"/data/schema/$rel")                 => dataController.Action {
-                                                        DataManagementHypermedia.schemaFor(rel)
+                                                        DataMgmtSchemas.schemaFor(rel)
                                                           .map(Ok(_))
                                                           .getOrElse(NotFound)
                                                       }
