@@ -8,9 +8,12 @@ GET     /bwhc                   de.bwhc.apibase.APIBaseController.ApiBase
 ->      /bwhc/catalogs/api/     de.bwhc.catalogs.api.Router
 
 
-
 # MUST be secured via mutual SSL!
-->      /bwhc/system/api/       de.bwhc.systems.api.Router
+->      /bwhc/peer2peer/api/    de.bwhc.peer2peer.api.Router
+
+
+# SHOULD be secured via mutual SSL!
+->      /bwhc/etl/api/          de.bwhc.etl.api.Router
 
 
 

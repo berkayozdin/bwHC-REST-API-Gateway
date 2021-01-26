@@ -25,7 +25,7 @@ import de.bwhc.mtb.data.entry.dtos.{
 
 
 
-trait QueryHyperResources
+trait QueryHypermedia
 {
 
   import syntax._
@@ -179,6 +179,6 @@ trait QueryHyperResources
 
 
 }
-object QueryHyperResources extends QueryHyperResources
+object QueryHypermedia extends QueryHypermedia
 
 

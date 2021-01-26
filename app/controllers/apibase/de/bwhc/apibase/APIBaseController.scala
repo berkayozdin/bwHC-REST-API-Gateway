@@ -39,8 +39,9 @@ class APIBaseController @Inject()
 extends BaseController
 {
 
-  import de.bwhc.systems.api.SystemHypermedia
+  import de.bwhc.etl.api.ETLHypermedia
   import de.bwhc.rest.auth.UserHypermedia
+  import de.bwhc.rest.auth.UserManagementPermissions._
   import de.bwhc.catalogs.api.CatalogHypermedia
   import de.bwhc.mtb.api.DataManagementPermissions.DataQualityAccessRights
   import de.bwhc.mtb.api.QueryPermissions.{
@@ -50,7 +51,7 @@ extends BaseController
   import de.bwhc.mtb.api.{
     ReportingHypermedia,
     DataQualityHypermedia,
-    QueryHyperResources  //TODO: clean up
+    QueryHypermedia
   }
 
   import Relations.SELF
@@ -68,7 +69,7 @@ extends BaseController
         SELF             -> Link(BASE_URI),
         "synthetic-data" -> Link("/bwhc/fake/data/api/MTBFile"),  //TODO: clean up
         "catalogs-api"   -> CatalogHypermedia.ApiBaseLink,
-        "systems-api"    -> SystemHypermedia.ApiBaseLink
+        "etl-api"        -> ETLHypermedia.ApiBaseLink
       )
 
 
@@ -78,7 +79,7 @@ extends BaseController
 
         for {
           optUser <-
-            sessionManager.instance authenticate request
+            sessionManager.instance.authenticate(request)
 
           apiDef <-
             optUser match {
@@ -95,22 +96,22 @@ extends BaseController
                   dataQCAccess    <- user has DataQualityAccessRights
                   reportingAccess <- user has QCAccessRight
                   queryAccess     <- user has EvidenceQueryRight
+                  allUsersAccess  <- user has GetAllUserRights
 
                   result =
                     api.withActions(
                       UserHypermedia.WhoAmIAction,
                       UserHypermedia.LogoutAction
                     )
-                    .withLinks("user-api" -> UserHypermedia.ApiBaseLink) |
-                    (r => if (dataQCAccess)
-                             r.withLinks(DATA_QC_API   -> DataQualityHypermedia.ApiBaseLink)
-                          else r) |
-                    (r => if (reportingAccess)
-                             r.withLinks(REPORTING_API -> ReportingHypermedia.ApiBaseLink)
-                          else r) |  
-                    (r => if (queryAccess)  
-                             r.withLinks(QUERY_API     -> QueryHyperResources.ApiBaseLink)
-                          else r)   
+                    .withLinks(
+                      "user-api" -> UserHypermedia.ApiBaseLink,
+                      "whoami"   -> UserHypermedia.UserLink(user.userId)
+//                      "my-user"  -> UserHypermedia.UserLink(user.userId)
+                    ) |
+                    (r => if (allUsersAccess)  r.withLinks(UserHypermedia.USERS -> UserHypermedia.UsersLink)          else r) |
+                    (r => if (dataQCAccess)    r.withLinks(DATA_QC_API          -> DataQualityHypermedia.ApiBaseLink) else r) |
+                    (r => if (reportingAccess) r.withLinks(REPORTING_API        -> ReportingHypermedia.ApiBaseLink)   else r) |  
+                    (r => if (queryAccess)     r.withLinks(QUERY_API            -> QueryHypermedia.ApiBaseLink)       else r)   
                    
                 } yield result
 

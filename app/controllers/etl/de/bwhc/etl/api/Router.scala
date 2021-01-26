@@ -1,4 +1,4 @@
-package de.bwhc.systems.api
+package de.bwhc.etl.api
 
 
 
@@ -27,25 +27,21 @@ extends SimpleRouter
     // Data Import                                               
     //-------------------------------------------------------------------------
     
-    case GET(p"/")                           => controller.Action { Ok(toJson(SystemHypermedia.ApiResource)) }
+    case GET(p"/")                           => controller.Action { Ok(toJson(ETLHypermedia.ApiResource)) }
     
     case GET(p"/schema/$rel")                => controller.Action {
-                                                  SystemHypermedia.schemaFor(rel)
+                                                  ETLHypermedia.schemaFor(rel)
                                                     .map(toJson(_))
                                                     .map(Ok(_))
-                                                    .getOrElse(NotFound(s"No JSON SChema availbale for Relation $rel"))
+                                                    .getOrElse(NotFound(s"No JSON Schema available for Relation $rel"))
                                                 }
 
     case POST(p"/data/upload")               => controller.processUpload
     case DELETE(p"/data/Patient/$id")        => controller.delete(id)
 
-
-    //-------------------------------------------------------------------------
-    // bwHC Node Peer-to-peer endpoints
-    //-------------------------------------------------------------------------
-
-    case POST(p"/peer2peer/query")           => controller.processPeerToPeerQuery
-    case GET(p"/peer2peer/LocalQCReport")    => controller.getLocalQCReport
+    case POST(p"/MTBFile")                   => controller.processUpload
+    case DELETE(p"/MTBFile/$id")             => controller.delete(id)
+    case DELETE(p"/Patient/$id")             => controller.delete(id)
 
   }
 

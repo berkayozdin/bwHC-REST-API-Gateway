@@ -136,7 +136,7 @@ with AuthenticationOps[UserWithRoles]
   //---------------------------------------------------------------------------
 
   import QueryOps.Command
-  import QueryHyperResources._
+  import QueryHypermedia._
 
 
   def submit: Action[AnyContent] =
@@ -249,7 +249,7 @@ with AuthenticationOps[UserWithRoles]
       implicit val user = request.user
 
       for {
-        api    <- QueryHyperResources.Api
+        api    <- QueryHypermedia.Api
         result =  Ok(toJson(api))
       } yield result
 
@@ -273,7 +273,6 @@ with AuthenticationOps[UserWithRoles]
 
 
   private def resultOf[T: Writes](
-//  private def resultOf[T: Format](
     rs: Future[Option[Iterable[T]]]
   )(
     queryId: Query.Id

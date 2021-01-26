@@ -53,7 +53,7 @@ export BWHC_QUERY_DATA_DIR=...    # TODO: Set absolute path to dir where Query/R
 
 #### 2.2.1 Backend API Access:
 
-Valid hosts for the Backend REST API can/must be configured in __production.conf__ :
+Valid hostnames/IPs under which the Backend REST API server can be addressed must be configured in __production.conf__ :
 
 ```
   filters {
@@ -80,15 +80,15 @@ URLs of other bwHC nodes are configured in __bwhcConnectorConfig.xml__:
   <ZPM site="Ulm"        baseURL="TODO"/>
 </bwHC>
 ```
-These URLs must point to the respective bwHC node's "System API" base URL, i.e.
+These URLs must point to the respective bwHC node's "Peer-to-peer API" base URL, i.e.
 
-https://HOST:PORT/bwhc/system/api
+https://HOST:PORT/bwhc/peer2peer/api/
 
 
 #### 2.2.3 Setting up HTTPS / Securing Backend API Access: 
 
 
-##### 2.2.3.1 Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
+#### 2.2.3.1 Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
 
 Here's a sample configuration to set up NGINX as reverse proxy to handle SSL-Termination for the bwHC Backend:
 
@@ -121,13 +121,22 @@ http {
 See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed reference.
 
 
-##### 2.2.3.2 Set up NGINX for Client Certificate Authentication (mutual SSL)
+#### 2.2.3.2 Set up NGINX to secure sub-APIs with Client Certificate Authentication (mutual TLS)
 
-There are __2 possible ways__ to configure Nginx to secure the bwHC System API endpoints via mutual SSL.
+__IMPORTANT__:
+The bwHC sub-APIs exposed to "system agents" are __NOT SECURED__ by a login-based authentication mechanism.
+Access to these APIs thus MUST be restricted otherwise, e.g. using mutual SSL.
+
+The APIs in question are:
+
+ETL-API for local data export: HOST:PORT/bwhc/etl/api/
+Peer-to-peer API: HOST:PORT/bwhc/peer2peer/api/
+
+There are __2 possible ways__ to configure Nginx to secure these APIs endpoints via mutual SSL.
 
 ##### Variant 1:
 
-In config from 2.2.3.1, add a 'location' to perform client verification specifically for calls to System API URI:
+In config from 2.2.3.1, add a 'location' to perform client verification specifically for calls to Peer-to-peer and/or ETL API URI:
 
 ```nginx
 http {
@@ -143,8 +152,15 @@ http {
     ssl_verify_depth        2;
 
     # Require successful client certificate verification
-    # for all calls to System API
-    location =/bwhc/system/api/ {
+    # for all calls to Peer-to-peer and ETL API
+    location =/bwhc/peer2peer/ {
+      if ($ssl_client_verify != "SUCCESS"){
+         return 403;
+      }
+      proxy_pass http://BACKEND_HOST:PORT;
+    }
+    
+    location =/bwhc/etl/ {
       if ($ssl_client_verify != "SUCCESS"){
          return 403;
       }
@@ -159,7 +175,7 @@ http {
 
 ##### Variant 2:
 
-Use a separate virtual server to handle client verification, in combination with re-direction of all calls to the System API to this reverse proxy:
+Use a separate virtual server to handle client verification, in combination with re-direction of all calls to the Peer-to-peer and/or ETL API to this reverse proxy:
  
 
 ```nginx
@@ -168,7 +184,7 @@ http {
 
   server {
 
-    listen       443 ssl;
+    listen       8443 ssl;
     server_name  yyyyyy;  #TODO
 
     # ...
@@ -180,7 +196,11 @@ http {
     ssl_verify_client        on;
     ssl_verify_depth         2;
 
-    location =/bwhc/system/api/ {
+    location =/bwhc/peer2peer/ {
+      proxy_pass http://BACKEND_HOST:PORT;
+    }
+    
+    location =/bwhc/etl/ {
       proxy_pass http://BACKEND_HOST:PORT;
     }
 
@@ -192,10 +212,14 @@ http {
 
     # ...
 
-    # Ensure that all calls to System API endpoints
+    # Ensure that all calls to Peer-to-peer or ETL API endpoints
     # are directed to mutual SSL reverse proxy above
-    location /bwhc/system/api {
-      return 308 https://localhost:443/bwhc/system/api;
+    location /bwhc/peer2peer/ {
+      return 308 https://localhost:8443/bwhc/peer2peer/;
+    }
+    
+    location /bwhc/etl/ {
+      return 308 https://localhost:8443/bwhc/etl/;
     }
 
     # ...
@@ -227,12 +251,12 @@ http {
     proxy_ssl_session_reuse      on;
 
     # Remote server certificate verification
-    proxy_ssl_verify               off;   # Deactivated 
+    proxy_ssl_verify               off;  # on; # Uncomment Ca-Certificate Chain when activating
     # proxy_ssl_trusted_certificate  /path/to/ca_cert_chain.pem;
     # proxy_ssl_verify_depth         2;
 
     location /Freiburg {
-      proxy_pass  https://HOST:PORT/bwhc/system/api;  # TODO: Adapt HOST/PORT
+      proxy_pass  https://HOST:PORT/bwhc/peer2peer/api;  # TODO: Adapt HOST/PORT
     }
 
     location /Heidelberg {

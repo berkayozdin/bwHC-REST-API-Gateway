@@ -37,35 +37,35 @@ from where hypermedia links to the various accessible sub-APIs can be followed:
         "href": "/bwhc/catalogs/api/"      // URI (relative) to Catalogs API
     },
     ...
-    "systems-api": {
-        "href": "/bwhc/system/api/"        // URI (relative) to Systems API
+    "etl-api": {
+        "href": "/bwhc/etl/api/"           // URI (relative) to ETL API
     }
   }
 }
 ```
-For instance, following the link to the "__systems-api__"
+For instance, following the link to the "__etl-api__"
 
-__GET__ http://HOST:PORT/bwhc/system/api/
+__GET__ http://HOST:PORT/bwhc/etl/api/
 
 returns a description of Links/Actions available for this sub-API:
 
 ```javascript
 {
   "_actions": {
-    "upload-mtbfile": {                                           // Action: Upload MTBFile
-      "method": "POST"                                            // HTTP Method
-      "href": "/bwhc/system/api/data/upload",                     // URI (relative)
+    "upload-mtbfile": {                                    // Action: Upload MTBFile
+      "method": "POST"                                     // HTTP Method
+      "href": "/bwhc/etl/api/MTBFile",                     // URI (relative)
 
-      "formats": {                                                // Format specifications of request payloads for the Action
+      "formats": {                                         // Format specifications of request payloads for the Action
         "application/json": {
-          "href": "/bwhc/system/api/schema/upload-mtbfile"        // Link to JSON Schema specification for Content-Type 'application/json'
+          "href": "/bwhc/etl/api/schema/upload-mtbfile"    // Link to JSON Schema specification for Content-Type 'application/json'
         }
       },
     },
     ...
-    "delete-patient": {                                           // Action: Delete a Patient's data
+    "delete-patient": {                                    // Action: Delete a Patient's data
       "method": "DELETE",
-      "href": "/bwhc/system/api/data/Patient/{id}"
+      "href": "/bwhc/etl/api/Patient/{id}"
     },
   },
   "_links": {
@@ -90,12 +90,17 @@ __GET__ http://HOST:PORT/bwhc/fake/data/api/MTBFile
 -------
 ### 3.1 Data Upload/Deletion API for external Systems
 
+__IMPORTANT__: This sub-API is not secured via a user login mechanism. 
+Access to this URL path SHOULD be restricted in the reverse proxy.
+
+
 -------
 #### 3.1.1 Upload MTBFile
 
 Required header: "Content-Type: application/json"
 
-__POST__ http://HOST:PORT/bwhc/system/api/data/upload
+__POST__ http://HOST:PORT/bwhc/etl/api/MTBFile
+__POST__ http://HOST:PORT/bwhc/etl/api/data/upload
 
 __Response__:
 
@@ -110,7 +115,9 @@ __Response__:
 -------
 #### 3.1.2 Delete a Patient's data
 
-__DELETE__ http://HOST:PORT/bwhc/system/api/data/Patient/{PatientID}
+__DELETE__ http://HOST:PORT/bwhc/etl/api/Patient/{PatientID}
+
+__DELETE__ http://HOST:PORT/bwhc/etl/api/MTBFile/{PatientID}
 
 
 

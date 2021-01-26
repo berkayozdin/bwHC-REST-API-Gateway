@@ -1,4 +1,4 @@
-package de.bwhc.systems.api
+package de.bwhc.etl.api
 
 
 import de.bwhc.rest.util.sapphyre._
@@ -21,7 +21,7 @@ object JsonSchemas extends JsonSchemas
 
 
 
-trait SystemHypermedia
+trait ETLHypermedia
 {
 
   import Relations._
@@ -31,7 +31,7 @@ trait SystemHypermedia
   import JsonSchemas._
 
 
-  private val BASE_URI = "/bwhc/system/api"
+  private val BASE_URI = "/bwhc/etl/api"
 
   
   val ApiBaseLink =
@@ -39,17 +39,13 @@ trait SystemHypermedia
 
 
   private val UploadMTBFile =
-    "upload-mtbfile" -> Action(POST -> s"$BASE_URI/data/upload")  //TODO: format
+//    "upload-mtbfile" -> Action(POST -> s"$BASE_URI/data/upload")
+    "upload-mtbfile" -> Action(POST -> s"$BASE_URI/MTBFile")
                           .withFormats(APPLICATION_JSON -> Link(s"$BASE_URI/schema/upload-mtbfile"))
 
   private val DeletePatient =
-    "delete-patient" -> Action(Method.DELETE -> s"$BASE_URI/data/Patient/{id}")
-
-  private val PeerToPeerQuery =
-    "peer2peer-query" -> Action(POST -> s"$BASE_URI/peer2peer/query")
-
-  private val PeerToPeerLocalQCReport =
-    "peer2peer-local-report" -> Action(GET -> s"$BASE_URI/peer2peer/LocalQCReport")
+//    "delete-patient-data" -> Action(Method.DELETE -> s"$BASE_URI/data/Patient/{id}")
+    "delete-patient-data" -> Action(Method.DELETE -> s"$BASE_URI/Patient/{id}")
 
 
   private val schemas =
@@ -57,7 +53,7 @@ trait SystemHypermedia
       UploadMTBFile._1 -> JsValueSchema[MTBFile]
     )
 
-  def schemaFor(rel: String) = //: Option[JsValue] =
+  def schemaFor(rel: String) =
     schemas.get(rel)
 
 
@@ -67,11 +63,9 @@ trait SystemHypermedia
       .withLinks(SELF -> ApiBaseLink)
       .withActions(
         UploadMTBFile,
-        DeletePatient,
-        PeerToPeerQuery,
-        PeerToPeerLocalQCReport
+        DeletePatient
       )
 
 
 }
-object SystemHypermedia extends SystemHypermedia
+object ETLHypermedia extends ETLHypermedia

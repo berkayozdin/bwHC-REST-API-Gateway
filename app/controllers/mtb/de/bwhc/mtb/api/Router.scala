@@ -77,7 +77,7 @@ extends SimpleRouter
     case GET(p"/query")                            => queryController.QueryApi
 
     case GET(p"/query/schema/$rel")                => queryController.Action {
-                                                        QueryHyperResources.schema(rel)
+                                                        QueryHypermedia.schema(rel)
                                                           .map(Ok(_))
                                                           .getOrElse(NotFound)
                                                       }

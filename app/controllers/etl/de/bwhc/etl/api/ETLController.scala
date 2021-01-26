@@ -1,4 +1,4 @@
-package de.bwhc.systems.api
+package de.bwhc.etl.api
 
 
 
@@ -28,7 +28,6 @@ import de.bwhc.mtb.data.entry.dtos.{
 }
 import de.bwhc.mtb.data.entry.dtos.Patient
 import de.bwhc.mtb.data.entry.api.MTBDataService
-import de.bwhc.mtb.query.api._
 
 
 import cats.data.{
@@ -40,13 +39,12 @@ import cats.syntax.either._
 
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
-import de.bwhc.services.{WrappedDataService,WrappedQueryService}
+import de.bwhc.services.WrappedDataService
 
 
 class SystemAgentController @Inject()(
   val controllerComponents: ControllerComponents,
-  val dataService: WrappedDataService,
-  val queryService: WrappedQueryService
+  val dataService: WrappedDataService
 )(
   implicit ec: ExecutionContext
 )
@@ -116,52 +114,5 @@ with RequestOps
      }
   }
 
-
-  //---------------------------------------------------------------------------
-  // Peer-to-peer operations
-  //---------------------------------------------------------------------------
-
-  private val BWHC_SITE_ORIGIN  = "bwhc-site-origin"
-  private val BWHC_QUERY_USERID = "bwhc-query-userid"
-
-
-  def getLocalQCReport: Action[AnyContent] = 
-    Action.async {
-
-      request =>
-
-      //TODO: get originating ZPM and Querier from request
-      
-//      val querier = Querier("TODO")
-//      val origin  = ZPM("TODO")
-
-      val result =
-        for {
-          origin  <- request.headers.get(BWHC_SITE_ORIGIN).map(ZPM(_))
-          querier <- request.headers.get(BWHC_QUERY_USERID).map(Querier(_))
-          res =
-            for {
-              qc      <- queryService.instance.getLocalQCReportFor(origin,querier)
-              outcome =  qc.leftMap(List(_))
-                           .leftMap(Outcome.fromErrors)
-            } yield outcome.toJsonResult
-        
-        } yield res
-
-      result.getOrElse(
-        Future.successful(BadRequest(s"Missing Header(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID"))
-      )
-
-    }
- 
-
-  def processPeerToPeerQuery: Action[AnyContent] = 
-    JsonAction[PeerToPeerQuery]{
-      query =>
-        queryService.instance.resultsOf(query)
-          .map(SearchSet(_))
-          .map(Json.toJson(_))
-          .map(Ok(_))
-    }
 
 }
