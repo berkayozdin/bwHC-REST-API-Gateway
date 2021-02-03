@@ -44,12 +44,16 @@ extends SimpleRouter
     case GET(p"/data-quality/patients")                         => dataController.patientsForQC
     case GET(p"/data-quality/patients/$id/mtbfile")             => dataController.mtbfile(id)
     case GET(p"/data-quality/patients/$id/mtbfileview")         => dataController.mtbfileView(id)
+    case GET(p"/data-quality/mtbfile/$id")                      => dataController.mtbfile(id)
+    case GET(p"/data-quality/mtbfileview/$id")                  => dataController.mtbfileView(id)
     case GET(p"/data-quality/patients/$id/data-quality-report") => dataController.dataQualityReport(id)
+    case GET(p"/data-quality/data-quality-report/$id")          => dataController.dataQualityReport(id)
 
     //----------------------
     //TODO: Remove
     case GET(p"/data/qc/Patient")                  => dataController.patientsForQC
     case GET(p"/data/MTBFile/$id")                 => dataController.mtbfile(id)
+    case GET(p"/data/MTBFileView/$id")             => dataController.mtbfileView(id)
     case GET(p"/data/DataQualityReport/$id")       => dataController.dataQualityReport(id)
     //----------------------
 
@@ -92,16 +96,18 @@ extends SimpleRouter
     case GET(p"/query/$id/molecular-therapies")     => queryController.molecularTherapiesFrom(Query.Id(id))
     case GET(p"/query/$id/ngs-summaries")           => queryController.ngsSummariesFrom(Query.Id(id))
     case GET(p"/query/$id/mtbfiles/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
+    case GET(p"/query/$id/mtbfileViews/$patId")     => queryController.mtbfileViewFrom(Query.Id(id),patId)
+    case GET(p"/query/$id")                         => queryController.query(Query.Id(id))
 
 
     //----------------------
     //TODO: Remove
-    case GET(p"/query/$id")                        => queryController.query(Query.Id(id))
     case GET(p"/query/$id/Patient")                => queryController.patientsFrom(Query.Id(id))
     case GET(p"/query/$id/TherapyRecommendation")  => queryController.therapyRecommendationsFrom(Query.Id(id))
     case GET(p"/query/$id/MolecularTherapy")       => queryController.molecularTherapiesFrom(Query.Id(id))
     case GET(p"/query/$id/NGSSummary")             => queryController.ngsSummariesFrom(Query.Id(id))
     case GET(p"/query/$id/MTBFile/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
+    case GET(p"/query/$id/MTBFileView/$patId")     => queryController.mtbfileViewFrom(Query.Id(id),patId)
     //----------------------
 
 

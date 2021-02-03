@@ -21,6 +21,12 @@ object syntax
     def withEmbedded[R](rel: String, r: R)(implicit emb: R IsIn Embeddable) =
       Resource(t).withEmbedded(rel,r)
 
+/*
+    def asHyperResource[R <: Resource[T,_,_]](
+      implicit hyper: Hyper[T,R]
+    ): R = hyper(t)
+*/
+
   }
 
 

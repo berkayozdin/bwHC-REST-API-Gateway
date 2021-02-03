@@ -27,6 +27,8 @@ import de.bwhc.mtb.data.entry.dtos.{
   Patient,
   ZPM
 }
+import de.bwhc.mtb.data.entry.views.MTBFileView
+
 import de.bwhc.mtb.query.api._
 
 import de.bwhc.user.api.User
@@ -310,8 +312,25 @@ with AuthenticationOps[UserWithRoles]
   ): Action[AnyContent] = 
     AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
       .async {
-        OptionT(service mtbFileFrom (queryId,Patient.Id(patId)))
+        OptionT(service.mtbFileFrom(queryId,Patient.Id(patId)))
           .map(HyperMTBFile(_)(queryId))
+          .map(Json.toJson(_))
+          .fold(
+            NotFound(s"Invalid Query ID ${queryId.value} or Patient ID $patId")
+          )(       
+            Ok(_)
+          )      
+      }
+
+
+  def mtbfileViewFrom(
+    queryId: Query.Id,
+    patId: String
+  ): Action[AnyContent] = 
+    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+      .async {
+        OptionT(service.mtbFileViewFrom(queryId,Patient.Id(patId)))
+          .map(HyperMTBFileView(_)(queryId))
           .map(Json.toJson(_))
           .fold(
             NotFound(s"Invalid Query ID ${queryId.value} or Patient ID $patId")

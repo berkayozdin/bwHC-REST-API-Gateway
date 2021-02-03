@@ -62,7 +62,7 @@ trait QuerySchemas
   implicit val patientViewSchema = Json.schema[PatientView]
   implicit val ngsSummarySchema  = Json.schema[NGSSummary]
   implicit val thRecommSchema    = Json.schema[TherapyRecommendation]
-  implicit val molThViewSchema   = Json.schema[MolecularTherapyView]
+//  implicit val molThViewSchema   = Json.schema[MolecularTherapyView]
 
 }
 object QuerySchemas extends QuerySchemas

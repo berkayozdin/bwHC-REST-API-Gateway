@@ -24,9 +24,6 @@ case class Table[T] private (
 object Table
 {
 
-  import de.bwhc.rest.util.sapphyre.Resource
-
-
   case class ColumnMapping
   (
     value: String,
@@ -37,14 +34,16 @@ object Table
 
   object Header 
   {
-
+/*
     def apply[T](
       implicit
       nr: T <:!< Resource[T,_,_],
       ht: Header[T]
     ) = ht
+*/
 
-    implicit def apply[T, R <: Resource[T,_,_]](
+//    implicit def apply[T, R <: Resource[T,_,_]](
+    implicit def apply[T, R](
       implicit
       ht: Header[T]
     ): Header[R] =

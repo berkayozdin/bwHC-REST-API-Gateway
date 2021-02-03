@@ -27,7 +27,9 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
 
     case POST(p"/query")           => controller.processQuery
-    case GET(p"/LocalQCReport")    => controller.getLocalQCReport
+
+    case POST(p"/LocalQCReport")   => controller.getLocalQCReport
+//    case GET(p"/LocalQCReport")    => controller.getLocalQCReport
 
   }
 

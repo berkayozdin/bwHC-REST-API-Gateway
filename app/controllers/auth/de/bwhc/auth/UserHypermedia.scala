@@ -99,13 +99,13 @@ trait UserHypermedia
 
   import de.bwhc.util.syntax.piping._  
 
-  def UserResource(
-    user: User
-  )(
+  implicit def userWithHypermedia(
     implicit
     agent: UserWithRoles,
     ec: ExecutionContext
   ) = {
+
+    (user: User) =>
 
     val hyperUser =
       user.withLinks(
@@ -148,17 +148,17 @@ trait UserHypermedia
     )
 
 
-  def UsersResource[C[X] <: Iterable[X]](
-    users: C[User]
-  )(
+  implicit def usersWithHypermedia[C[X] <: Iterable[X]](
     implicit
     agent: UserWithRoles,
     ec: ExecutionContext
   ) = {
 
+    (users: C[User]) =>
+
     for {
       items <-
-        Future.sequence(users.map(UserResource(_)))
+        Future.sequence(users.map(Hyper(_)))
 
       hyperTable = 
         Table(items)

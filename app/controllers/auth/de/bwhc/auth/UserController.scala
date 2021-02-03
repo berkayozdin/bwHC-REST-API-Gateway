@@ -50,6 +50,7 @@ import de.bwhc.auth.core._
 import de.bwhc.auth.api._
 import de.bwhc.services.{WrappedSessionManager,WrappedUserService}
 
+import de.bwhc.rest.util.sapphyre.Hyper
 import de.bwhc.rest.util.sapphyre.playjson._
 
 
@@ -161,7 +162,7 @@ with AuthenticationOps[UserWithRoles]
         result  <-  optUser.fold(
                        Future.successful(NotFound(s"Invalid User"))
                      )(
-                       UserResource(_)
+                       user => Hyper(user)
                          .map(toJson(_))
                          .map(Ok(_))
                      )
@@ -176,7 +177,6 @@ with AuthenticationOps[UserWithRoles]
         req =>
 
         (errorsOrJson[UserCommand.Create] thenApply (process(_)(req.user) )).apply(req)
-//        errorsOrJson[UserCommand.Create] thenApply process
       }
 
   def getAll: Action[AnyContent] =
@@ -187,7 +187,7 @@ with AuthenticationOps[UserWithRoles]
 
       for {
         users   <- userService.instance.getAll      
-        result  <- UsersResource(users)
+        result  <- Hyper(users)
                      .map(toJson(_))  
       } yield Ok(result)
 
@@ -205,7 +205,7 @@ with AuthenticationOps[UserWithRoles]
           result <- user.fold(
                       Future.successful(NotFound(s"Invalid UserId $id"))
                     )(
-                      UserResource(_)
+                      user => Hyper(user)
                         .map(toJson(_))
                         .map(Ok(_))
                     )
@@ -259,11 +259,11 @@ with AuthenticationOps[UserWithRoles]
         response.fold(
           errs => Future.successful(UnprocessableEntity(toJson(Outcome.fromErrors(errs.toList)))),
           {
-            case UserEvent.Created(user,_)   => UserResource(user)
+            case UserEvent.Created(user,_)   => Hyper(user)
                                                   .map(toJson(_))
                                                   .map(Created(_))
                                              
-            case UserEvent.Updated(user,_)   => UserResource(user)
+            case UserEvent.Updated(user,_)   => Hyper(user)
                                                   .map(toJson(_))
                                                   .map(Ok(_))
 

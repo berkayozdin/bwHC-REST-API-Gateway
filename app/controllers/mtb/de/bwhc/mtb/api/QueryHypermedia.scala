@@ -21,6 +21,7 @@ import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
   Patient
 }
+import de.bwhc.mtb.data.entry.views.MTBFileView
 
 
 
@@ -47,6 +48,8 @@ trait QueryHypermedia
   private val RECOMMENDATIONS = "therapy-recommendations"
   private val THERAPIES       = "molecular-therapies"
   private val MTBFILE         = "mtbfile"
+  private val MTBFILEVIEW     = "mtbfileView"
+
 
 
   val ApiBaseLink =
@@ -88,6 +91,9 @@ trait QueryHypermedia
   private def MTBFileLink(queryId: Query.Id, patId: Patient.Id) = 
     Link(s"$BASE_URI/${queryId.value}/mtbfiles/${patId.value}")
 
+  private def MTBFileViewLink(queryId: Query.Id, patId: Patient.Id) = 
+    Link(s"$BASE_URI/${queryId.value}/mtbfileViews/${patId.value}")
+
 
 
   private val schemas =
@@ -96,11 +102,6 @@ trait QueryHypermedia
       UPDATE       -> JsValueSchema[QueryOps.Command.Update],
       APPLY_FILTER -> JsValueSchema[QueryOps.Command.ApplyFilter],
       PATIENTS     -> JsValueSchema[PatientView],
-/*
-       -> JsValueSchema[NGSSummary],
-       -> JsValueSchema[TherapyRecommendation],
-       -> JsValueSchema[MolecularTherapyView] 
-*/
     )
 
 
@@ -159,7 +160,8 @@ trait QueryHypermedia
       BASE       -> ApiBaseLink,
       QUERY      -> QueryLink(queryId),
       COLLECTION -> PatientsLink(queryId),
-      MTBFILE    -> MTBFileLink(queryId,patient.id)
+      MTBFILE    -> MTBFileLink(queryId,patient.id),
+      MTBFILEVIEW -> MTBFileViewLink(queryId,patient.id)
     )
 
   }
@@ -176,6 +178,20 @@ trait QueryHypermedia
       QUERY -> QueryLink(queryId)
     )
   }
+
+
+  def HyperMTBFileView(
+    mtbfile: MTBFileView
+  )(
+    queryId: Query.Id
+  ) = {
+    mtbfile.withLinks(
+      BASE  -> ApiBaseLink,
+      SELF  -> MTBFileLink(queryId,mtbfile.patient.id),
+      QUERY -> QueryLink(queryId)
+    )
+  }
+
 
 
 }

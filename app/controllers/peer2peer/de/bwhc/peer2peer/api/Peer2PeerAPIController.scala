@@ -69,6 +69,26 @@ with RequestOps
 
       val result =
         for {
+          form    <- request.body.asFormUrlEncoded
+          origin  <- form.get(BWHC_SITE_ORIGIN).flatMap(_.headOption).map(ZPM(_))
+          querier <- form.get(BWHC_QUERY_USERID).flatMap(_.headOption).map(Querier(_))
+          res =
+            for {
+              qc      <- queryService.instance.getLocalQCReportFor(origin,querier)
+              outcome =  qc.leftMap(List(_))
+                           .leftMap(Outcome.fromErrors)
+            } yield outcome.toJsonResult
+        
+        } yield res
+
+      result.getOrElse(
+        Future.successful(
+          BadRequest(s"Missing Form Parameter(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID")
+        )
+      )
+/*
+      val result =
+        for {
           origin  <- request.headers.get(BWHC_SITE_ORIGIN).map(ZPM(_))
           querier <- request.headers.get(BWHC_QUERY_USERID).map(Querier(_))
           res =
@@ -85,7 +105,7 @@ with RequestOps
           BadRequest(s"Missing Header(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID")
         )
       )
-
+*/
     }
  
 

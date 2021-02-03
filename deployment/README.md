@@ -129,8 +129,11 @@ Access to these APIs thus MUST be restricted otherwise, e.g. using mutual SSL.
 
 The APIs in question are:
 
-ETL-API for local data export: HOST:PORT/bwhc/etl/api/
-Peer-to-peer API: HOST:PORT/bwhc/peer2peer/api/
+| API | Base URL |
+| ---- | -------------|
+| ETL API (local data export) | HOST:PORT/bwhc/etl/api/ |
+| Peer-to-peer API | HOST:PORT/bwhc/peer2peer/api/ |
+
 
 There are __2 possible ways__ to configure Nginx to secure these APIs endpoints via mutual SSL.
 
