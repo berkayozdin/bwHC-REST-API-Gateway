@@ -50,14 +50,17 @@ trait DataQualityHypermedia
 
   def HyperPatient(
     pat: PatientDataInfo
-//    pat: Patient
-  ) = 
+  ) = {
+//  implicit val HyperPatient = {
+
+//    (pat: PatientDataInfo) =>
+
     pat.withLinks(
       COLLECTION          -> PatientsLink,
       MTBFILE             -> MTBFileLink(pat.id),
       DATA_QUALITY_REPORT -> DataQualityReportLink(pat.id)
     )
-
+  }
 
   def HyperMTBFile(
     mtbfile: MTBFile
@@ -92,7 +95,6 @@ trait DataQualityHypermedia
 
 
   def HyperPatients[C[X] <: Iterable[X]](
-//    pats: C[Patient]
     pats: C[PatientDataInfo]
   ) =
     Table(pats.map(HyperPatient))

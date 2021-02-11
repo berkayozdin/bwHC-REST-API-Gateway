@@ -1,8 +1,10 @@
 package de.bwhc.rest.util.sapphyre
 
 
-import scala.concurrent.{ExecutionContext,Future}
 import shapeless.HList
+
+
+import cats.Id
 
 
 object Hyper
@@ -14,6 +16,7 @@ object Hyper
     implicit
     f: T => F[Resource[R,Meta,Embedded]]
   ) = f(t)
+
 
 }
 

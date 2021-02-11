@@ -15,13 +15,18 @@ import de.bwhc.util.syntax.piping._
 import de.bwhc.mtb.query.api.{
   PatientView,
   Query,
-  QueryOps
+  QueryOps,
+  NGSSummary
 }
 import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
   Patient
 }
-import de.bwhc.mtb.data.entry.views.MTBFileView
+import de.bwhc.mtb.data.entry.views.{
+  MTBFileView,
+  TherapyRecommendationView,
+  MolecularTherapyView
+}
 
 
 
@@ -191,6 +196,37 @@ trait QueryHypermedia
       QUERY -> QueryLink(queryId)
     )
   }
+
+
+  def HyperNGSSummary(
+    ngs: NGSSummary
+  )(
+    queryId: Query.Id
+  ) = {
+    ngs.withLinks(
+      BASE        -> ApiBaseLink,
+      COLLECTION  -> NGSSummariesLink(queryId),
+      MTBFILE     -> MTBFileLink(queryId,ngs.patient),
+      MTBFILEVIEW -> MTBFileViewLink(queryId,ngs.patient),
+      QUERY       -> QueryLink(queryId)
+    )
+  }
+
+
+  def HyperTherapyRecommendation(
+    th: TherapyRecommendationView
+  )(
+    queryId: Query.Id
+  ) = {
+    th.withLinks(
+      BASE        -> ApiBaseLink,
+      COLLECTION  -> RecommendationsLink(queryId),
+      MTBFILE     -> MTBFileLink(queryId,th.patient),
+      MTBFILEVIEW -> MTBFileViewLink(queryId,th.patient),
+      QUERY       -> QueryLink(queryId)
+    )
+  }
+
 
 
 

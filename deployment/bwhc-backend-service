@@ -7,7 +7,7 @@ source ./config
 ###############################################################################
 ###############################################################################
 
-BWHC_APP_DIR="$BASE_DIR/BWHCAPPPLACEHOLDER"
+BWHC_APP_DIR="$BWHC_BASE_DIR/BWHCAPPPLACEHOLDER"
 
 
 case "$1" in
@@ -25,25 +25,56 @@ case "$1" in
       echo " Else delete obsolete RUNNING_PID file"
       echo "-------------------------------------------------------------------------"
 
+      exit 1
+
     else
+
+      if [ "$ZPM_SITE" = "TODO" ]; then
+        echo "ERROR: Configure variable ZPM_SITE correctly!"
+        exit 1
+      fi 
+
+      if [ "$BWHC_DATA_ENTRY_DIR" = "TODO" ]; then
+        echo "ERROR: Configure variable BWHC_DATA_ENTRY_DIR correctly!"
+        exit 1
+      fi 
+
+      if [ "$BWHC_QUERY_DATA_DIR" = "TODO" ]; then
+        echo "ERROR: Configure variable BWHC_QUERY_DATA_DIR correctly!"
+        exit 1
+      fi 
+
+      if [ "$BWHC_USER_DB_DIR" = "TODO" ]; then
+        echo "ERROR: Configure variable BWHC_USER_DB_DIR correctly!"
+        exit 1
+      fi 
+
+
 
       echo "-------------------------------------------------------------------------"
       echo " Starting bwHealthCloud Backend Service" $ZPM_SITE
       echo "-------------------------------------------------------------------------"
 
+
       #N_RANDOM_FILES=50    
       #-Dbwhc.query.data.generate=$N_RANDOM_FILES \
  
+ 
+      if [ -n "$N_RANDOM_FILES" ] && (( $N_RANDOM_FILES > 2000 )); then
+        echo "ERROR: Random data generation utility is for TESTING purposes only! Reduce N_RANDOM_FILES"
+        exit 1
+      fi 
+
+
       cp logback.xml $BWHC_APP_DIR/conf/
       
       $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
-        -Dconfig.file=$BASE_DIR/production.conf \
+        -Dconfig.file=$BWHC_BASE_DIR/production.conf \
         -Dbwhc.zpm.site=$ZPM_SITE \
         -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
         -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
         -Dbwhc.user.data.dir=$BWHC_USER_DB_DIR \
-        -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG \
-        -Dhttp.port=$BWHC_PORT &
+        -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG &
       
       sleep 1s
      
@@ -83,6 +114,8 @@ case "$1" in
 
   *)
      echo 'Arguments must be one of { start | stop }'
+
+     exit 1
   ;;
 
 

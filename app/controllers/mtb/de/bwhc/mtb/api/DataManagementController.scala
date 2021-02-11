@@ -27,6 +27,7 @@ import play.api.mvc.{
 import play.api.libs.json.{Json,JsObject}
 import Json.toJson
 
+import cats.Id
 import cats.syntax.either._
 
 import de.bwhc.mtb.data.entry.dtos.{
@@ -43,6 +44,7 @@ import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
 import de.bwhc.rest.util.cphl.syntax._
 
+import de.bwhc.rest.util.sapphyre.Hyper
 import de.bwhc.rest.util.sapphyre.playjson._
 
 import de.bwhc.auth.core._
@@ -122,6 +124,7 @@ with AuthenticationOps[UserWithRoles]
       .async {
         for {
           pats      <- dataService.instance.patientsWithIncompleteData 
+//          hyperPats =  Hyper(pats)
           hyperPats =  HyperPatients(pats)
           json      =  toJson(hyperPats)   
         } yield Ok(json)

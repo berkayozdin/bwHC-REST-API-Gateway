@@ -19,47 +19,80 @@ foo@bar: ./install.sh /path/to/target/dir
 
 The target directory is created if non-existent.
 
-The installation script copies all necessary files to the target directory. In case that configuration files from a previous installation are already present, the previous files are __NOT__ overwritten.
+The installation script copies all necessary files to the target directory.
+In case that configuration files from a previous installation are already present, the previous files are __NOT__ overwritten.
 
 
 --------
 ## 2. Configuration/Setup: 
 
 --------
-### 2.1 Backend Application Parameters: 
+### 2.1 Basic Backend Application Configuration: 
 
-In Bash-script __config__, set the parameters marked with TODO
+The backend application is configured via environment variables defined in the script file __config__.
+
+### 2.1.2 Local Site and Persistence:
+
+Configure the __local site name__ and the directories for __data storage__:
 
 ```bash
-
-export BASE_DIR=$(pwd)            # Optional: Adapt BASE_DIR
-                                  
-export BWHC_PORT=9000             # Optional: Adapt HTTP Port
-
-export BWHC_CONNECTOR_CONFIG=$BASE_DIR/bwhcConnectorConfig.xml
-                                  
+...                                
 export ZPM_SITE=...               # TODO: Set local ZPM Site name
 
-export BWHC_USER_DB_DIR=...       # TODO: Set absolute path to dir where User Service stores data
+export BWHC_USER_DB_DIR=...       # ABSOLUTE path to dir where User Service stores data
 
-export BWHC_DATA_ENTRY_DIR=...    # TODO: Set absolute path to dir where Data Entry/Validation Service stores data
+export BWHC_DATA_ENTRY_DIR=...    # ABSOLUTE path to dir where Data Entry/Validation Service stores data
 
-export BWHC_QUERY_DATA_DIR=...    # TODO: Set absolute path to dir where Query/Reporting Service stores data
-
+export BWHC_QUERY_DATA_DIR=...    # ABSOLUTE path to dir where Query/Reporting Service stores data
 ```
 
 -------
 ### 2.2 HTTP(S)/Communication Setup:
 
-#### 2.2.1 Backend API Access:
+#### 2.2.1 Play Application HTTP Server:
 
-Valid hostnames/IPs under which the Backend REST API server can be addressed must be configured in __production.conf__ :
+By default, the Play HTTP Server will listen to __port 9000__ and address __0.0.0.0__.
+These settings can be overriden by uncommenting and adapting the corresponding environment variables in __config__
+```bash
+...
+export PLAY_HTTP_PORT=...
+export PLAY_HTTP_ADDRESS=...
+...
+```
+#### 2.2.1.1 Application Secret Key:
+
+The Play HTTP Server requires an [application secret key](https://www.playframework.com/documentation/2.8.x/ApplicationSecret#The-Application-Secret). This must be a random String of at least 32 characters, which can be generated for instance by <code>head -c 64 /dev/urandom | base64</code>.
+
+
+The application secret key can be configured either in __config__, e.g.:
+
+```bash
+...
+# static
+export APPLICATION_SECRET=secret...
+
+# dynamic
+export APPLICATION_SECRET=$(head -c 64 /dev/urandom | base64)
+...
+
+```
+or directly in __production.conf__, in which case the pre-defined setting using environment variable APPLICATION_SECRET should be removed:
+```
+...
+http.secret.key = "secret..."
+...
+```
+
+#### 2.2.1.2 Allowed Hosts:
+
+If the Play Application won't be addressed by a reverse proxy forwarding to 'localhost' (see 2.2.3.1) but by an _explicit_ IP and/or hostname,
+these "allowed hosts" must be configured in __production.conf__ :
 
 ```
   filters {
     ...
     hosts {
-      allowed = ["localhost",...] # TODO: Add IP and/or domain name of host VM
+      allowed = ["localhost",...] # TODO: Add IP and/or hostname
     }
   }
 ```
@@ -95,9 +128,18 @@ Here's a sample configuration to set up NGINX as reverse proxy to handle SSL-Ter
 ```nginx
 http {
   # ...
+  
+  ssl_protocols TLSv1.3;
+  ssl_early_data off;
+  ssl_prefer_server_ciphers on;
+  
+  # BSI TR-02102-2 recommends the brainpool curves
+  # secp256r1 = prime256v1, see https://www.ietf.org/rfc/rfc5480.txt
+  ssl_ecdh_curve 'brainpoolP384r1:secp384r1:brainpoolP256r1:prime256v1:brainpoolP512r1';
 
-  ssl_certificate      /path/to/server_cert.pem;
+  ssl_certificate      /path/to/server_cert.pem; # File should contain the intermediary certificates from which server certificate
   ssl_certificate_key  /path/to/server_key.key;
+    
 
   server {
 
@@ -125,11 +167,11 @@ See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed 
 
 __IMPORTANT__:
 The bwHC sub-APIs exposed to "system agents" are __NOT SECURED__ by a login-based authentication mechanism.
-Access to these APIs thus MUST be restricted otherwise, e.g. using mutual SSL.
+Access to these APIs thus __MUST__ be restricted using mutual TLS.
 
 The APIs in question are:
 
-| API | Base URL |
+| API | URI Path |
 | ---- | -------------|
 | ETL API (local data export) | HOST:PORT/bwhc/etl/api/ |
 | Peer-to-peer API | HOST:PORT/bwhc/peer2peer/api/ |
@@ -192,8 +234,7 @@ http {
 
     # ...
 
-    # Setting ssl_trusted_certificate seems more fitting than ssl_client_certificate below,
-    # but throws an error
+    # Setting ssl_trusted_certificate seems more fitting than ssl_client_certificate below, but throws an error
     #ssl_trusted_certificate  /path/to/ca-cert.pem;  # Path to trusted CA certificate
     ssl_client_certificate   /path/to/ca-cert.pem;   # Path to trusted CA certificate
     ssl_verify_client        on;
@@ -231,7 +272,7 @@ http {
 ```
 
 
-##### 2.2.3.3 Set up NGINX as Proxy for bwHC peers:
+#### 2.2.3.3 Set up NGINX as Proxy for bwHC peers:
 
 Here's a sample configuration to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
 
@@ -244,6 +285,8 @@ http {
  
     listen 127.0.0.1:8080;   # Adapt as required
 
+    proxy_ssl_protocols TLSv1.3;
+
     #IP-Filter
     allow  127.0.0.1;        # This proxy should only accept requests from local bwHC backend
     deny   all;
@@ -254,9 +297,9 @@ http {
     proxy_ssl_session_reuse      on;
 
     # Remote server certificate verification
-    proxy_ssl_verify               off;  # on; # Uncomment Ca-Certificate Chain when activating
-    # proxy_ssl_trusted_certificate  /path/to/ca_cert_chain.pem;
-    # proxy_ssl_verify_depth         2;
+    proxy_ssl_verify               on; 
+    proxy_ssl_trusted_certificate  /path/to/ca_cert_chain.pem; # File ca_cert_chain.pem must contain the concatenated certificate chain
+    proxy_ssl_verify_depth         2;
 
     location /Freiburg {
       proxy_pass  https://HOST:PORT/bwhc/peer2peer/api;  # TODO: Adapt HOST/PORT

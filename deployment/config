@@ -1,27 +1,42 @@
 #!/bin/bash
 
 
-#Optional TODO: Adapt BASE_DIR
-export BASE_DIR=$(pwd)
+#-----------------------------------------------------------------------------
+# Play Framework HTTP-Server Configuration variables
+#-----------------------------------------------------------------------------
+
+# Uncomment to override default HTTP server port '9000' and address '0.0.0.0'
+#export PLAY_HTTP_PORT=
+#export PLAY_HTTP_ADDRESS=
 
 
-#Optional TODO: Adapt PORT
-export BWHC_PORT=9000
+# APPLICATION_SECRET MUST be a random String of at least 32 characters
+export APPLICATION_SECRET=TODO
+
+#-----------------------------------------------------------------------------
 
 
-#TODO adapt ZPM site name
-export ZPM_SITE=Tübingen
+#-----------------------------------------------------------------------------
+# bwHC Configuration Variables
+#-----------------------------------------------------------------------------
+
+# Optional TODO: Adapt BASE_DIR
+export BWHC_BASE_DIR=$(pwd)
 
 
-#TODO Adapt path to bwHCConnector config file
-export BWHC_CONNECTOR_CONFIG=$BASE_DIR/bwhcConnectorConfig.xml
+#TODO: adapt ZPM site name
+export ZPM_SITE=TODO
+
+
+# Optional: Adapt path to bwHCConnector config file
+export BWHC_CONNECTOR_CONFIG=$BWHC_BASE_DIR/bwhcConnectorConfig.xml
 
 
 #TODO adapt data directories
-export BWHC_DATA_ENTRY_DIR=/tmp/bwhc_data_entry
+export BWHC_DATA_ENTRY_DIR=TODO
 
-export BWHC_QUERY_DATA_DIR=/tmp/bwhc_query_data
+export BWHC_QUERY_DATA_DIR=TODO
 
-export BWHC_USER_DB_DIR=/tmp/bwhc_users
+export BWHC_USER_DB_DIR=TODO
 
-
+#-----------------------------------------------------------------------------
