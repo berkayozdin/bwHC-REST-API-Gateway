@@ -39,12 +39,10 @@ trait ETLHypermedia
 
 
   private val UploadMTBFile =
-//    "upload-mtbfile" -> Action(POST -> s"$BASE_URI/data/upload")
     "upload-mtbfile" -> Action(POST -> s"$BASE_URI/MTBFile")
                           .withFormats(APPLICATION_JSON -> Link(s"$BASE_URI/schema/upload-mtbfile"))
 
   private val DeletePatient =
-//    "delete-patient-data" -> Action(Method.DELETE -> s"$BASE_URI/data/Patient/{id}")
     "delete-patient-data" -> Action(Method.DELETE -> s"$BASE_URI/Patient/{id}")
 
 

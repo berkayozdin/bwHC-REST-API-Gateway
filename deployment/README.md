@@ -1,8 +1,17 @@
 # bwHealthCloud Backend Manual
 
 
+
 -----
-## 1. Installation:
+## 1. Pre-requisites:
+
+* Java Runtime Environment (e.g. OpenJDK)
+
+* Nginx Web Server
+
+
+-----
+## 2. Installation:
 
 * Unzip application package
 
@@ -24,14 +33,14 @@ In case that configuration files from a previous installation are already presen
 
 
 --------
-## 2. Configuration/Setup: 
+## 3. Configuration/Setup: 
 
 --------
-### 2.1 Basic Backend Application Configuration: 
+### 3.1 Basic Backend Application Configuration: 
 
 The backend application is configured via environment variables defined in the script file __config__.
 
-### 2.1.2 Local Site and Persistence:
+### 3.1.2 Local Site and Persistence:
 
 Configure the __local site name__ and the directories for __data storage__:
 
@@ -47,9 +56,9 @@ export BWHC_QUERY_DATA_DIR=...    # ABSOLUTE path to dir where Query/Reporting S
 ```
 
 -------
-### 2.2 HTTP(S)/Communication Setup:
+### 3.2 HTTP(S)/Communication Setup:
 
-#### 2.2.1 Play Application HTTP Server:
+#### 3.2.1 Play Application HTTP Server:
 
 By default, the Play HTTP Server will listen to __port 9000__ and address __0.0.0.0__.
 These settings can be overriden by uncommenting and adapting the corresponding environment variables in __config__
@@ -59,7 +68,7 @@ export PLAY_HTTP_PORT=...
 export PLAY_HTTP_ADDRESS=...
 ...
 ```
-#### 2.2.1.1 Application Secret Key:
+#### 3.2.1.1 Application Secret Key:
 
 The Play HTTP Server requires an [application secret key](https://www.playframework.com/documentation/2.8.x/ApplicationSecret#The-Application-Secret). This must be a random String of at least 32 characters, which can be generated for instance by <code>head -c 64 /dev/urandom | base64</code>.
 
@@ -83,7 +92,7 @@ http.secret.key = "secret..."
 ...
 ```
 
-#### 2.2.1.2 Allowed Hosts:
+#### 3.2.1.2 Allowed Hosts:
 
 If the Play Application won't be addressed by a reverse proxy forwarding to 'localhost' (see 2.2.3.1) but by an _explicit_ IP and/or hostname,
 these "allowed hosts" must be configured in __production.conf__ :
@@ -100,7 +109,7 @@ these "allowed hosts" must be configured in __production.conf__ :
 See the [Play Framework Docs](https://www.playframework.com/documentation/2.8.x/AllowedHostsFilter#Allowed-hosts-filter) for details.
 
 
-#### 2.2.2 bwHC Node Peer-to-Peer Communication:
+#### 3.2.2 bwHC Node Peer-to-Peer Communication:
 
 URLs of other bwHC nodes are configured in __bwhcConnectorConfig.xml__:
 
@@ -163,7 +172,7 @@ http {
 See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed reference.
 
 
-#### 2.2.3.2 Set up NGINX to secure sub-APIs with Client Certificate Authentication (mutual TLS)
+#### 3.2.3.2 Set up NGINX to secure sub-APIs with Client Certificate Authentication (mutual TLS)
 
 __IMPORTANT__:
 The bwHC sub-APIs exposed to "system agents" are __NOT SECURED__ by a login-based authentication mechanism.
@@ -181,7 +190,7 @@ There are __2 possible ways__ to configure Nginx to secure these APIs endpoints 
 
 ##### Variant 1:
 
-In config from 2.2.3.1, add a 'location' to perform client verification specifically for calls to Peer-to-peer and/or ETL API URI:
+In config from 3.2.3.1, add a 'location' to perform client verification specifically for calls to Peer-to-peer and/or ETL API URI:
 
 ```nginx
 http {
@@ -212,7 +221,7 @@ http {
       proxy_pass http://BACKEND_HOST:PORT;
     }
 
-    # ... Rest from config from 2.2.3.1
+    # ... Rest from config from 3.2.3.1
     
   }
 }
@@ -272,7 +281,7 @@ http {
 ```
 
 
-#### 2.2.3.3 Set up NGINX as Proxy for bwHC peers:
+#### 3.2.3.3 Set up NGINX as Proxy for bwHC peers:
 
 Here's a sample configuration to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
 
@@ -328,7 +337,7 @@ The corresponding URL settings in __bwhcConnectorConfig.xml__ would then be:
 ```
 
 ------
-### 2.3 Logging Configuration (SLF4J):
+### 3.3 Logging Configuration (SLF4J):
 
 In __logback.xml__, set property __LOG_DIR__ to the desired logging output directory.
 Also uncomment the __FILE__ logging __appender__ and __appender-ref__. This activates logging to a daily changing log file.
@@ -375,7 +384,7 @@ See [SLF4J/Logback](http://logback.qos.ch/manual/configuration.html) reference f
 
 
 ------
-### 2.4 Random Data Generation Config:
+### 3.4 Random Data Generation Config:
 
 For test purposes, the system can be configured to be filled with randomly generated MTBFiles.
 
@@ -407,7 +416,7 @@ Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and incl
 ```
 
 -------
-## 3. Operation:
+## 4. Operation:
 
 Start/stop the backend service via Bash script __bwhc-backend-service__
 ```

@@ -2,7 +2,7 @@ package de.bwhc.mtb.api
 
 
 
-import java.time.LocalDate
+import java.time.{LocalDate,YearMonth}
 
 import scala.util.{
   Left,
@@ -68,9 +68,9 @@ final case class PatientWithStatus
 (
   id: Patient.Id,
   gender: Gender.Value,
-  birthDate: Option[LocalDate],
+  birthDate: Option[YearMonth],
   insurance: Option[HealthInsurance.Id],
-  dateOfDeath: Option[LocalDate],
+  dateOfDeath: Option[YearMonth],
   status: DataStatus.Value
 )
 object PatientWithStatus
@@ -87,6 +87,8 @@ object PatientWithStatus
         status
       )
   }
+
+  import de.bwhc.util.json.time._
 
   implicit val format = Json.format[PatientWithStatus]
 

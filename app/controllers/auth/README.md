@@ -58,6 +58,45 @@ __Response__: User in session
 }
 ```
 
+#### What functions do I have access to?
+
+__GET__ http://HOST:PORT/bwhc
+
+with Header: 'Authorization: Bearer _access_token_'
+
+
+__Response__: URLs to accessible links/actions
+
+```javascript
+{
+    "_actions": {
+        "logout": {
+            "href": "/bwhc/user/api/logout",
+            "method": "POST"
+        },
+        "whoami": {
+            "href": "/bwhc/user/api/whoami",
+            "method": "GET"
+        }
+    },
+    "_links": {
+        ...
+        "data-quality-api": {
+            "href": "/bwhc/mtb/api/data-quality/"
+        },
+        "etl-api": {
+            "href": "/bwhc/etl/api/"
+        },
+        "query-api": {
+            "href": "/bwhc/mtb/api/query/"
+        },
+        "reporting-api": {
+            "href": "/bwhc/mtb/api/reporting/"
+        },
+        ...
+    }
+}
+```
 
 #### Logout
 
