@@ -23,6 +23,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     case GET(p"/MTBFile")         => examples.mtbfile
 
+//    case GET(p"/fhir/MTBFile")    => examples.fhirMtbfile
 
   }
 

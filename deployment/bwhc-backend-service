@@ -1,7 +1,14 @@
 #!/bin/bash
 
 
-source ./config
+# Check if BWHC_BASE_DIR is already set
+if [ -z ${BWHC_BASE_DIR+x} ]; then
+  # assume we are in the correct working directory
+  source ./config
+else
+  source $BWHC_BASE_DIR/config
+fi
+
 
 
 ###############################################################################
@@ -13,8 +20,6 @@ BWHC_APP_DIR="$BWHC_BASE_DIR/BWHCAPPPLACEHOLDER"
 case "$1" in
 
   'start')
-
-    PID_FILE=$BWHC_APP_DIR/RUNNING_PID
 
     if [ -f "$PID_FILE" ]; then
 
@@ -65,11 +70,10 @@ case "$1" in
         exit 1
       fi 
 
-
-      cp logback.xml $BWHC_APP_DIR/conf/
-      
       $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
         -Dconfig.file=$BWHC_BASE_DIR/production.conf \
+        -Dlogger.file=$BWHC_BASE_DIR/logback.xml \
+        -Dpidfile.path=$PID_FILE \
         -Dbwhc.zpm.site=$ZPM_SITE \
         -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
         -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
@@ -87,8 +91,6 @@ case "$1" in
  
   'stop')
 
-    PID_FILE=$BWHC_APP_DIR/RUNNING_PID
- 
     if [ -f "$PID_FILE" ]; then
 
       PID=$(cat $PID_FILE)

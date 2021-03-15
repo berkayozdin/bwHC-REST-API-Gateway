@@ -13,6 +13,9 @@
 # APPLICATION_SECRET MUST be a random String of at least 32 characters
 export APPLICATION_SECRET=TODO
 
+# Location of the PID-File
+export PID_FILE="/tmp/bwhc-backend.pid"
+
 #-----------------------------------------------------------------------------
 
 
@@ -20,8 +23,11 @@ export APPLICATION_SECRET=TODO
 # bwHC Configuration Variables
 #-----------------------------------------------------------------------------
 
-# Optional TODO: Adapt BASE_DIR
-export BWHC_BASE_DIR=$(pwd)
+# Optional TODO: Adapt BWHC_BASE_DIR
+if [ -z ${BWHC_BASE_DIR+x} ]; then
+  # only export, if not already set
+  export BWHC_BASE_DIR=$(pwd)
+fi
 
 
 #TODO: adapt ZPM site name
