@@ -16,3 +16,4 @@ trait Linked
   val links: Links
 
 }
+

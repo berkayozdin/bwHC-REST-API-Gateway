@@ -141,6 +141,27 @@ https://HOST:PORT/bwhc/peer2peer/api/
 
 #### 2.2.3 Setting up HTTPS / Securing Backend API Access: 
 
+By default (i.e. without explicit configuration of Java Keystores), the Play Server of the bwHC Backend API only supports normal HTTP. 
+For HTTPS support and securing access to the backend API, it is recommended to use a reverse proxy such as Nginx:
+
+
+![Reverse Proxy Overview](Reverse_Proxy_Overview.png)
+
+
+__IMPORTANT__:
+
+The bwHC sub-APIs exposed to "system agents" are __NOT SECURED__ by a login-based authentication mechanism.
+Access to these APIs thus __MUST__ be restricted using mutual TLS.
+
+The APIs in question are:
+
+| API | URI Path |
+| ---- | -------------|
+| ETL API (local data export) | HOST:PORT/bwhc/etl/api/ |
+| Peer-to-peer API | HOST:PORT/bwhc/peer2peer/api/ |
+
+
+The following sections provide examples on how to set-up Nginx for the aforementioned purposes.
 
 #### 2.2.3.1 Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
 
@@ -158,7 +179,7 @@ http {
   # secp256r1 = prime256v1, see https://www.ietf.org/rfc/rfc5480.txt
   ssl_ecdh_curve 'brainpoolP384r1:secp384r1:brainpoolP256r1:prime256v1:brainpoolP512r1';
 
-  ssl_certificate      /path/to/server_cert.pem; # File should contain the intermediary certificates from which server certificate
+  ssl_certificate      /path/to/server_cert.pem; # File should contain the intermediary certificates from which server certificate descends
   ssl_certificate_key  /path/to/server_key.key;
     
 
@@ -278,7 +299,7 @@ http {
     # ...
 
     # Ensure that all calls to Peer-to-peer or ETL API endpoints
-    # are directed to mutual SSL reverse proxy above
+    # are directed to mutual SSL/TLS reverse proxy above
     location /bwhc/peer2peer/ {
       return 308 https://localhost:8443/bwhc/peer2peer/;
     }
