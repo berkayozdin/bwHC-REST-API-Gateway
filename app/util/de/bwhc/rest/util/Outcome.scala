@@ -44,15 +44,7 @@ object Outcome
 
     def warning(details: String) = Issue(Severity.Warning,details)
 
-
-    implicit def writes[I <: Issue]: Writes[I] =
-      Writes {
-        case Issue(severity,details) =>
-          Json.obj(
-            "severity" -> severity,
-            "details"  -> details
-          )       
-      }
+    implicit val writes = Json.writes[Issue]
 
   }
 

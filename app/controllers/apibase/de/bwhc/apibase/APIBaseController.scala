@@ -21,7 +21,7 @@ import play.api.libs.json.Json.toJson
 import de.bwhc.auth.api._
 import de.bwhc.auth.core._
 
-import de.bwhc.services.WrappedSessionManager
+import de.bwhc.services.{WrappedSessionManager,WrappedQueryService}
 
 import de.bwhc.rest.util.sapphyre._
 import de.bwhc.rest.util.sapphyre.playjson._
@@ -32,13 +32,16 @@ import de.bwhc.util.syntax.piping._
 class APIBaseController @Inject()
 (
   val controllerComponents: ControllerComponents,
-  val sessionManager: WrappedSessionManager
+  val sessionManager: WrappedSessionManager,
+  val queryService: WrappedQueryService
 )(
   implicit ec: ExecutionContext
 )
 extends BaseController
+with AuthenticationOps[UserWithRoles]
 {
 
+  import de.bwhc.user.api.Role._
   import de.bwhc.etl.api.ETLHypermedia
   import de.bwhc.rest.auth.UserHypermedia
   import de.bwhc.rest.auth.UserManagementPermissions._
@@ -55,6 +58,15 @@ extends BaseController
   }
 
   import Relations.SELF
+
+
+  implicit val authService = sessionManager.instance
+
+  
+
+  private val AdminRights =
+    Authorization[UserWithRoles](_ hasRole Admin)
+
 
 
   private val BASE_URI = "/bwhc"
@@ -93,6 +105,7 @@ extends BaseController
 
                 for {
 
+                  admin           <- user has AdminRights
                   dataQCAccess    <- user has DataQualityAccessRights
                   reportingAccess <- user has QCAccessRight
                   queryAccess     <- user has EvidenceQueryRight
@@ -106,8 +119,8 @@ extends BaseController
                     .withLinks(
                       "user-api" -> UserHypermedia.ApiBaseLink,
                       "whoami"   -> UserHypermedia.UserLink(user.userId)
-//                      "my-user"  -> UserHypermedia.UserLink(user.userId)
                     ) |
+                    (r => if (admin)           r.withLinks("peer-status-report" -> Link(s"$BASE_URI/peerStatusReport")) else r) |
                     (r => if (allUsersAccess)  r.withLinks(UserHypermedia.USERS -> UserHypermedia.UsersLink)          else r) |
                     (r => if (dataQCAccess)    r.withLinks(DATA_QC_API          -> DataQualityHypermedia.ApiBaseLink) else r) |
                     (r => if (reportingAccess) r.withLinks(REPORTING_API        -> ReportingHypermedia.ApiBaseLink)   else r) |  
@@ -124,6 +137,16 @@ extends BaseController
 
     }
 
+
+
+  def peerStatusReport: Action[AnyContent] =
+    AuthenticatedAction(AdminRights).async {
+      queryService.instance
+        .peerStatusReport
+        .map(toJson(_))
+        .map(Ok(_))
+
+    }
 
 
 }

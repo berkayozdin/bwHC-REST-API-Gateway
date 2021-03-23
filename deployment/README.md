@@ -40,7 +40,18 @@ In case that configuration files from a previous installation are already presen
 
 The backend application is configured via environment variables defined in the script file __config__.
 
-### 3.1.2 Local Site and Persistence:
+### 3.1.1 bwHC Backend Base Directory:
+
+The path to the Backend application base directory is set with <code>BWHC_APP_DIR</code>.
+By default, this variable will be set as the directory in which the __bwhc-backend-service__ script invocation occurs (pwd).
+It can also be either overriden in __config__ or set in the command invoking the bwhc-backend-service script (see 4).
+
+### 3.1.2 PID File:
+
+The __process ID__ of the running backend application is written to a PID file configured in <code>PID_FILE</code>.
+This defaults to <code>/tmp/bwhc-backend.pid</code> but can be overriden as desired.
+
+### 3.1.3 Local Site and Persistence:
 
 Configure the __local site name__ and the directories for __data storage__:
 
@@ -70,7 +81,8 @@ export PLAY_HTTP_ADDRESS=...
 ```
 #### 3.2.1.1 Application Secret Key:
 
-The Play HTTP Server requires an [application secret key](https://www.playframework.com/documentation/2.8.x/ApplicationSecret#The-Application-Secret). This must be a random String of at least 32 characters, which can be generated for instance by <code>head -c 64 /dev/urandom | base64</code>.
+The Play HTTP Server requires an [application secret key](https://www.playframework.com/documentation/2.8.x/ApplicationSecret#The-Application-Secret).
+This must be a random String of at least 32 characters, which can be generated for instance by <code>head -c 64 /dev/urandom | base64</code>.
 
 
 The application secret key can be configured either in __config__, e.g.:
@@ -207,14 +219,14 @@ http {
 
     # Require successful client certificate verification
     # for all calls to Peer-to-peer and ETL API
-    location =/bwhc/peer2peer/ {
+    location /bwhc/peer2peer/ {
       if ($ssl_client_verify != "SUCCESS"){
          return 403;
       }
       proxy_pass http://BACKEND_HOST:PORT;
     }
     
-    location =/bwhc/etl/ {
+    location /bwhc/etl/ {
       if ($ssl_client_verify != "SUCCESS"){
          return 403;
       }
@@ -249,11 +261,11 @@ http {
     ssl_verify_client        on;
     ssl_verify_depth         2;
 
-    location =/bwhc/peer2peer/ {
+    location /bwhc/peer2peer/ {
       proxy_pass http://BACKEND_HOST:PORT;
     }
     
-    location =/bwhc/etl/ {
+    location /bwhc/etl/ {
       proxy_pass http://BACKEND_HOST:PORT;
     }
 
@@ -418,10 +430,20 @@ Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and incl
 -------
 ## 4. Operation:
 
-Start/stop the backend service via Bash script __bwhc-backend-service__
+The backend service can be operated via Bash script __bwhc-backend-service__
+
+#### 4.1 Start: 
 ```
 foo@bar: ./bwhc-backend-service start
-...
+```
+
+OR explicitly setting BWHC_APP_DIR
+```
+foo@bar: BWHC_APP_DIR=/path/to/bwhc/dir /path/to/bwhc-backend-service start
+```
+
+#### 4.2 Stop:
+```
 foo@bar: ./bwhc-backend-service stop
 ```
 

@@ -100,6 +100,7 @@ Access to this URL path SHOULD be restricted in the reverse proxy.
 Required header: "Content-Type: application/json"
 
 __POST__ http://HOST:PORT/bwhc/etl/api/MTBFile
+
 __POST__ http://HOST:PORT/bwhc/etl/api/data/upload
 
 __Response__:

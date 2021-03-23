@@ -117,7 +117,7 @@ trait RequestOps
         toJson(_)
       )
       .fold(
-        out => InternalServerError(out),
+        InternalServerError(_),
         Ok(_)
       )
      }
@@ -131,6 +131,26 @@ trait RequestOps
     wt: Writes[T]
   ){
 
+    import de.bwhc.rest.util.sapphyre._
+    import playjson._
+    import syntax._
+
+    def toJsonResult: Result = {
+      ior.fold(
+        out        => InternalServerError(toJson(out)),
+        data       => Ok(toJson(data)),
+        (out,data) => Ok(
+          toJson(
+            data.withIssues(
+              out.issues.map(i => Issue.Error(i.details)).toList
+            )
+          )
+        )
+      )
+
+    }
+
+/*
     def toJsonResult: Result = {
        ior.bimap(
         toJson(_),
@@ -141,8 +161,8 @@ trait RequestOps
         Ok(_),
         (out,_) => InternalServerError(out),
       )
-
-     }
+    }
+*/
 
   }
 

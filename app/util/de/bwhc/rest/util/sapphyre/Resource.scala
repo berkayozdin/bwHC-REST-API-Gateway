@@ -16,7 +16,8 @@ case class Resource[T, Meta, Embedded <: HList]
   meta: Option[Meta] = None,
   links: Map[String,Link] = Map.empty[String,Link],
   actions: Map[String,Action] = Map.empty[String,Action],
-  embedded: Embedded
+  issues: List[Issue] = List.empty,
+  embedded: Embedded = HNil,
 )
 extends Document
 {
@@ -32,6 +33,9 @@ extends Document
 
   def withActions(as: (String,Action)*) =
     copy(actions = actions ++ as)
+
+  def withIssues(is: List[Issue]) =
+    copy(issues = issues ++ is)
 
   def withEmbedded[R](rel: String, r: R)(implicit emb: R IsIn Embeddable) =
     copy(embedded = (rel -> r) :: embedded)

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bwHC>
+
 <!--
   <ZPM site="Freiburg"   baseURL="http://localhost:9001/bwhc/peer2peer/api/"/>
   <ZPM site="Heidelberg" baseURL="http://localhost:9002/bwhc/peer2peer/api/"/>
   <ZPM site="Tübingen"   baseURL="http://localhost:9003/bwhc/peer2peer/api/"/>
   <ZPM site="Ulm"        baseURL="http://localhost:9004/bwhc/peer2peer/api/"/>
 -->
+
 </bwHC>

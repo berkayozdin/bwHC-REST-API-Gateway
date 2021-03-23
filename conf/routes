@@ -2,6 +2,7 @@
 # Unsecured endpoints
 
 GET     /bwhc                   de.bwhc.apibase.APIBaseController.ApiBase 
+GET     /bwhc/peerStatusReport  de.bwhc.apibase.APIBaseController.peerStatusReport
 
 ->      /bwhc/fake/data/api/    de.bwhc.fake.data.Router
 

@@ -53,6 +53,11 @@ object playjson
   implicit val writesLink =
     Json.writes[Link]
 
+  implicit val formatIssueSeverity = Json.formatEnum(Issue.Severity)
+
+  implicit val writesIssue =
+    Json.writes[Issue]
+
 
   implicit val writesMediaType =
     Json.valueFormat[MediaType]
@@ -76,7 +81,7 @@ object playjson
     Es <: HList: Writes
   ]: Writes[Resource[T,Meta,Es]] =
     Writes {
-      case Resource(data,meta,links,actions,embedded) =>
+      case Resource(data,meta,links,actions,issues,embedded) =>
  
         Json.toJson(data).as[JsObject] | 
           (js => embedded match {
@@ -85,7 +90,8 @@ object playjson
                  }) |
           (js => meta.fold              (js)(m => js + ("_meta"    -> Json.toJson(m)))) |
           (js => links.headOption.fold  (js)(h => js + ("_links"   -> Json.toJson(links)))) |
-          (js => actions.headOption.fold(js)(h => js + ("_actions" -> Json.toJson(actions)))) 
+          (js => actions.headOption.fold(js)(h => js + ("_actions" -> Json.toJson(actions)))) | 
+          (js => if (!issues.isEmpty) js + ("_issues" -> Json.toJson(issues)) else js) 
     }
 
 

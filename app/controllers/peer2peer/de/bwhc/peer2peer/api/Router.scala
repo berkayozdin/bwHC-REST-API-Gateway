@@ -26,10 +26,13 @@ extends SimpleRouter
     // bwHC Node Peer-to-peer endpoints
     //-------------------------------------------------------------------------
 
+    // Return Ok by default, as this implies this node is "online"
+    case GET(p"/status")           => controller.Action { Ok }
+
+
     case POST(p"/query")           => controller.processQuery
 
     case POST(p"/LocalQCReport")   => controller.getLocalQCReport
-//    case GET(p"/LocalQCReport")    => controller.getLocalQCReport
 
   }
 

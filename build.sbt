@@ -26,6 +26,10 @@ libraryDependencies ++= Seq(
 //  "de.bwhc"                %% "fake-session-manager"            % "1.0-SNAPSHOT",
   "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
 
+   // Fake Data dependencies
+  "de.bwhc"                %% "mtb-dto-generators"              % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "fhir-mappings"                   % "1.0-SNAPSHOT",
+
   // User Service dependencies
   "de.bwhc"                %% "user-service-api"                % "1.0-SNAPSHOT",
   "de.bwhc"                %% "user-service-impl"               % "1.0-SNAPSHOT",
@@ -35,7 +39,6 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "data-entry-service-api"          % "1.0-SNAPSHOT",
   "de.bwhc"                %% "data-entry-service-impl"         % "1.0-SNAPSHOT",
   "de.bwhc"                %% "data-entry-service-dependencies" % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "mtb-dto-generators"              % "1.0-SNAPSHOT",
 
   // Query Service dependencies
   "de.bwhc"                %% "query-service-api"               % "1.0-SNAPSHOT",

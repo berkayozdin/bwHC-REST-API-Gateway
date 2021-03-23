@@ -75,7 +75,6 @@ with RequestOps
 with AuthenticationOps[UserWithRoles]
 {
 
-//  import QueryHypermedia._
   import QueryPermissions._
 
 
