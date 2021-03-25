@@ -138,10 +138,12 @@ These URLs must point to the respective bwHC node's "Peer-to-peer API" base URL,
 
 https://HOST:PORT/bwhc/peer2peer/api/
 
+See below (3.2.3.3) for instructions on how to set up peer-to-peer communication in combination with a proxy to handle client certificates.
+
 
 #### 2.2.3 Setting up HTTPS / Securing Backend API Access: 
 
-By default (i.e. without explicit configuration of Java Keystores), the Play Server of the bwHC Backend API only supports normal HTTP. 
+By default (i.e. without explicit configuration of Java Keystores), the Play Server of the bwHC Backend only supports normal HTTP. 
 For HTTPS support and securing access to the backend API, it is recommended to use a reverse proxy such as Nginx:
 
 
@@ -206,18 +208,6 @@ See [NGINX Admin Guide](https://docs.nginx.com/nginx/admin-guide/) for detailed 
 
 
 #### 3.2.3.2 Set up NGINX to secure sub-APIs with Client Certificate Authentication (mutual TLS)
-
-__IMPORTANT__:
-The bwHC sub-APIs exposed to "system agents" are __NOT SECURED__ by a login-based authentication mechanism.
-Access to these APIs thus __MUST__ be restricted using mutual TLS.
-
-The APIs in question are:
-
-| API | URI Path |
-| ---- | -------------|
-| ETL API (local data export) | HOST:PORT/bwhc/etl/api/ |
-| Peer-to-peer API | HOST:PORT/bwhc/peer2peer/api/ |
-
 
 There are __2 possible ways__ to configure Nginx to secure these APIs endpoints via mutual SSL.
 
@@ -316,7 +306,12 @@ http {
 
 #### 3.2.3.3 Set up NGINX as Proxy for bwHC peers:
 
-Here's a sample configuration to set up a virtual NGINX server to act as proxy "into the bwHC", i.e. for outgoing requests to other bwHC sites:
+The communication of bwHC nodes among bwHC sites uses HTTPS with Client Certificates. The handling of these certificate issues is performed in a proxy server mediating between the local bwHC backend and its external peers: 
+
+![Outgoing Proxy Overview](Outgoing_Proxy_Overview.png)
+
+
+Here's a sample configuration to set up a virtual NGINX server to act as such a proxy:
 
 ```nginx
 http {
@@ -427,25 +422,19 @@ In Bash-script __bwhc-backend-service__, uncomment variable __N_RANDOM_FILES__ a
 
 __WARNING__: The random generated data will all be kept in memory, so avoid excessively large numbers!
 
-Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as shown below (indented command):
+Then uncomment the JVM-parameter setting __-Dbwhc.query.data.generate__ and include it in the application startup command, as shown below:
 
 ```bash
-  ...
-  
-  N_RANDOM_FILES=50
-  ...
-  
-  $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
-    -Dconfig.file=$BASE_DIR/production.conf \
-    -Dbwhc.zpm.site=$ZPM_SITE \
-    -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
-    -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
-    -Dbwhc.user.data.dir=$BWHC_USER_DB_DIR \
-    -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG \
-  -Dbwhc.query.data.generate=$N_RANDOM_FILES \        #This command is commented in default bwhc-backend-service
-    -Dhttp.port=$BWHC_PORT &
+ ...
+ N_RANDOM_FILES=50
+ ...
+ 
+ $BWHC_APP_DIR/bin/bwhc-rest-api-gateway \
+    ... \
+    -Dbwhc.query.data.generate=$N_RANDOM_FILES \     #This command is commented in default bwhc-backend-service
+    ... &
 
-  ...
+ 
 ```
 
 -------
