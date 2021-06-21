@@ -57,22 +57,27 @@ trait QueryPermissions
     else LocalEvidenceQueryRight
  
 
-
   def AccessRightFor(
     queryId: Query.Id
   )(
     implicit
     service: QueryService,
     ec: ExecutionContext
-  ): Authorization[UserWithRoles] = Authorization.async {
+  ): Authorization[UserWithRoles] =
+    EvidenceQueryRight AND Authorization.async {
+      case UserWithRoles(userId,_) =>
+        for {
+          query <- service get queryId
+          ok    =  query.exists(_.querier.value == userId.value)
+        } yield ok
+    }
 
-    case UserWithRoles(userId,_) =>
 
-      for {
-        query <- service get queryId
-        ok    =  query.exists(_.querier.value == userId.value)
-      } yield ok
-  }
+  //TODO
+  val MTBFileAccessRight =  
+    Authorization[UserWithRoles](
+      user => user hasAnyOf Set(MTBCoordinator, ApprovedResearcher)
+    )
 
 }
 object QueryPermissions extends QueryPermissions

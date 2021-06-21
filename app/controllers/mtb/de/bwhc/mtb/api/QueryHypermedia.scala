@@ -16,7 +16,8 @@ import de.bwhc.mtb.query.api.{
   PatientView,
   Query,
   QueryOps,
-  NGSSummary
+  NGSSummary,
+  ResultSummary
 }
 import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
@@ -38,16 +39,17 @@ trait QueryHypermedia
   import Method._
   import Relations._
   import QuerySchemas._
+  import QueryPermissions._
 
 
   private val BASE_URI = "/bwhc/mtb/api/query"
 
-  
   private val SUBMIT_LOCAL_QUERY = "submit-local-query"
   private val SUBMIT_FEDERATED_QUERY = "submit-federated-query"
   private val APPLY_FILTER    = "apply-filter"
 
   private val QUERY           = "query"
+  private val RESULT_SUMMARY  = "result-summary"
   private val PATIENTS        = "patients"
   private val NGS_SUMMARIES   = "ngs-summaries"
   private val RECOMMENDATIONS = "therapy-recommendations"
@@ -80,6 +82,9 @@ trait QueryHypermedia
 
   private def QueryLink(queryId: Query.Id) =
     Link(s"$BASE_URI/${queryId.value}")
+
+  private def ResultSummaryLink(queryId: Query.Id) =
+    Link(s"$BASE_URI/${queryId.value}/result-summary")
 
   private def PatientsLink(queryId: Query.Id) =
     Link(s"$BASE_URI/${queryId.value}/patients")
@@ -114,7 +119,6 @@ trait QueryHypermedia
     schemas.get(rel) 
 
 
-
   def Api(
     implicit
     user: UserWithRoles,
@@ -122,14 +126,12 @@ trait QueryHypermedia
   ) = {
     for {
 
-      localQueryRights     <- user has QueryPermissions.LocalEvidenceQueryRight
+      localQueryRights     <- user has LocalEvidenceQueryRight
 
-      federatedQueryRights <- user has QueryPermissions.FederatedEvidenceQueryRight
-
-      api = Resource.empty.withLinks(SELF -> ApiBaseLink)
+      federatedQueryRights <- user has FederatedEvidenceQueryRight
 
       result =
-        api |
+        Resource.empty.withLinks(SELF -> ApiBaseLink) |
         (r => if (localQueryRights)     r.withActions(LocalQueryAction)     else r) |
         (r => if (federatedQueryRights) r.withActions(FederatedQueryAction) else r)
 
@@ -137,6 +139,41 @@ trait QueryHypermedia
   }
 
 
+  def HyperQuery(
+    query: Query
+  )(
+    implicit
+    user: UserWithRoles,
+    ec: ExecutionContext
+  ) = { 
+    for {
+      mtbFileAccess <- user has MTBFileAccessRight
+
+      result = 
+        query.withLinks(
+          BASE            -> ApiBaseLink,
+          SELF            -> QueryLink(query.id),
+          RESULT_SUMMARY  -> ResultSummaryLink(query.id)
+        )
+        .withActions(
+          UpdateAction(query.id),
+          ApplyFilterAction(query.id)
+        ) | (
+          q =>
+          if (mtbFileAccess)
+            q.withLinks(
+              PATIENTS        -> PatientsLink(query.id),
+              NGS_SUMMARIES   -> NGSSummariesLink(query.id),
+              RECOMMENDATIONS -> RecommendationsLink(query.id),
+              THERAPIES       -> TherapiesLink(query.id)
+            )
+          else q 
+        )
+    } yield result
+
+  }
+
+/*
   def HyperQuery(
     query: Query
   ) = {
@@ -153,6 +190,18 @@ trait QueryHypermedia
       ApplyFilterAction(query.id)
     )
 
+  }
+*/
+
+  def HyperResultSummary(
+    result: ResultSummary
+  )(
+    queryId: Query.Id
+  ) = {
+    result.withLinks(
+      BASE       -> ApiBaseLink,
+      QUERY      -> QueryLink(queryId)
+    )
   }
 
 
@@ -226,9 +275,6 @@ trait QueryHypermedia
       QUERY       -> QueryLink(queryId)
     )
   }
-
-
-
 
 }
 object QueryHypermedia extends QueryHypermedia

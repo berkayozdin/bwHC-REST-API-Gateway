@@ -35,10 +35,12 @@ import de.bwhc.user.api.User
 
 import cats.data.{
   EitherT,
-  OptionT
+  OptionT,
+  Ior
 }
 import cats.instances.future._
 import cats.syntax.either._
+import cats.syntax.ior._
 
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 import de.bwhc.rest.util.cphl.syntax._
@@ -145,7 +147,7 @@ with AuthenticationOps[UserWithRoles]
 
       request => 
 
-      val user = request.user
+      implicit val user = request.user
 
       errorsOrJson[QueryForm]
         .apply(request)
@@ -160,11 +162,22 @@ with AuthenticationOps[UserWithRoles]
                   if (allowed)
                     for {
                       resp    <- service ! Command.Submit(Querier(user.userId.value),mode,params)
+                      outcome <- resp.leftMap(
+                                   errs => Outcome.fromErrors(errs.toList)
+                                 )
+                                 .fold(
+                                   out     => Future.successful(out.leftIor),
+                                   q       => HyperQuery(q).map(_.rightIor),
+                                   (out,q) => HyperQuery(q).map(Ior.both(out,_))
+                                 )
+                      result  = outcome.toJsonResult
+/*
                       outcome =  resp.bimap(
                                    errs => Outcome.fromErrors(errs.toList),
                                    HyperQuery(_)
                                  )
                       result  =  outcome.toJsonResult
+*/
                     } yield result
                   else 
                     Future.successful(Forbidden)
@@ -179,11 +192,12 @@ with AuthenticationOps[UserWithRoles]
   def update(
     id: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight AND AccessRightFor(id) ).async {
+//    AuthenticatedAction( EvidenceQueryRight AND AccessRightFor(id) ).async {
+    AuthenticatedAction( AccessRightFor(id) ).async {
 
       request => 
 
-      val user = request.user
+      implicit val user = request.user
 
       errorsOrJson[Command.Update].apply(request)
         .fold(
@@ -197,11 +211,21 @@ with AuthenticationOps[UserWithRoles]
                 if (queryModeAllowed)
                   for {
                     resp    <- service ! update
+/*
                     outcome =  resp.bimap(
                                  errs => Outcome.fromErrors(errs.toList),
                                  HyperQuery(_)
                                )
-                    result  =  outcome.toJsonResult
+*/
+                    outcome <- resp.leftMap(
+                                 errs => Outcome.fromErrors(errs.toList)
+                               )
+                               .fold(
+                                 out     => Future.successful(out.leftIor),
+                                 q       => HyperQuery(q).map(_.rightIor),
+                                 (out,q) => HyperQuery(q).map(Ior.both(out,_))
+                               )
+                    result  = outcome.toJsonResult
                   } yield result
                 else 
                   Future.successful(Forbidden)
@@ -216,11 +240,13 @@ with AuthenticationOps[UserWithRoles]
   def applyFilter(
     id: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight AND AccessRightFor(id) )
+    AuthenticatedAction( AccessRightFor(id) )
       .async {
-  
+
         request => 
   
+        implicit val user = request.user
+
         errorsOrJson[Command.ApplyFilter].apply(request)
           .fold(
             Future.successful,
@@ -228,9 +254,19 @@ with AuthenticationOps[UserWithRoles]
             applyFilter => 
               for {
                 resp    <- service ! applyFilter
+/*
                 outcome =  resp.bimap(
                              errs => Outcome.fromErrors(errs.toList),
                              HyperQuery(_)
+                           )
+*/
+                outcome <- resp.leftMap(
+                             errs => Outcome.fromErrors(errs.toList)
+                           )
+                           .fold(
+                             out     => Future.successful(out.leftIor),
+                             q       => HyperQuery(q).map(_.rightIor),
+                             (out,q) => HyperQuery(q).map(Ior.both(out,_))
                            )
                 result  =  outcome.toJsonResult
               } yield result
@@ -260,7 +296,28 @@ with AuthenticationOps[UserWithRoles]
   def query(
     queryId: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+    AuthenticatedAction( AccessRightFor(queryId) )
+      .async { request =>
+
+        implicit val user = request.user
+
+        OptionT(service.get(queryId))
+          .flatMapF(HyperQuery(_).map(Some(_)))
+          .map(Json.toJson(_))
+          .fold(
+            NotFound(s"Invalid Query ID ${queryId.value}")
+          )(       
+            Ok(_)
+          )
+
+      }
+
+/*
+  def query(
+    queryId: Query.Id
+  ): Action[AnyContent] = 
+//    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+    AuthenticatedAction( AccessRightFor(queryId) )
       .async {
         OptionT(service get queryId)
           .map(HyperQuery(_))
@@ -271,7 +328,7 @@ with AuthenticationOps[UserWithRoles]
             Ok(_)
           )      
       }
-
+*/
 
   private def resultOf[T: Writes](
     rs: Future[Option[Iterable[T]]]
@@ -288,10 +345,27 @@ with AuthenticationOps[UserWithRoles]
       )      
   }
 
+
+  def resultSummaryFrom(
+    queryId: Query.Id
+  ): Action[AnyContent] = 
+    AuthenticatedAction( AccessRightFor(queryId) )
+      .async {        
+        OptionT(service.resultSummaryOf(queryId))
+          .map(HyperResultSummary(_)(queryId))
+          .map(Json.toJson(_))
+          .fold(
+            NotFound(s"Invalid Query ID ${queryId.value}")
+          )(       
+            Ok(_)
+          )      
+      }
+
+
   def patientsFrom(
     queryId: Query.Id
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
       .async {        
         OptionT(service patientsFrom queryId)
           .map(_.map(HyperPatient(_)(queryId)))
@@ -305,11 +379,38 @@ with AuthenticationOps[UserWithRoles]
       }
 
 
+  def therapyRecommendationsFrom(
+    queryId: Query.Id,
+  ): Action[AnyContent] = 
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
+      .async {
+        resultOf(service therapyRecommendationsFrom queryId)(queryId)
+      }
+
+
+  def molecularTherapiesFrom(
+    queryId: Query.Id,
+  ): Action[AnyContent] = 
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
+      .async {
+        resultOf(service molecularTherapiesFrom queryId)(queryId)
+      }
+
+
+  def ngsSummariesFrom(
+    queryId: Query.Id,
+  ): Action[AnyContent] = 
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
+      .async {
+        resultOf(service.ngsSummariesFrom(queryId))(queryId)
+      }
+
+
   def mtbfileFrom(
     queryId: Query.Id,
     patId: String
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
       .async {
         OptionT(service.mtbFileFrom(queryId,Patient.Id(patId)))
           .map(HyperMTBFile(_)(queryId))
@@ -326,7 +427,7 @@ with AuthenticationOps[UserWithRoles]
     queryId: Query.Id,
     patId: String
   ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
       .async {
         OptionT(service.mtbFileViewFrom(queryId,Patient.Id(patId)))
           .map(HyperMTBFileView(_)(queryId))
@@ -336,34 +437,6 @@ with AuthenticationOps[UserWithRoles]
           )(       
             Ok(_)
           )      
-      }
-
-
-
-  def therapyRecommendationsFrom(
-    queryId: Query.Id,
-  ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
-      .async {
-        resultOf(service therapyRecommendationsFrom queryId)(queryId)
-      }
-
-
-  def molecularTherapiesFrom(
-    queryId: Query.Id,
-  ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
-      .async {
-        resultOf(service molecularTherapiesFrom queryId)(queryId)
-      }
-
-
-  def ngsSummariesFrom(
-    queryId: Query.Id,
-  ): Action[AnyContent] = 
-    AuthenticatedAction( EvidenceQueryRight and AccessRightFor(queryId) )
-      .async {
-        resultOf(service.ngsSummariesFrom(queryId))(queryId)
       }
 
 

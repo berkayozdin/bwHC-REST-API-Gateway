@@ -183,7 +183,9 @@ http {
 
   ssl_certificate      /path/to/server_cert.pem; # File should contain the intermediary certificates from which server certificate descends
   ssl_certificate_key  /path/to/server_key.key;
-    
+
+
+  client_max_body_size  2M;  # Increase max. request body size to handle large data uploads    
 
   server {
 

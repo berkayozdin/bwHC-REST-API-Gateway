@@ -91,6 +91,7 @@ extends SimpleRouter
     case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
 
                                                   
+    case GET(p"/query/$id/result-summary")          => queryController.resultSummaryFrom(Query.Id(id))
     case GET(p"/query/$id/patients")                => queryController.patientsFrom(Query.Id(id))
     case GET(p"/query/$id/therapy-recommendations") => queryController.therapyRecommendationsFrom(Query.Id(id))
     case GET(p"/query/$id/molecular-therapies")     => queryController.molecularTherapiesFrom(Query.Id(id))
