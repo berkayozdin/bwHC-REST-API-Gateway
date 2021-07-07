@@ -51,10 +51,6 @@ trait DataQualityHypermedia
   def HyperPatient(
     pat: PatientDataInfo
   ) = {
-//  implicit val HyperPatient = {
-
-//    (pat: PatientDataInfo) =>
-
     pat.withLinks(
       COLLECTION          -> PatientsLink,
       MTBFILE             -> MTBFileLink(pat.id),
@@ -84,7 +80,6 @@ trait DataQualityHypermedia
   
   
   implicit val patientHeader =
-//    Table.Header[Patient](
     Table.Header[PatientDataInfo](
       "id"             -> "ID",
       "birthDate"      -> "Birthdate",

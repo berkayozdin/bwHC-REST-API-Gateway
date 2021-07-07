@@ -9,7 +9,11 @@ import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
 
-import de.bwhc.user.api.User
+import play.api.libs.json.Json.toJson
+
+import de.bwhc.user.api.{
+  User, Role
+}
 
 
 
@@ -43,6 +47,10 @@ extends SimpleRouter
                                       }
 
 
+    case GET(p"/user-roles")        => userController.Action {
+                                      Results.Ok(toJson(Role.values))
+                                    }
+
     case GET(p"/users")             => userController.getAll
     case GET(p"/users/$id")         => userController.get(User.Id(id))
                                    
@@ -51,15 +59,6 @@ extends SimpleRouter
     case PUT(p"/users/$id/roles")   => userController.updateRoles
     case DELETE(p"/users/$id")      => userController.delete(User.Id(id))
 
-/*
-    case GET(p"/user")             => userController.getAll
-    case GET(p"/user/$id")         => userController.get(User.Id(id))
-                                   
-    case POST(p"/user")            => userController.create
-    case PUT(p"/user/$id")         => userController.update
-    case PUT(p"/user/$id/roles")   => userController.updateRoles
-    case DELETE(p"/user/$id")      => userController.delete(User.Id(id))
-*/
   }
 
 

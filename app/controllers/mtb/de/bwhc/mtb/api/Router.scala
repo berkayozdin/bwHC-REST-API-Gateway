@@ -41,6 +41,14 @@ extends SimpleRouter
                                                         Ok(toJson(DataQualityHypermedia.ApiResource))
                                                       }
 
+/*
+    case GET(p"/data-quality/patients" ?
+               q_s"genders=$genders" &
+               q_o"errorMsg=$errorMsg" &
+               q_o"entityType=$entityType" &
+               q_o"attribute=$attribute") => dataController.patientsForQC(genders,errorMsg,entityType,attribute)
+*/
+
     case GET(p"/data-quality/patients")                         => dataController.patientsForQC
     case GET(p"/data-quality/patients/$id/mtbfile")             => dataController.mtbfile(id)
     case GET(p"/data-quality/patients/$id/mtbfileview")         => dataController.mtbfileView(id)

@@ -117,10 +117,10 @@ with AuthenticationOps[UserWithRoles]
                       UserHypermedia.LogoutAction
                     )
                     .withLinks(
-                      "user-api" -> UserHypermedia.ApiBaseLink,
+                      "userApi" -> UserHypermedia.ApiBaseLink,
                       "whoami"   -> UserHypermedia.UserLink(user.userId)
                     ) |
-                    (r => if (admin)           r.withLinks("peer-status-report" -> Link(s"$BASE_URI/peerStatusReport")) else r) |
+                    (r => if (admin)           r.withLinks("peerStatusReport" -> Link(s"$BASE_URI/peerStatusReport")) else r) |
                     (r => if (allUsersAccess)  r.withLinks(UserHypermedia.USERS -> UserHypermedia.UsersLink)          else r) |
                     (r => if (dataQCAccess)    r.withLinks(DATA_QC_API          -> DataQualityHypermedia.ApiBaseLink) else r) |
                     (r => if (reportingAccess) r.withLinks(REPORTING_API        -> ReportingHypermedia.ApiBaseLink)   else r) |  

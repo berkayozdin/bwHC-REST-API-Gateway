@@ -92,6 +92,7 @@ extends BaseController
 
   import Catalogs._ 
 
+  import java.time.Year
 
   def coding(
     system: String,
@@ -108,7 +109,8 @@ extends BaseController
             (
               version match {
 
-                case Some(vsn) => Try { ICD10GM.Version(vsn) }
+//                case Some(vsn) => Try { ICD10GM.Version(vsn) }
+                case Some(vsn) => Try { Year.of(vsn.toInt) }
                                     .map(v => pattern.fold(icd10gm.codings())(icd10gm.matches(_,v)) )
 
                 case None    => Try { pattern.fold(icd10gm.codings())(icd10gm.matches(_)) }
