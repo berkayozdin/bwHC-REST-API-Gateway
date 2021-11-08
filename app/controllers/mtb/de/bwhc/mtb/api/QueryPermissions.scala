@@ -22,7 +22,7 @@ trait QueryPermissions
 
   val LocalQCAccessRight =
     Authorization[UserWithRoles](
-      _ hasAnyOf (GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator)
+      _ hasAnyOf (GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator /*, Documentarist */)
     )
 
   val GlobalQCAccessRight =
@@ -38,13 +38,13 @@ trait QueryPermissions
 
   val FederatedEvidenceQueryRight =
     Authorization[UserWithRoles](
-      _ hasAnyOf (GlobalZPMCoordinator, Researcher)
+      _ hasAnyOf (GlobalZPMCoordinator, Researcher, ApprovedResearcher)
     )
 
 
   val LocalEvidenceQueryRight =
     Authorization[UserWithRoles](
-      _ hasAnyOf (GlobalZPMCoordinator, Researcher, LocalZPMCoordinator, MTBCoordinator)
+      _ hasAnyOf (GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator, Researcher, ApprovedResearcher)
     )
 
   val EvidenceQueryRight = LocalEvidenceQueryRight

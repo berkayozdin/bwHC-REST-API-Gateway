@@ -23,6 +23,7 @@ trait DataQualityHypermedia
 
   private val PATIENTS            = "patients"
   private val MTBFILE             = "mtbfile"
+  private val MTBFILEVIEW         = "mtbfileview"
   private val DATA_QUALITY_REPORT = "data-quality-report"
 
         
@@ -34,6 +35,9 @@ trait DataQualityHypermedia
 
   private def MTBFileLink(id: Patient.Id) =
     Link(s"$BASE_URI/$PATIENTS/${id.value}/$MTBFILE")
+     
+  private def MTBFileViewLink(id: Patient.Id) =
+    Link(s"$BASE_URI/$PATIENTS/${id.value}/$MTBFILEVIEW")
      
   private def DataQualityReportLink(id: Patient.Id) =
     Link(s"$BASE_URI/$PATIENTS/${id.value}/$DATA_QUALITY_REPORT")
@@ -54,6 +58,7 @@ trait DataQualityHypermedia
     pat.withLinks(
       COLLECTION          -> PatientsLink,
       MTBFILE             -> MTBFileLink(pat.id),
+      MTBFILEVIEW         -> MTBFileViewLink(pat.id),
       DATA_QUALITY_REPORT -> DataQualityReportLink(pat.id)
     )
   }

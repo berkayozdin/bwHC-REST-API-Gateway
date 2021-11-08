@@ -45,4 +45,6 @@ export BWHC_QUERY_DATA_DIR=TODO
 
 export BWHC_USER_DB_DIR=TODO
 
+export BWHC_HGNC_DIR="$BWHC_BASE_DIR/hgnc_data/"
+
 #-----------------------------------------------------------------------------

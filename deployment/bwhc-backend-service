@@ -78,6 +78,7 @@ case "$1" in
         -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
         -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
         -Dbwhc.user.data.dir=$BWHC_USER_DB_DIR \
+        -Dbwhc.hgnc.dir=$BWHC_HGNC_DIR \
         -Dbwhc.connector.configFile=$BWHC_CONNECTOR_CONFIG &
       
       sleep 1s

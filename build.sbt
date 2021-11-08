@@ -43,6 +43,7 @@ libraryDependencies ++= Seq(
   // Query Service dependencies
   "de.bwhc"                %% "query-service-api"               % "1.0-SNAPSHOT",
   "de.bwhc"                %% "query-service-impl"              % "1.0-SNAPSHOT",
+//  "de.bwhc"                %% "bwhc-broker-connector"           % "1.0-SNAPSHOT",
   "de.bwhc"                %% "bwhc-connector"                  % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fs-mtbfile-db"                   % "1.0-SNAPSHOT",
 
