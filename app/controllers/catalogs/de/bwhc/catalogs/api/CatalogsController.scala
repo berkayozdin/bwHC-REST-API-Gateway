@@ -70,7 +70,7 @@ object Catalogs
 
 
   lazy val jsonValueSets =
-    ValueSets.all
+    ValueSets.allValueSets
       .toHList
       .map(ToJson)
       .toList
