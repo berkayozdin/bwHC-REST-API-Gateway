@@ -14,7 +14,7 @@ object DTOSchemas
 {
 
   implicit val icd10gmSchema = Json.schema[ICD10GM]("icd-10-code")
-  implicit val geneSchema    = Json.schema[Variant.Gene]("gene-symbol")
+  implicit val geneSchema    = Json.schema[Variant.GeneSymbol]("gene-symbol")
 
 //  implicit val medUsageSchema = Json.schema[Query.MedicationWithUsage]("medication-with-usage")
 //  implicit val parametersSchema = Json.schema[Query.Parameters]("parameters")

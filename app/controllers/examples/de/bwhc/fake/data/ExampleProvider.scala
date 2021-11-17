@@ -23,7 +23,7 @@ import de.bwhc.mtb.data.entry.dtos.MTBFile
 import de.bwhc.mtb.data.gens._
 
 
-import de.bwhc.util.mapping.syntax._
+//import de.bwhc.util.mapping.syntax._
 import org.hl7.fhir.r4.FHIRJson._
 import de.bwhc.fhir.MTBFileBundle
 import de.bwhc.fhir.Mappings._
@@ -45,18 +45,6 @@ extends BaseController
 
 
 
-/*
-  def mtbfile: Action[AnyContent] =
-    Action.async {
-      Future.successful(
-        Gen.of[MTBFile].next
-      )
-      .map(toJson(_))
-      .map(Ok(_))
-    }
-*/
-
-
   def mtbfile: Action[AnyContent] =
     Action.async {
       implicit request =>
@@ -75,27 +63,7 @@ extends BaseController
              ct => Ok(mtbf.mapTo[MTBFileBundle].toFHIRJson).as(FHIR_JSON)
            )
 
-/*
-          if (request.accepts(FHIR_JSON))
-            Ok(mtbf.mapTo[MTBFileBundle].toFHIRJson).as(FHIR_JSON)
-          else
-            Ok(toJson(mtbf))
-*/
       }
-    }
-
-
-  def fhirMtbfile: Action[AnyContent] =
-    Action.async {
-      Future.successful(
-        Gen.of[MTBFile].next
-      )
-      .map(
-        _.mapTo[MTBFileBundle].toFHIRJson
-      )
-      .map(
-        Ok(_).as(FHIR_JSON)
-      )
     }
 
 }
