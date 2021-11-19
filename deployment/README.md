@@ -56,7 +56,7 @@ This defaults to <code>/tmp/bwhc-backend.pid</code> but can be overriden as desi
 Configure the __local site name__ and the directories for __data storage__:
 
 ```bash
-...                                
+...
 export ZPM_SITE=...               # TODO: Set local ZPM Site name
 
 export BWHC_USER_DB_DIR=...       # ABSOLUTE path to dir where User Service stores data
@@ -65,6 +65,19 @@ export BWHC_DATA_ENTRY_DIR=...    # ABSOLUTE path to dir where Data Entry/Valida
 
 export BWHC_QUERY_DATA_DIR=...    # ABSOLUTE path to dir where Query/Reporting Service stores data
 ```
+
+### 3.1.4 HGNC Catalog Management 
+
+The bwHC application requires the HGNC catalog (in the TSV format as obtained from HUGO at https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt).
+Given that this evolves rapidly, it has to be updated regularly in the bwHC app (current turnover period: 7 days).
+The bwHC app has 2 strategies to obtain this catalog:
+
+1) It will try to fetch it directly from the above URL and save it in the directory configured by environment variable <code>BWHC_HGNC_DIR</code>.
+This requires that settings on the VM and IT environment allow for this external URL call.
+
+2) If the HGNC catalog file is already present in the configured directory and not older than the turnover period (see above), it will be read directly.
+The periodic update of the HGNC catalog can thus be set up alternatively with a cron job or similar.
+
 
 -------
 ### 3.2 HTTP(S)/Communication Setup:
@@ -118,6 +131,15 @@ these "allowed hosts" must be configured in __production.conf__ :
   }
 ```
 
+#### 3.2.1.3 Maximum Request Payload Size:
+
+The memory buffer for request payloads can be adjusted with
+
+```
+http.parser.maxMemoryBuffer=xMB
+```
+
+
 See the [Play Framework Docs](https://www.playframework.com/documentation/2.8.x/AllowedHostsFilter#Allowed-hosts-filter) for details.
 
 
@@ -141,7 +163,7 @@ https://HOST:PORT/bwhc/peer2peer/api/
 See below (3.2.3.3) for instructions on how to set up peer-to-peer communication in combination with a proxy to handle client certificates.
 
 
-#### 2.2.3 Setting up HTTPS / Securing Backend API Access: 
+#### 3.2.3 Setting up HTTPS / Securing Backend API Access: 
 
 By default (i.e. without explicit configuration of Java Keystores), the Play Server of the bwHC Backend only supports normal HTTP. 
 For HTTPS support and securing access to the backend API, it is recommended to use a reverse proxy such as Nginx:
@@ -165,7 +187,7 @@ The APIs in question are:
 
 The following sections provide examples on how to set-up Nginx for the aforementioned purposes.
 
-#### 2.2.3.1 Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
+#### 3.2.3.1 Set up NGINX as Reverse Proxy to handle SSL-Termination (HTTPS)
 
 Here's a sample configuration to set up NGINX as reverse proxy to handle SSL-Termination for the bwHC Backend:
 
