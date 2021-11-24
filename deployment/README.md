@@ -68,7 +68,7 @@ export BWHC_QUERY_DATA_DIR=...    # ABSOLUTE path to dir where Query/Reporting S
 
 ### 3.1.4 HGNC Catalog Management 
 
-The bwHC application requires the HGNC catalog (in the TSV format as obtained from HUGO at https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/hgnc_complete_set.txt).
+The bwHC application requires the HGNC catalog (in the JSON format as obtained from HUGO at https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/json/hgnc_complete_set.json).
 Given that this evolves rapidly, it has to be updated regularly in the bwHC app (current turnover period: 7 days).
 The bwHC app has 2 strategies to obtain this catalog:
 
@@ -78,6 +78,7 @@ This requires that settings on the VM and IT environment allow for this external
 2) If the HGNC catalog file is already present in the configured directory and not older than the turnover period (see above), it will be read directly.
 The periodic update of the HGNC catalog can thus be set up alternatively with a cron job or similar.
 
+In case any of these operationsfails, the bwHC app will fall back to a pre-packaged (but thus possibly outdated) version of the HGNC catalog.
 
 -------
 ### 3.2 HTTP(S)/Communication Setup:
@@ -119,7 +120,7 @@ http.secret.key = "secret..."
 
 #### 3.2.1.2 Allowed Hosts:
 
-If the Play Application won't be addressed by a reverse proxy forwarding to 'localhost' (see 2.2.3.1) but by an _explicit_ IP and/or hostname,
+If the Play Application won't be addressed by a reverse proxy forwarding to 'localhost' (see 3.2.3.1) but by an _explicit_ IP and/or hostname,
 these "allowed hosts" must be configured in __production.conf__ :
 
 ```
