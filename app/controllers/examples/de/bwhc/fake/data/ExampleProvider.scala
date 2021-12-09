@@ -47,7 +47,7 @@ extends BaseController
 
   def mtbfile: Action[AnyContent] =
     Action.async {
-      implicit request =>
+      request =>
 
       Future.successful(
         Gen.of[MTBFile].next

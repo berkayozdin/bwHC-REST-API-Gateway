@@ -15,7 +15,7 @@ import de.bwhc.rest.util.sapphyre.playjson._
 
 
 class Router @Inject()(
-  controller: SystemAgentController
+  controller: ETLController
 )
 extends SimpleRouter
 {

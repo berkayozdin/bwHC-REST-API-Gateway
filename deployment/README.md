@@ -1,6 +1,10 @@
 # bwHealthCloud Backend Manual
 
 
+## System overview
+
+![bwHC_Node_Architecture](bwHC_Node_Architecture.png)
+
 
 -----
 ## 1. Pre-requisites:
@@ -69,16 +73,30 @@ export BWHC_QUERY_DATA_DIR=...    # ABSOLUTE path to dir where Query/Reporting S
 ### 3.1.4 HGNC Catalog Management 
 
 The bwHC application requires the HGNC catalog (in the JSON format as obtained from HUGO at https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/json/hgnc_complete_set.json).
-Given that this evolves rapidly, it has to be updated regularly in the bwHC app (current turnover period: 7 days).
+Given that this evolves rapidly, it has to be updated regularly in the bwHC app (currently implemented turnover period: 7 days).
 The bwHC app has 2 strategies to obtain this catalog:
 
-1) It will try to fetch it directly from the above URL and save it in the directory configured by environment variable <code>BWHC_HGNC_DIR</code>.
+#### 1)
+It will try to fetch it directly from the above URL and save it in the directory configured by environment variable <code>BWHC_HGNC_DIR</code>.
 This requires that settings on the VM and IT environment allow for this external URL call.
+Potential settings for a Proxy can be configured via the [JVM Networking System Properties](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/doc-files/net-properties.html)
 
-2) If the HGNC catalog file is already present in the configured directory and not older than the turnover period (see above), it will be read directly.
+- **https.proxyHost** / **https.proxyPort**
+- **http.proxyHost** / **http.proxyPort**
+
+by adding corresponding parameters to the bwHC app startup command in **bwhc-backend-service**, for instance
+```bash
+...
+-Dhttps.proxyHost=HOSTNAME \
+-Dhttps.proxyHost=PORT
+
+```
+
+#### 2)
+If the HGNC catalog file is already present in the configured directory and not older than the turnover period (see above), it will be read directly.
 The periodic update of the HGNC catalog can thus be set up alternatively with a cron job or similar.
 
-In case any of these operationsfails, the bwHC app will fall back to a pre-packaged (but thus possibly outdated) version of the HGNC catalog.
+In case any of these operations fails, the bwHC app will fall back to a pre-packaged (but thus possibly outdated) version of the HGNC catalog.
 
 -------
 ### 3.2 HTTP(S)/Communication Setup:

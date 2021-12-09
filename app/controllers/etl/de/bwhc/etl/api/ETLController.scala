@@ -14,11 +14,12 @@ import play.api.mvc.{
   AnyContent,
   BaseController,
   ControllerComponents,
+PlayBodyParsers,
   Request,
   Result
 }
 import play.api.libs.json.{
-  Json, Format
+  Json, JsValue, Format
 }
 
 import de.bwhc.mtb.data.entry.dtos.{
@@ -26,7 +27,7 @@ import de.bwhc.mtb.data.entry.dtos.{
   Patient,
   ZPM
 }
-import de.bwhc.mtb.data.entry.dtos.Patient
+//import de.bwhc.mtb.data.entry.dtos.Patient
 import de.bwhc.mtb.data.entry.api.MTBDataService
 
 
@@ -41,10 +42,13 @@ import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 
 import de.bwhc.services.WrappedDataService
 
+import de.bwhc.fhir.MTBFileBundle
 
-class SystemAgentController @Inject()(
+
+class ETLController @Inject()(
   val controllerComponents: ControllerComponents,
-  val dataService: WrappedDataService
+  val dataService: WrappedDataService,
+  override val parse: PlayBodyParsers
 )(
   implicit ec: ExecutionContext
 )
@@ -59,10 +63,64 @@ with RequestOps
   import MTBDataService.Response._
   import MTBDataService.Error._
 
+  private val FHIR_JSON = "application/fhir+json"
+
 
   //---------------------------------------------------------------------------
   // Data Import
   //---------------------------------------------------------------------------
+
+/*
+  def processUpload: Action[JsValue] =
+    Action.async(parse.tolerantJson) { req =>
+
+      import de.bwhc.fhir.Mappings._
+      import org.hl7.fhir.r4.FHIRJson._
+
+      val contentType = req.contentType
+
+      val js = req.body
+
+      val result =
+        contentType.filter(_ == FHIR_JSON)
+          .fold(
+            js.validate[MTBFile]
+          )(
+            _ => js.asFHIR[MTBFileBundle].map(_.mapTo[MTBFile])
+          )
+
+      result.asEither
+        .leftMap(Outcome.fromJsErrors(_))
+        .leftMap(toJson(_))
+        .fold(
+          out => Future.successful(BadRequest(out)),
+          mtbfile => {
+           (dataService.instance ! Upload(mtbfile))
+             .map(
+               _.fold(
+                 {
+                   case InvalidData(qc) =>
+                     UnprocessableEntity(toJson(qc))
+           
+                   case UnspecificError(msg) =>
+                     BadRequest(toJson(Outcome.fromErrors(List(msg))))
+                 },
+                 {
+                   case Imported(input,_) =>
+                     Ok
+//                     Ok(toJson(input))
+           
+                   case IssuesDetected(qc,_) => 
+                     Created(toJson(qc))
+           
+                   case _ => InternalServerError
+                 }
+               )
+             )
+          }
+        )
+    }
+*/
 
   def processUpload: Action[AnyContent] =
     JsonAction[MTBFile]{ mtbfile =>
@@ -80,18 +138,15 @@ with RequestOps
             {
               case Imported(input,_) =>
                 Ok(toJson(input))
-//                  .withHeaders(LOCATION -> s"/data/MTBFile/${mtbfile.patient.id.value}")
 
               case IssuesDetected(qc,_) => 
                 Created(toJson(qc))
-//                  .withHeaders(LOCATION -> s"/data/DataQualityReport/${mtbfile.patient.id.value}")
 
               case _ => InternalServerError
             }
           )
         )
     }
-
 
   def delete(patId: String): Action[AnyContent] = {
      Action.async {

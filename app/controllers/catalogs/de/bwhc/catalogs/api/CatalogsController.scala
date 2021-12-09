@@ -42,13 +42,13 @@ import shapeless.syntax._
 object Catalogs
 {
 
-  lazy val icd10gm     = ICD10GMCatalogs.getInstance.get
-                       
-  lazy val icdO3       = ICDO3Catalogs.getInstance.get
-                       
-  lazy val hgnc        = HGNCCatalog.getInstance.get
+  val icd10gm     = ICD10GMCatalogs.getInstance.get
+                  
+  val icdO3       = ICDO3Catalogs.getInstance.get
+                  
+  val hgnc        = HGNCCatalog.getInstance.get
 
-  lazy val medications = MedicationCatalog.getInstance.get
+  val medications = MedicationCatalog.getInstance.get
 
 
   object ToJson extends Poly1
