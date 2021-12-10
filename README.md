@@ -13,11 +13,11 @@ https://docs.google.com/spreadsheets/d/1dwntOuyitgAuxwwU4i0kMBJZQQc31UrNdpG6AFW5
 
 ### 1.2 Hypermedia
 
-The new bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) to be truly RESTful, i.e. to allow easier discoverability and usage of API functions.
+The bwHC backend includes experimental usage of [Hypermedia](https://en.wikipedia.org/wiki/HATEOAS) to be truly RESTful, i.e. to allow easier discoverability and usage of API functions.
 The used representation for hypermedia content is essentially [Hypertext Application Language](https://en.wikipedia.org/wiki/Hypertext_Application_Language) (HAL) with
 custom extensions inspired from [SIREN](https://github.com/kevinswiber/siren) and [CPHL](https://github.com/mikestowe/CPHL) to allow specifying _actions_ on resources in addition to just links/relations.
 
-The backend now has a "__hypermedia API entry point__":
+The backend has a "__hypermedia API entry point__":
 
 __GET__ http://HOST:PORT/bwhc
 
@@ -85,23 +85,22 @@ __GET__ http://HOST:PORT/bwhc/fake/data/api/MTBFile
 
 
 -------
-## 3. Data Upload/Management and Evidence Query API
-
--------
-### 3.1 Data Upload/Deletion API for external Systems
+## 3 ETL API (Data upload and deletion)
 
 __IMPORTANT__: This sub-API is not secured via a user login mechanism. 
 Access to this URL path SHOULD be restricted in the reverse proxy.
 
 
 -------
-#### 3.1.1 Upload MTBFile
-
-Required header: "Content-Type: application/json"
+### 3.1 Upload MTBFile
 
 __POST__ http://HOST:PORT/bwhc/etl/api/MTBFile
 
 __POST__ http://HOST:PORT/bwhc/etl/api/data/upload
+
+Supported formats (HTTP Header "Content-type"):
+- application/json
+- application/fhir+json (experimental)
 
 __Response__:
 
@@ -114,7 +113,7 @@ __Response__:
 
 
 -------
-#### 3.1.2 Delete a Patient's data
+### 3.2 Delete a Patient's data
 
 __DELETE__ http://HOST:PORT/bwhc/etl/api/Patient/{PatientID}
 
@@ -124,28 +123,28 @@ __DELETE__ http://HOST:PORT/bwhc/etl/api/MTBFile/{PatientID}
 
 
 -------
-### 3.2 Data Quality Feedback API
+## 4. Data Quality Feedback API
 
 -------
-#### 3.2.1 Get Patients with Data Quality Issue reports
+### 4.1 Get Patients with Data Quality Issue reports
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/data/Patient
 
 
 -------
-#### 3.2.2 Get a Patient's MTBFile
+### 4.2 Get a Patient's MTBFile
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/data/MTBFile/{PatientID}
 
 
 -------
-#### 3.2.3 Get DataQualityReport for a given Patient's MTBFile
+### 4.3 Get DataQualityReport for a given Patient's MTBFile
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/data/DataQualityReport/{PatientID}
 
 
 -------
-#### 3.2.4 Delete a Patient's data
+### 4.4 Delete a Patient's data
 
 __DELETE__ http://HOST:PORT/bwhc/mtb/api/data/Patient/{PatientID}
 
@@ -153,11 +152,11 @@ __DELETE__ http://HOST:PORT/bwhc/mtb/api/data/Patient/{PatientID}
 
 
 -------
-## 4. ZPM-QC-Reporting / Query API
+## 5. ZPM-QC-Reporting / Query API
 
-### 4.1 Reporting 
+### 5.1 Reporting 
 -------
-#### 4.1.1 Get LocalQCReport (from local ZPM site)
+#### 5.1.1 Get LocalQCReport (from local ZPM site)
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/reporting/QCReport?scope=local
 
@@ -165,7 +164,7 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/reporting/LocalQCReport
 
 
 -------
-#### 4.1.2 Get GlobalQCReport (combined LocalQCReport of all ZPM sites)
+#### 5.1.2 Get GlobalQCReport (combined LocalQCReport of all ZPM sites)
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/reporting/QCReport?scope=global
 
@@ -174,11 +173,11 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/reporting/GlobalQCReport
 
 
 -------
-### 4.2 Evidence Querying API
+### 5.2 Evidence Querying API
 
 
 -------
-#### 4.2.1 Query Submission
+#### 5.2.1 Query Submission
 
 __POST__ http://HOST:PORT/bwhc/mtb/api/query
 
@@ -233,14 +232,14 @@ __Response__: Created Query Object
 ```
 
 -------
-#### 4.2.2 Get Query Object by ID
+#### 5.2.2 Get Query Object by ID
 
 __GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}
 
 
 
 -------
-#### 4.2.3 Access to contents from Query ResultSet
+#### 5.2.3 Access to contents from Query ResultSet
 
 | Resource | URL |
 |----------|--------|
@@ -252,10 +251,10 @@ __TODO TODO TODO__
 
 
 -------
-## 5 Catalogs and ValueSet API
+## 6 Catalogs and ValueSet API
 
 -------
-### 5.1 Coding Systems (Catalogs)
+### 6.1 Coding Systems (Catalogs)
 
 __GET__ http://HOST:PORT/bwhc/catalogs/api/Coding/SYSTEM[?pattern=CHARS][?version=VERSION]
 
@@ -277,11 +276,11 @@ Optional Parameter "version" indicated requested catalog version (only different
 
 
 -------
-### 5.2 ValueSets
+### 6.2 ValueSets
 
 __GET__ http://HOST:PORT/bwhc/catalogs/api/ValueSet
 
-#### 5.2.1 Fetch a given ValueSet NAME
+#### 6.2.1 Fetch a given ValueSet NAME
 
 __GET__ http://HOST:PORT/bwhc/catalogs/api/ValueSet/NAME
 

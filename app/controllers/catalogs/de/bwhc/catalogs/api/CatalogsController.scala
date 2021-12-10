@@ -31,11 +31,12 @@ import de.bwhc.catalogs.hgnc.HGNCCatalog
 import de.bwhc.catalogs.med.MedicationCatalog
 
 import de.bwhc.mtb.data.entry.dtos._
+import de.bwhc.mtb.query.api.Query
 
 import de.bwhc.rest.util.SearchSet
 
 
-import shapeless.{Poly1,Generic}
+import shapeless.{Poly1,Generic,::}
 import shapeless.syntax._
 
 
@@ -69,6 +70,19 @@ object Catalogs
   }
 
 
+
+  lazy val jsonValueSets =
+    (
+     ValueSet[Query.Mode.Value] ::
+     ValueSet[Query.DrugUsage.Value] ::
+     ValueSets.allValueSets.toHList
+    )
+    .map(ToJson)
+    .toList
+    .map(js => (js \ "name").as[String].toLowerCase -> js)
+    .toMap
+
+/*
   lazy val jsonValueSets =
     ValueSets.allValueSets
       .toHList
@@ -76,8 +90,7 @@ object Catalogs
       .toList
       .map(js => (js \ "name").as[String].toLowerCase -> js)
       .toMap
-
-
+*/
 }
 
 

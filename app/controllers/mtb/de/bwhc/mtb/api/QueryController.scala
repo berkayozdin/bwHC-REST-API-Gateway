@@ -23,6 +23,7 @@ import play.api.libs.json.{
 import Json.toJson
 
 import de.bwhc.mtb.data.entry.dtos.{
+  Coding,
   MTBFile,
   Patient,
   ZPM
@@ -55,7 +56,8 @@ import de.bwhc.rest.util.sapphyre.playjson._
 
 
 final case class QueryForm(
-  mode: Query.Mode.Value,
+  mode: Coding[Query.Mode.Value],
+//  mode: Query.Mode.Value,
   parameters: Query.Parameters
 )
 
@@ -156,7 +158,7 @@ with AuthenticationOps[UserWithRoles]
           {
             case QueryForm(mode,params) =>
               for {         
-                allowed <- user has QueryRightFor(mode)
+                allowed <- user has QueryRightFor(mode.code)
             
                 result <-
                   if (allowed)
@@ -171,13 +173,6 @@ with AuthenticationOps[UserWithRoles]
                                    (out,q) => HyperQuery(q).map(Ior.both(out,_))
                                  )
                       result  = outcome.toJsonResult
-/*
-                      outcome =  resp.bimap(
-                                   errs => Outcome.fromErrors(errs.toList),
-                                   HyperQuery(_)
-                                 )
-                      result  =  outcome.toJsonResult
-*/
                     } yield result
                   else 
                     Future.successful(Forbidden)
@@ -192,7 +187,6 @@ with AuthenticationOps[UserWithRoles]
   def update(
     id: Query.Id
   ): Action[AnyContent] = 
-//    AuthenticatedAction( EvidenceQueryRight AND AccessRightFor(id) ).async {
     AuthenticatedAction( AccessRightFor(id) ).async {
 
       request => 
@@ -205,18 +199,12 @@ with AuthenticationOps[UserWithRoles]
 
           update => 
             for {         
-              queryModeAllowed <- user has QueryRightFor(update.mode)
+              queryModeAllowed <- user has QueryRightFor(update.mode.code)
 
               result <-
                 if (queryModeAllowed)
                   for {
                     resp    <- service ! update
-/*
-                    outcome =  resp.bimap(
-                                 errs => Outcome.fromErrors(errs.toList),
-                                 HyperQuery(_)
-                               )
-*/
                     outcome <- resp.leftMap(
                                  errs => Outcome.fromErrors(errs.toList)
                                )
@@ -254,12 +242,6 @@ with AuthenticationOps[UserWithRoles]
             applyFilter => 
               for {
                 resp    <- service ! applyFilter
-/*
-                outcome =  resp.bimap(
-                             errs => Outcome.fromErrors(errs.toList),
-                             HyperQuery(_)
-                           )
-*/
                 outcome <- resp.leftMap(
                              errs => Outcome.fromErrors(errs.toList)
                            )
