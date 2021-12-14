@@ -183,17 +183,35 @@ __POST__ http://HOST:PORT/bwhc/mtb/api/query
 
 ```javascript
 {
-  "mode": "local",                         // Query Mode: {local,federated}
+  "mode": {
+      "code": "local",                  // Values: "local", "federated"
+  },
   "parameters": {
-    "diagnoses": ["C22.0", "C25.6", ...],  // ICD-10-GM codes
-    "medicationsWithUsage": [
-      {
-        "code": "L01XE15",                 // ATC Medication Code,
-        "usage": "used"                    // Medication usage: {recommended, used}
-      },                                  
-      ...                                 
-    ],                                    
-    "responses": ["CR","PR", ...]          // Therapy Responses (RECIST codes)
+      "diagnoses": [
+          {
+              "code": "C25.1",
+          }
+      ],
+      "medicationsWithUsage": [
+          {
+              "medication": {
+                  "code": "L01XX59",   // ATC code
+              },
+              "usage": {
+                  "code": "used",      // Values: "used", "recommended"
+              }
+          }
+      ],
+      "mutatedGenes": [
+          {
+              "code": "HGNC:22",       // HGNC ID
+          }
+      ],
+      "responses": [
+          {
+              "code": "SD",            // RECIST code 
+          }
+      ]
   }
 }
 ```
@@ -202,33 +220,107 @@ __Response__: Created Query Object
 
 ```javascript
 {
-  "id": "b65defa0-3bef-44e2-b1f7-3dfec07e8a24",
-  "querier": "TODO",
-  "submittedAt": "2020-05-12T15:35:50.528746",
-  "mode": "local",
-  "parameters": {
-      "diagnoses": [
-          "C25.6"
-      ],
-      "medicationsWithUsage": [
-          {
-              "code": "L01XE15",
-              "usage": "used"
-          }
-      ],
-      "responses": [
-          "PR"
-      ]
-  },
-  "filter": {
-      "ageRange": {
-          "end": 0,
-          "start": 0
-      },
-      "genders": []
-  },
-  "lastUpdate": "2020-05-12T13:35:50.529974Z",
+    "id": "6033bc57-1ec5-4c32-a1e5-cf97355ee950",
+    "querier": "082e1d9e-9d94-43a5-8a9f-1aed7118f6e8",
+    "submittedAt": "2021-12-14T08:28:31.695372Z",
+    "lastUpdate": "2021-12-14T08:28:31.695389Z",
+    "mode": {
+        "code": "local",
+        "display": "Lokal",
+        "system": "Query-Mode"
+    },
+    "parameters": {
+        "diagnoses": [
+            {
+                "code": "C25.1",
+                "display": "Bösartige Neubildung: Pankreaskörper",
+                "system": "ICD-10-GM",
+                "version": "2022"
+            }
+        ],
+        "medicationsWithUsage": [
+            {
+                "medication": {
+                    "code": "L01XX59",
+                    "display": "Enasidenib",
+                    "system": "ATC",
+                    "version": "2021"
+                },
+                "usage": {
+                    "code": "used",
+                    "system": "Drug-Usage"
+                }
+            }
+        ],
+        "mutatedGenes": [
+            {
+                "code": "HGNC:22",
+                "display": "adeno-associated virus integration site 1",
+                "system": "HGNC"
+            }
+        ],
+        "responses": [
+            {
+                "code": "SD",
+                "display": "Stable Disease",
+                "system": "RECIST"
+            }
+        ]
+    },
+    "filter": {
+        "ageRange": {
+            "l": 0,
+            "r": 0
+        },
+        "genders": [],
+        "vitalStatus": []
+    },
+    "zpms": []
+    "_links": {
+        "base": {
+            "href": "/bwhc/mtb/api/query/"
+        },
+        "molecular-therapies": {
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950/molecular-therapies"
+        },
+        "ngs-summaries": {
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950/ngs-summaries"
+        },
+        "patients": {
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950/patients"
+        },
+        "result-summary": {
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950/result-summary"
+        },
+        "self": {
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950"
+        },
+        "therapy-recommendations": {
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950/therapy-recommendations"
+        }
+    },
+    "_actions": {
+        "apply-filter": {
+            "formats": {
+                "application/json": {
+                    "href": "/bwhc/mtb/api/query/schema/apply-filter"
+                }
+            },
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950/filter",
+            "method": "POST"
+        },
+        "update": {
+            "formats": {
+                "application/json": {
+                    "href": "/bwhc/mtb/api/query/schema/update"
+                }
+            },
+            "href": "/bwhc/mtb/api/query/6033bc57-1ec5-4c32-a1e5-cf97355ee950",
+            "method": "POST"
+        }
+    },
 }
+
 ```
 
 -------
@@ -241,13 +333,7 @@ __GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}
 -------
 #### 5.2.3 Access to contents from Query ResultSet
 
-| Resource | URL |
-|----------|--------|
-| Patients |__GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}/Patient   |
-
-__TODO TODO TODO__
-
-
+See hypermedia links in example above
 
 
 -------
