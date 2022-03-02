@@ -150,20 +150,6 @@ trait RequestOps
 
     }
 
-/*
-    def toJsonResult: Result = {
-       ior.bimap(
-        toJson(_),
-        toJson(_)
-      )
-      .fold(
-        out => InternalServerError(out),
-        Ok(_),
-        (out,_) => InternalServerError(out),
-      )
-    }
-*/
-
   }
 
 

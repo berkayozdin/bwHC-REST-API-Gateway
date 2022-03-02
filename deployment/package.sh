@@ -61,6 +61,7 @@ sed -i $REPLACE_COMMAND $PCKG_DIR/install.sh
 
 
 
-zip --encrypt -r $PCKG_ZIP $PCKG_DIR/
+//zip --encrypt -r $PCKG_ZIP $PCKG_DIR/
+zip -r $PCKG_ZIP $PCKG_DIR/
 
 rm -r $PCKG_DIR

@@ -329,9 +329,24 @@ __Response__: Created Query Object
 __GET__ http://HOST:PORT/bwhc/mtb/api/query/{QueryID}
 
 
+#### 5.2.3 Update Query
+
+__POST__ http://HOST:PORT/bwhc/mtb/api/query/QUERY_ID
+
+```javascript
+{
+  "id": "6033bc57-1ec5-4c32-a1e5-cf97355ee950",
+  "mode": {
+      "code": .... 
+  },
+  "parameters": {
+    ...
+  }
+}
+```
 
 -------
-#### 5.2.3 Access to contents from Query ResultSet
+#### 5.2.4 Access to contents from Query ResultSet
 
 See hypermedia links in example above
 

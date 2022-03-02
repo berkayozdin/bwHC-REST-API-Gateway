@@ -70,19 +70,17 @@ with RequestOps
   // Data Import
   //---------------------------------------------------------------------------
 
-/*
+
   def processUpload: Action[JsValue] =
     Action.async(parse.tolerantJson) { req =>
 
       import de.bwhc.fhir.Mappings._
       import org.hl7.fhir.r4.FHIRJson._
 
-      val contentType = req.contentType
-
       val js = req.body
 
       val result =
-        contentType.filter(_ == FHIR_JSON)
+        req.contentType.filter(_ == FHIR_JSON)
           .fold(
             js.validate[MTBFile]
           )(
@@ -108,7 +106,6 @@ with RequestOps
                  {
                    case Imported(input,_) =>
                      Ok
-//                     Ok(toJson(input))
            
                    case IssuesDetected(qc,_) => 
                      Created(toJson(qc))
@@ -120,8 +117,9 @@ with RequestOps
           }
         )
     }
-*/
 
+
+/*
   def processUpload: Action[AnyContent] =
     JsonAction[MTBFile]{ mtbfile =>
 
@@ -147,6 +145,7 @@ with RequestOps
           )
         )
     }
+*/
 
   def delete(patId: String): Action[AnyContent] = {
      Action.async {

@@ -173,25 +173,6 @@ trait QueryHypermedia
 
   }
 
-/*
-  def HyperQuery(
-    query: Query
-  ) = {
-    query.withLinks(
-      BASE            -> ApiBaseLink,
-      SELF            -> QueryLink(query.id),
-      PATIENTS        -> PatientsLink(query.id),
-      NGS_SUMMARIES   -> NGSSummariesLink(query.id),
-      RECOMMENDATIONS -> RecommendationsLink(query.id),
-      THERAPIES       -> TherapiesLink(query.id)
-    )
-    .withActions(
-      UpdateAction(query.id),
-      ApplyFilterAction(query.id)
-    )
-
-  }
-*/
 
   def HyperResultSummary(
     result: ResultSummary
