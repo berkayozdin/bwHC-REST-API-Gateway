@@ -107,6 +107,15 @@ extends SimpleRouter
     case GET(p"/query/$id/mtbfiles/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
     case GET(p"/query/$id/mtbfileViews/$patId")     => queryController.mtbfileViewFrom(Query.Id(id),patId)
     case GET(p"/query/$id")                         => queryController.query(Query.Id(id))
+//    case GET(p"/query"?q"querier=$id")              => queryController.queriesOf(Querier(id))
+//    case POST(p"/query/$id:save")                   => queryController.save(Query.Id(id))
+//    case POST(p"/query/$id:reload")                 => queryController.reload(Query.Id(id))
+//    case DELETE(p"/query/$id")                      => queryController.delete(Query.Id(id))
+
+    case GET(p"/MTBFile" ?
+              q"patient=$patId" &
+              q_o"site=$site" &
+              q_o"snapshot=$snpId")                 => queryController.mtbfile(patId,site,snpId)
 
   }
 

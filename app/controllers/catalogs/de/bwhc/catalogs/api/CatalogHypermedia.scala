@@ -28,11 +28,11 @@ trait CatalogHypermedia
 
 
   private val valueSetLinks =
-        Catalogs
-          .jsonValueSets
-          .keys
-          .map(vs => vs -> Link(s"$BASE_URI/ValueSet?name=$vs"))
-          .toList       
+    Catalogs
+      .jsonValueSets
+      .keys
+      .map(vs => vs -> Link(s"$BASE_URI/ValueSet?name=$vs"))
+      .toList       
 
   val ApiBaseLink =
     Link(s"$BASE_URI/")

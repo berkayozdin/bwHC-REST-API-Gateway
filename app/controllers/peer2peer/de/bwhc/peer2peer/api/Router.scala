@@ -34,6 +34,8 @@ extends SimpleRouter
 
     case POST(p"/LocalQCReport")   => controller.getLocalQCReport
 
+    case POST(p"/MTBFile:request") => controller.processMTBFileRequest
+
   }
 
 

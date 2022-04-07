@@ -1,7 +1,7 @@
 package de.bwhc.mtb.api
 
 
-
+import scala.util.{Either,Left,Right}
 import scala.concurrent.{
   Future,
   ExecutionContext
@@ -57,7 +57,6 @@ import de.bwhc.rest.util.sapphyre.playjson._
 
 final case class QueryForm(
   mode: Coding[Query.Mode.Value],
-//  mode: Query.Mode.Value,
   parameters: Query.Parameters
 )
 
@@ -135,6 +134,38 @@ with AuthenticationOps[UserWithRoles]
       } yield result
     }
 
+
+  def mtbfile(
+    patId: String,
+    site: Option[String],
+    snapshot: Option[String]
+  ): Action[AnyContent] = 
+    AuthenticatedAction( MTBFileAccessRight ).async {
+      
+      request =>
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      for {
+        errOrSnp <-
+          service.mtbFileSnapshotFor(
+            Patient.Id(patId),
+            site.map(ZPM(_)),
+            snapshot.map(Snapshot.Id(_))
+          )
+
+        result = 
+          errOrSnp match {
+            case Left(err)         => InternalServerError(Json.toJson(Outcome.fromErrors(List(err))))
+
+            case Right(Some(mtbf)) => Ok(Json.toJson(mtbf))
+
+            case Right(None)       => NotFound("Invalid Patient ID or Snapshot ID")
+          }
+      } yield result
+
+    }
 
   //---------------------------------------------------------------------------
   // Query commands

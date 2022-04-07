@@ -86,26 +86,6 @@ with RequestOps
           BadRequest(s"Missing Form Parameter(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID")
         )
       )
-/*
-      val result =
-        for {
-          origin  <- request.headers.get(BWHC_SITE_ORIGIN).map(ZPM(_))
-          querier <- request.headers.get(BWHC_QUERY_USERID).map(Querier(_))
-          res =
-            for {
-              qc      <- queryService.instance.getLocalQCReportFor(origin,querier)
-              outcome =  qc.leftMap(List(_))
-                           .leftMap(Outcome.fromErrors)
-            } yield outcome.toJsonResult
-        
-        } yield res
-
-      result.getOrElse(
-        Future.successful(
-          BadRequest(s"Missing Header(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID")
-        )
-      )
-*/
     }
  
 
@@ -116,6 +96,17 @@ with RequestOps
           .map(SearchSet(_))
           .map(Json.toJson(_))
           .map(Ok(_))
+    }
+
+
+  def processMTBFileRequest: Action[AnyContent] = 
+    JsonAction[PeerToPeerMTBFileRequest]{
+      req =>
+        queryService.instance.process(req)
+          .map {
+            case Some(snp) => Ok(Json.toJson(snp))
+            case None      => NotFound
+          }
     }
 
 }
