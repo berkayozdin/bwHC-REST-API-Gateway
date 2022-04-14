@@ -2,16 +2,10 @@ package de.bwhc.rest.util.sapphyre
 
 
 
-//import play.api.libs.json.Json
-
-
 case class MediaType(value: String) extends AnyVal
 
 object MediaType
 {
-
-//  implicit val format = Json.valueFormat[MediaType]
-
 
   val APPLICATION_JSON             = MediaType("application/json")
   val JSON                         = APPLICATION_JSON

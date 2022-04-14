@@ -42,11 +42,14 @@ trait QueryHypermedia
   import QueryPermissions._
 
 
-  private val BASE_URI = "/bwhc/mtb/api/query"
+  private val BASE_URI       = "/bwhc/mtb/api/query"
+//  private val BASE_URI       = "/bwhc/mtb/api"
+//  private val QUERY_BASE_URI = s"$BASE_URI/query"
 
   private val SUBMIT_LOCAL_QUERY     = "submit-local-query"
   private val SUBMIT_FEDERATED_QUERY = "submit-federated-query"
   private val APPLY_FILTER           = "apply-filter"
+  private val RETRIEVE_MTBFILE       = "retrieve-mtbfile"
 
   private val QUERY           = "query"
   private val RESULT_SUMMARY  = "result-summary"
@@ -78,6 +81,10 @@ trait QueryHypermedia
   private def ApplyFilterAction(queryId: Query.Id) =
     APPLY_FILTER -> Action(POST -> s"$BASE_URI/${queryId.value}/filter")
                       .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$APPLY_FILTER"))
+
+
+  private val RetrieveMTBFileAction =
+    RETRIEVE_MTBFILE -> Action(GET -> s"/bwhc/mtb/api/MTBFile?patient={id}[&site={site}][&snapshot={snapshotId}]")
 
 
   private def QueryLink(queryId: Query.Id) =
@@ -130,10 +137,13 @@ trait QueryHypermedia
 
       federatedQueryRights <- user has FederatedEvidenceQueryRight
 
+      mtbFileRetrievalRight <- user has MTBFileAccessRight
+
       result =
         Resource.empty.withLinks(SELF -> ApiBaseLink) |
         (r => if (localQueryRights)     r.withActions(LocalQueryAction)     else r) |
-        (r => if (federatedQueryRights) r.withActions(FederatedQueryAction) else r)
+        (r => if (federatedQueryRights) r.withActions(FederatedQueryAction) else r) |
+        (r => if (mtbFileRetrievalRight) r.withActions(RetrieveMTBFileAction) else r)
 
     } yield result
   }

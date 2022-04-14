@@ -6,7 +6,7 @@ object Method extends Enumeration
 {
   type Method = Value
 
-  val DELETE, GET, PATCH, POST, PUT = Value
+  val DELETE, GET, PATCH, POST, PUT, OPTIONS = Value
 }
 
 

@@ -149,10 +149,10 @@ with AuthenticationOps[UserWithRoles]
 
       for {
         errOrSnp <-
-          service.mtbFileSnapshotFor(
+          service.retrieveMTBFileSnapshot(
             Patient.Id(patId),
-            site.map(ZPM(_)),
-            snapshot.map(Snapshot.Id(_))
+            snapshot.map(Snapshot.Id(_)),
+            site.map(ZPM(_))
           )
 
         result = 

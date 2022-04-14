@@ -49,7 +49,7 @@ with AuthenticationOps[UserWithRoles]
   import de.bwhc.mtb.api.DataManagementPermissions.DataQualityAccessRights
   import de.bwhc.mtb.api.QueryPermissions.{
     QCAccessRight,
-    EvidenceQueryRight
+    EvidenceQueryRight,
   }
   import de.bwhc.mtb.api.{
     ReportingHypermedia,

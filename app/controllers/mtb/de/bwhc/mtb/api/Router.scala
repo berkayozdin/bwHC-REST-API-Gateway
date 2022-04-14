@@ -35,8 +35,9 @@ extends SimpleRouter
                                                           .getOrElse(NotFound)
                                                       }
 
-    case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
+//    case DELETE(p"/data/Patient/$id")              => dataController.delete(id)
 
+//    case OPTIONS(p"/data-quality")                     => dataController.Action {
     case GET(p"/data-quality")                     => dataController.Action {
                                                         Ok(toJson(DataQualityHypermedia.ApiResource))
                                                       }
@@ -86,6 +87,7 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // MTBFile Queries                                                  
     //-------------------------------------------------------------------------
+//    case OPTIONS(p"/query")                            => queryController.QueryApi
     case GET(p"/query")                            => queryController.QueryApi
 
     case GET(p"/query/schema/$rel")                => queryController.Action {
@@ -94,10 +96,11 @@ extends SimpleRouter
                                                           .getOrElse(NotFound)
                                                       }
  
+//    case POST(p"/query")                           => queryController.submitOrUpdate
     case POST(p"/query")                           => queryController.submit
+//    case POST(p"/query:reset")                     => queryController.resetQuery
     case POST(p"/query/$id")                       => queryController.update(Query.Id(id))
     case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
-
                                                   
     case GET(p"/query/$id/result-summary")          => queryController.resultSummaryFrom(Query.Id(id))
     case GET(p"/query/$id/patients")                => queryController.patientsFrom(Query.Id(id))
@@ -107,15 +110,18 @@ extends SimpleRouter
     case GET(p"/query/$id/mtbfiles/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
     case GET(p"/query/$id/mtbfileViews/$patId")     => queryController.mtbfileViewFrom(Query.Id(id),patId)
     case GET(p"/query/$id")                         => queryController.query(Query.Id(id))
-//    case GET(p"/query"?q"querier=$id")              => queryController.queriesOf(Querier(id))
-//    case POST(p"/query/$id:save")                   => queryController.save(Query.Id(id))
-//    case POST(p"/query/$id:reload")                 => queryController.reload(Query.Id(id))
-//    case DELETE(p"/query/$id")                      => queryController.delete(Query.Id(id))
+
+/*
+    case GET(p"/query"?q"querier=$id")              => queryController.queriesOf(Querier(id))
+    case POST(p"/query/$id:save")                   => queryController.save(Query.Id(id))
+    case POST(p"/query/$id:reload")                 => queryController.reload(Query.Id(id))
+    case DELETE(p"/query/$id")                      => queryController.delete(Query.Id(id))
+*/
 
     case GET(p"/MTBFile" ?
-              q"patient=$patId" &
-              q_o"site=$site" &
-              q_o"snapshot=$snpId")                 => queryController.mtbfile(patId,site,snpId)
+             q"patient=$patId" &
+             q_o"site=$site" &
+             q_o"snapshot=$snpId")                 => queryController.mtbfile(patId,site,snpId)
 
   }
 
