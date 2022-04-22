@@ -13,7 +13,8 @@ import play.api.mvc.{
   AnyContent,
   BaseController,
   ControllerComponents,
-  Result
+  Result,
+  Accepting
 }
 import play.api.libs.json.Json.toJson
 
@@ -23,7 +24,6 @@ import de.bwhc.mtb.data.entry.dtos.MTBFile
 import de.bwhc.mtb.data.gens._
 
 
-//import de.bwhc.util.mapping.syntax._
 import org.hl7.fhir.r4.FHIRJson._
 import de.bwhc.fhir.MTBFileBundle
 import de.bwhc.fhir.Mappings._
@@ -40,10 +40,32 @@ extends BaseController
   
   private val FHIR_JSON = "application/fhir+json"
 
+  private val AcceptsFHIR = Accepting(FHIR_JSON)
 
   implicit val rnd = new scala.util.Random(42)
 
+/*
+  def mtbfile: Action[AnyContent] =
+    Action.async {
+      implicit request =>
 
+      Future.successful(
+        Gen.of[MTBFile].next
+      )
+      .map {
+        mtbf =>
+//TODO: correct -- MediaType match doesn't work yet
+
+         render {
+           case AcceptsFHIR()  =>
+             Ok(mtbf.mapTo[MTBFileBundle].toFHIRJson).as(FHIR_JSON)
+
+           case Accepts.Json() =>
+             Ok(toJson(mtbf))
+         }
+      }
+    }
+*/
 
   def mtbfile: Action[AnyContent] =
     Action.async {

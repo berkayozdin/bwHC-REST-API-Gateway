@@ -82,15 +82,6 @@ object Catalogs
     .map(js => (js \ "name").as[String].toLowerCase -> js)
     .toMap
 
-/*
-  lazy val jsonValueSets =
-    ValueSets.allValueSets
-      .toHList
-      .map(ToJson)
-      .toList
-      .map(js => (js \ "name").as[String].toLowerCase -> js)
-      .toMap
-*/
 }
 
 

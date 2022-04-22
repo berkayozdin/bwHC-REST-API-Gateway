@@ -54,7 +54,7 @@ import de.bwhc.services.{WrappedQueryService,WrappedSessionManager}
 import de.bwhc.rest.util.sapphyre.playjson._
 
 
-
+/*
 final case class QueryForm(
   mode: Coding[Query.Mode.Value],
   parameters: Query.Parameters
@@ -64,7 +64,7 @@ object QueryForm
 {
   implicit val format = Json.format[QueryForm]
 }
-
+*/
 
 class QueryController @Inject()(
   val controllerComponents: ControllerComponents,
@@ -180,6 +180,47 @@ with AuthenticationOps[UserWithRoles]
 
       request => 
 
+      implicit val user    = request.user
+      implicit val querier = Querier(user.userId.value)
+
+      errorsOrJson[Command.Submit]
+        .apply(request)
+        .fold(
+          Future.successful,
+          {
+            case cmd @ Command.Submit(mode,params) =>
+              for {         
+                allowed <- user has QueryRightFor(mode.code)
+            
+                result <-
+                  if (allowed)
+                    for {
+                      resp    <- service ! cmd
+                      outcome <- resp.leftMap(
+                                   errs => Outcome.fromErrors(errs.toList)
+                                 )
+                                 .fold(
+                                   out     => Future.successful(out.leftIor),
+                                   q       => HyperQuery(q).map(_.rightIor),
+                                   (out,q) => HyperQuery(q).map(Ior.both(out,_))
+                                 )
+                      result  = outcome.toJsonResult
+                    } yield result
+                  else 
+                    Future.successful(Forbidden)
+                  
+              } yield result
+          }
+        )
+
+   }
+
+/*
+  def submit: Action[AnyContent] =
+    AuthenticatedAction( EvidenceQueryRight ).async {
+
+      request => 
+
       implicit val user = request.user
 
       errorsOrJson[QueryForm]
@@ -254,7 +295,7 @@ with AuthenticationOps[UserWithRoles]
         )
 
     }
-
+*/
 
   def applyFilter(
     id: Query.Id
@@ -265,6 +306,7 @@ with AuthenticationOps[UserWithRoles]
         request => 
   
         implicit val user = request.user
+        implicit val querier = Querier(user.userId.value)
 
         errorsOrJson[Command.ApplyFilter].apply(request)
           .fold(

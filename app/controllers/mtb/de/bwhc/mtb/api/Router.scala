@@ -96,10 +96,9 @@ extends SimpleRouter
                                                           .getOrElse(NotFound)
                                                       }
  
-//    case POST(p"/query")                           => queryController.submitOrUpdate
     case POST(p"/query")                           => queryController.submit
 //    case POST(p"/query:reset")                     => queryController.resetQuery
-    case POST(p"/query/$id")                       => queryController.update(Query.Id(id))
+//    case POST(p"/query/$id")                       => queryController.update(Query.Id(id))
     case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
                                                   
     case GET(p"/query/$id/result-summary")          => queryController.resultSummaryFrom(Query.Id(id))

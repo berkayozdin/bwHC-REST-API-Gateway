@@ -14,11 +14,7 @@ object DTOSchemas
 {
 
   implicit val icd10gmSchema = Json.schema[ICD10GM]("icd-10-code")
-//  implicit val geneSchema    = Json.schema[Variant.GeneSymbol]("gene-symbol")
   implicit val geneSchema    = Json.schema[Gene.HgncId]("hgnc-id")
-
-//  implicit val medUsageSchema = Json.schema[Query.MedicationWithUsage]("medication-with-usage")
-//  implicit val parametersSchema = Json.schema[Query.Parameters]("parameters")
 
 
   implicit def codingSystemSchema[T](
@@ -57,8 +53,9 @@ trait QuerySchemas
   import DTOSchemas._
 
   implicit val querySchema       = Json.schema[Query]
-  implicit val queryFormSchema   = Json.schema[QueryForm]
-  implicit val queryUpdateSchema = Json.schema[Command.Update]
+//  implicit val queryFormSchema   = Json.schema[QueryForm]
+  implicit val querySubmitSchema = Json.schema[Command.Submit]
+//  implicit val queryUpdateSchema = Json.schema[Command.Update]
   implicit val queryFilterSchema = Json.schema[Command.ApplyFilter]
   implicit val patientViewSchema = Json.schema[PatientView]
   implicit val ngsSummarySchema  = Json.schema[NGSSummary]

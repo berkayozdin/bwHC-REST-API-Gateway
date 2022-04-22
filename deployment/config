@@ -39,10 +39,13 @@ export BWHC_CONNECTOR_CONFIG=$BWHC_BASE_DIR/bwhcConnectorConfig.xml
 
 
 #TODO adapt data directories
+#export BWHC_DATA_BASE_DIR=TODO
+#export BWHC_DATA_ENTRY_DIR="$BWHC_DATA_BASE_DIR/data_entry"
+#export BWHC_QUERY_DATA_DIR="$BWHC_DATA_BASE_DIR/query_data"
+#export BWHC_USER_DB_DIR="$BWHC_DATA_BASE_DIR/user_data"
+
 export BWHC_DATA_ENTRY_DIR=TODO
-
 export BWHC_QUERY_DATA_DIR=TODO
-
 export BWHC_USER_DB_DIR=TODO
 
 export BWHC_HGNC_DIR="$BWHC_BASE_DIR/hgnc_data/"

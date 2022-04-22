@@ -74,9 +74,12 @@ trait QueryHypermedia
     SUBMIT_FEDERATED_QUERY -> Action(POST -> BASE_URI)
                                 .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$QUERY"))
 
+//  private def UpdateAction(queryId: Query.Id) =
+//    UPDATE -> Action(POST -> s"$BASE_URI/${queryId.value}")
+//                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$UPDATE"))
   private def UpdateAction(queryId: Query.Id) =
-    UPDATE -> Action(POST -> s"$BASE_URI/${queryId.value}")
-                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$UPDATE"))
+    UPDATE -> Action(POST -> BASE_URI)
+                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$QUERY"))
 
   private def ApplyFilterAction(queryId: Query.Id) =
     APPLY_FILTER -> Action(POST -> s"$BASE_URI/${queryId.value}/filter")
@@ -115,8 +118,9 @@ trait QueryHypermedia
 
   private val schemas =
     Map(
-      QUERY        -> JsValueSchema[QueryForm],
-      UPDATE       -> JsValueSchema[QueryOps.Command.Update],
+//      QUERY        -> JsValueSchema[QueryForm],
+      QUERY        -> JsValueSchema[QueryOps.Command.Submit],
+//      UPDATE       -> JsValueSchema[QueryOps.Command.Update],
       APPLY_FILTER -> JsValueSchema[QueryOps.Command.ApplyFilter],
       PATIENTS     -> JsValueSchema[PatientView],
     )
