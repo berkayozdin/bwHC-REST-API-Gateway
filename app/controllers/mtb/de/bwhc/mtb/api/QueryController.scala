@@ -466,11 +466,12 @@ with AuthenticationOps[UserWithRoles]
 
   def mtbfileFrom(
     queryId: Query.Id,
-    patId: String
+//    patId: String
+    patId: Patient.Id
   ): Action[AnyContent] = 
     AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
       .async {
-        OptionT(service.mtbFileFrom(queryId,Patient.Id(patId)))
+        OptionT(service.mtbFileFrom(queryId,patId))
           .map(HyperMTBFile(_)(queryId))
           .map(Json.toJson(_))
           .fold(
@@ -483,11 +484,11 @@ with AuthenticationOps[UserWithRoles]
 
   def mtbfileViewFrom(
     queryId: Query.Id,
-    patId: String
+    patId: Patient.Id
   ): Action[AnyContent] = 
     AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
       .async {
-        OptionT(service.mtbFileViewFrom(queryId,Patient.Id(patId)))
+        OptionT(service.mtbFileViewFrom(queryId,patId))
           .map(HyperMTBFileView(_)(queryId))
           .map(Json.toJson(_))
           .fold(

@@ -15,6 +15,7 @@ import play.api.libs.json.Json.toJson
 import de.bwhc.rest.util.sapphyre.playjson._
 
 
+
 class Router @Inject()(
   dataController: DataManagementController,
   queryController: QueryController,
@@ -98,17 +99,18 @@ extends SimpleRouter
  
     case POST(p"/query")                           => queryController.submit
 //    case POST(p"/query:reset")                     => queryController.resetQuery
-    case POST(p"/query/$id")                       => queryController.update(Query.Id(id))
+    case POST(p"/query/${QueryId(qid)}")           => queryController.update(qid)
     case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
                                                   
-    case GET(p"/query/$id/result-summary")          => queryController.resultSummaryFrom(Query.Id(id))
-    case GET(p"/query/$id/patients")                => queryController.patientsFrom(Query.Id(id))
-    case GET(p"/query/$id/therapy-recommendations") => queryController.therapyRecommendationsFrom(Query.Id(id))
-    case GET(p"/query/$id/molecular-therapies")     => queryController.molecularTherapiesFrom(Query.Id(id))
-    case GET(p"/query/$id/ngs-summaries")           => queryController.ngsSummariesFrom(Query.Id(id))
-    case GET(p"/query/$id/mtbfiles/$patId")         => queryController.mtbfileFrom(Query.Id(id),patId)
-    case GET(p"/query/$id/mtbfileViews/$patId")     => queryController.mtbfileViewFrom(Query.Id(id),patId)
-    case GET(p"/query/$id")                         => queryController.query(Query.Id(id))
+    case GET(p"/query/${QueryId(qid)}/result-summary")               => queryController.resultSummaryFrom(qid)
+    case GET(p"/query/${QueryId(qid)}/patients")                     => queryController.patientsFrom(qid)
+    case GET(p"/query/${QueryId(qid)}/therapy-recommendations")      => queryController.therapyRecommendationsFrom(qid)
+    case GET(p"/query/${QueryId(qid)}/molecular-therapies")          => queryController.molecularTherapiesFrom(qid)
+    case GET(p"/query/${QueryId(qid)}/ngs-summaries")                => queryController.ngsSummariesFrom(qid)
+    case GET(p"/query/${QueryId(qid)}/mtbfiles/${PatId(patId)}")     => queryController.mtbfileFrom(qid,patId)
+    case GET(p"/query/${QueryId(qid)}/mtbfileViews/${PatId(patId)}") => queryController.mtbfileViewFrom(qid,patId)
+    case GET(p"/query/${QueryId(qid)}")                              => queryController.query(qid)
+
 
 /*
     case GET(p"/query"?q"querier=$id")              => queryController.queriesOf(Querier(id))
