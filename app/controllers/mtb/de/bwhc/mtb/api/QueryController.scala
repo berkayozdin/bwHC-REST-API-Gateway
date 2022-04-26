@@ -174,7 +174,7 @@ with AuthenticationOps[UserWithRoles]
   import QueryOps.Command
   import QueryHypermedia._
 
-
+/*
   def submit: Action[AnyContent] =
     AuthenticatedAction( EvidenceQueryRight ).async {
 
@@ -214,28 +214,30 @@ with AuthenticationOps[UserWithRoles]
         )
 
    }
+*/
 
-/*
+
   def submit: Action[AnyContent] =
     AuthenticatedAction( EvidenceQueryRight ).async {
 
       request => 
 
       implicit val user = request.user
+      implicit val querier = Querier(user.userId.value)
 
-      errorsOrJson[QueryForm]
+      errorsOrJson[Command.Submit]
         .apply(request)
         .fold(
           Future.successful,
           {
-            case QueryForm(mode,params) =>
+            case cmd @ Command.Submit(mode,params) =>
               for {         
                 allowed <- user has QueryRightFor(mode.code)
             
                 result <-
                   if (allowed)
                     for {
-                      resp    <- service ! Command.Submit(Querier(user.userId.value),mode,params)
+                      resp    <- service ! cmd
                       outcome <- resp.leftMap(
                                    errs => Outcome.fromErrors(errs.toList)
                                  )
@@ -264,6 +266,7 @@ with AuthenticationOps[UserWithRoles]
       request => 
 
       implicit val user = request.user
+      implicit val querier = Querier(user.userId.value)
 
       errorsOrJson[Command.Update].apply(request)
         .fold(
@@ -295,7 +298,7 @@ with AuthenticationOps[UserWithRoles]
         )
 
     }
-*/
+
 
   def applyFilter(
     id: Query.Id

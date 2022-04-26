@@ -53,9 +53,8 @@ trait QuerySchemas
   import DTOSchemas._
 
   implicit val querySchema       = Json.schema[Query]
-//  implicit val queryFormSchema   = Json.schema[QueryForm]
   implicit val querySubmitSchema = Json.schema[Command.Submit]
-//  implicit val queryUpdateSchema = Json.schema[Command.Update]
+  implicit val queryUpdateSchema = Json.schema[Command.Update]
   implicit val queryFilterSchema = Json.schema[Command.ApplyFilter]
   implicit val patientViewSchema = Json.schema[PatientView]
   implicit val ngsSummarySchema  = Json.schema[NGSSummary]
