@@ -6,6 +6,7 @@ import de.bwhc.mtb.data.entry.views.MolecularTherapyView
 import de.bwhc.mtb.query.api._
 
 import json.{Schema,Json}
+import de.bwhc.util.data.{Interval,ClosedInterval}
 import de.bwhc.util.json.schema._
 import play.api.libs.json.{JsObject,JsValue}
 
@@ -40,14 +41,21 @@ object DTOSchemas
     sch(s"coding-${codeSch.refName.get}")
   }
 
+
+//  implicit def intervalSchema[T: Numeric: Schema]: Schema[Interval[T]] =
+//    Json.schema[ClosedInterval[T]].asInstanceOf[Schema[Interval[T]]]
+
+  implicit val intIntervalSchema: Schema[Interval[Int]] =
+    Json.schema[ClosedInterval[Int]].asInstanceOf[Schema[Interval[Int]]]
+
+  implicit val doubleIntervalSchema: Schema[Interval[Double]] =
+    Json.schema[ClosedInterval[Double]].asInstanceOf[Schema[Interval[Double]]]
+
 }
-
-
-import QueryOps.Command
-
 
 trait QuerySchemas
 {
+  import QueryOps.Command
 
   import de.bwhc.util.json.schema.workarounds._
   import DTOSchemas._
@@ -59,7 +67,6 @@ trait QuerySchemas
   implicit val patientViewSchema = Json.schema[PatientView]
   implicit val ngsSummarySchema  = Json.schema[NGSSummary]
   implicit val thRecommSchema    = Json.schema[TherapyRecommendation]
-//  implicit val molThViewSchema   = Json.schema[MolecularTherapyView]
 
 }
 object QuerySchemas extends QuerySchemas
