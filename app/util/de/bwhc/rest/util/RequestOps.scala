@@ -48,7 +48,9 @@ trait RequestOps
     }
 
 
-  implicit class EitherResultHelpers[T](val f: Request[AnyContent] => Either[Result,T]){
+  implicit class EitherResultHelpers[T](
+    val f: Request[AnyContent] => Either[Result,T]
+   ){
 
     def thenApply(
       g: T => Future[Result]
@@ -66,6 +68,28 @@ trait RequestOps
 
 
 
+  def JsonAction[T: Reads](
+    block: T => Future[Result]
+  )(
+    implicit
+    ec: ExecutionContext
+  ): Action[JsValue] =
+    Action.async(parse.tolerantJson) { req =>
+
+      req.body
+        .validate[T]
+        .fold(
+          errs => 
+            Future.successful(
+              Outcome.fromJsErrors(errs)
+            )
+            .map(toJson(_))
+            .map(BadRequest(_)),
+          block
+        )
+    }
+
+/*
   def JsonAction[T: Reads](
     block: T => Future[Result]
   )(
@@ -90,8 +114,7 @@ trait RequestOps
         )
 
     }
-
-
+*/
 
   implicit class OptionOps[T: Writes](opt: Option[T])
   {

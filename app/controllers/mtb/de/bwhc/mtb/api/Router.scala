@@ -100,7 +100,9 @@ extends SimpleRouter
     case POST(p"/query")                           => queryController.submit
 //    case POST(p"/query:reset")                     => queryController.resetQuery
     case POST(p"/query/${QueryId(qid)}")           => queryController.update(qid)
-    case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
+    case PATCH(p"/query/$id/filters")              => queryController.applyFilters(Query.Id(id))
+    case PUT(p"/query/$id/filters")                => queryController.applyFilters(Query.Id(id))
+//    case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
                                                   
     case GET(p"/query/${QueryId(qid)}/result-summary")               => queryController.resultSummaryFrom(qid)
     case GET(p"/query/${QueryId(qid)}/patients")                     => queryController.patientsFrom(qid)

@@ -48,7 +48,8 @@ trait QueryHypermedia
 
   private val SUBMIT_LOCAL_QUERY     = "submit-local-query"
   private val SUBMIT_FEDERATED_QUERY = "submit-federated-query"
-  private val APPLY_FILTER           = "apply-filter"
+//  private val APPLY_FILTER           = "apply-filter"
+  private val APPLY_FILTERS          = "apply-filters"
   private val RETRIEVE_MTBFILE       = "retrieve-mtbfile"
 
   private val QUERY           = "query"
@@ -77,13 +78,10 @@ trait QueryHypermedia
   private def UpdateAction(queryId: Query.Id) =
     UPDATE -> Action(POST -> s"$BASE_URI/${queryId.value}")
                 .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$UPDATE"))
-//  private def UpdateAction(queryId: Query.Id) =
-//    UPDATE -> Action(POST -> BASE_URI)
-//                .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$QUERY"))
 
   private def ApplyFilterAction(queryId: Query.Id) =
-    APPLY_FILTER -> Action(POST -> s"$BASE_URI/${queryId.value}/filter")
-                      .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$APPLY_FILTER"))
+    APPLY_FILTERS -> Action(POST -> s"$BASE_URI/${queryId.value}/filters")
+                      .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$APPLY_FILTERS"))
 
 
   private val RetrieveMTBFileAction =
@@ -118,9 +116,10 @@ trait QueryHypermedia
 
   private val schemas =
     Map(
-      QUERY        -> JsValueSchema[QueryOps.Command.Submit],
-      UPDATE       -> JsValueSchema[QueryOps.Command.Update],
-      APPLY_FILTER -> JsValueSchema[QueryOps.Command.ApplyFilter],
+      QUERY         -> JsValueSchema[QueryOps.Command.Submit],
+      UPDATE        -> JsValueSchema[QueryOps.Command.Update],
+      APPLY_FILTERS -> JsValueSchema[QueryOps.Command.ApplyFilters],
+//      APPLY_FILTER -> JsValueSchema[QueryOps.Command.ApplyFilter],
       PATIENTS     -> JsValueSchema[PatientView],
     )
 

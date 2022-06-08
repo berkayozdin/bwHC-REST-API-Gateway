@@ -89,7 +89,7 @@ with RequestOps
     }
  
 
-  def processQuery: Action[AnyContent] = 
+  def processQuery = //: Action[AnyContent] = 
     JsonAction[PeerToPeerQuery]{
       query =>
         queryService.instance.resultsOf(query)
@@ -99,7 +99,7 @@ with RequestOps
     }
 
 
-  def processMTBFileRequest: Action[AnyContent] = 
+  def processMTBFileRequest = //: Action[AnyContent] = 
     JsonAction[PeerToPeerMTBFileRequest]{
       req =>
         queryService.instance.process(req)
