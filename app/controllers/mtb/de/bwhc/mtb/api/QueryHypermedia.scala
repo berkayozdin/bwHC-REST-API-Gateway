@@ -80,7 +80,7 @@ trait QueryHypermedia
                 .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$UPDATE"))
 
   private def ApplyFilterAction(queryId: Query.Id) =
-    APPLY_FILTERS -> Action(POST -> s"$BASE_URI/${queryId.value}/filters")
+    APPLY_FILTERS -> Action(PUT -> s"$BASE_URI/${queryId.value}/filters")
                       .withFormats(MediaType.APPLICATION_JSON -> Link(s"$BASE_URI/schema/$APPLY_FILTERS"))
 
 

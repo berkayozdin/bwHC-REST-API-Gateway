@@ -248,7 +248,6 @@ with AuthenticationOps[UserWithRoles]
     }
 
 
-//  def applyFilter(
   def applyFilters(
     id: Query.Id
   ): Action[AnyContent] = 
@@ -260,7 +259,6 @@ with AuthenticationOps[UserWithRoles]
         implicit val user = request.user
         implicit val querier = Querier(user.userId.value)
 
-//        errorsOrJson[Command.ApplyFilter].apply(request)
         errorsOrJson[Command.ApplyFilters].apply(request)
           .fold(
             Future.successful,
