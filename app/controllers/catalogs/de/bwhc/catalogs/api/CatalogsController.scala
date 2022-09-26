@@ -96,7 +96,6 @@ extends BaseController
 
   import Catalogs._ 
 
-  import java.time.Year
 
   def coding(
     system: String,
@@ -113,8 +112,7 @@ extends BaseController
             (
               version match {
 
-                case Some(vsn) => Try { Year.of(vsn.toInt) }
-                                    .map(v => pattern.fold(icd10gm.codings())(icd10gm.matches(_,v)) )
+                case Some(v) => Try { pattern.fold(icd10gm.codings())(icd10gm.matches(_,v)) }
 
                 case None    => Try { pattern.fold(icd10gm.codings())(icd10gm.matches(_)) }
 
@@ -144,7 +142,8 @@ extends BaseController
                               .map(Json.toJson(_))
 
           case "atc"       => Try {
-                                pattern.map(medications.findMatching(_)).getOrElse(medications.entries())
+                                val v = version.getOrElse(medications.latestVersion)
+                                pattern.map(medications.findMatching(_,v)).getOrElse(medications.entries(v))
                               }
                               .map(SearchSet(_))
                               .map(Json.toJson(_))
