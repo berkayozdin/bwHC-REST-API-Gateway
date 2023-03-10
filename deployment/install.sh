@@ -5,15 +5,10 @@ TARGET_DIR=""
 
 
 if [ "$#" -eq "0" ]; then
-
   echo "ERROR: Enter a target directory for bwHC backend installation"
- 
   exit 1
-
 else 
-
   TARGET_DIR="$1"
-
 fi
 
 if [ ! -d "$TARGET_DIR" ]; then
@@ -21,8 +16,8 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 
-BWHC_APP_DIR="BWHCAPPPLACEHOLDER"  # Value 'BWHCAPPPLACEHOLDER' in this script template
-                                   # is replaced by actual value upon packaging
+BWHC_APP_PREFIX="PREFIX_PLACEHOLDER"
+BWHC_APP_DIR="BWHCAPPPLACEHOLDER" 
 
 
 BWHC_ZIP="$BWHC_APP_DIR.zip"
@@ -35,33 +30,23 @@ FILES=(
   "logback.xml"
 )
 
-
 cp $BWHC_ZIP "$TARGET_DIR/"
 
-
 for FILE in "${FILES[@]}"; do
-
   if [ ! -f "$TARGET_DIR/$FILE" ]; then
-
-    echo "Copying $FILE ..."
-
+    echo "Copying $FILE to $TARGET_DIR..."
     cp $FILE "$TARGET_DIR/"
   fi
-
 done
-
 
 
 cd "$TARGET_DIR"
 
-
 if [ -d "$BWHC_APP_DIR" ]; then
-
-  echo " Removing previous bwHC backend app"
-
+  echo "Removing previous bwHC backend app"
   rm -r $BWHC_APP_DIR
-
 fi
 
-unzip $BWHC_ZIP
+
+unzip -q $BWHC_ZIP
 

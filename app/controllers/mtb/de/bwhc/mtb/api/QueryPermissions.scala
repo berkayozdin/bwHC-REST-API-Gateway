@@ -20,14 +20,16 @@ trait QueryPermissions
   // ZPM QC Reporting
   //---------------------------------------------------------------------------
 
-  val LocalQCAccessRight =
-    Authorization[UserWithRoles](
-      _ hasAnyOf (GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator /*, Documentarist */)
-    )
-
   val GlobalQCAccessRight =
     Authorization[UserWithRoles](_ hasRole GlobalZPMCoordinator)
 
+//  val LocalQCAccessRight =
+//    GlobalQCAccessRight OR Authorization[UserWithRoles](_ hasAnyOf (LocalZPMCoordinator, MTBCoordinator))
+
+  val LocalQCAccessRight =
+    Authorization[UserWithRoles](
+      _ hasAnyOf (GlobalZPMCoordinator, LocalZPMCoordinator, MTBCoordinator)
+    )
 
   val QCAccessRight = LocalQCAccessRight
 
@@ -74,9 +76,7 @@ trait QueryPermissions
 
 
   val MTBFileAccessRight =  
-    Authorization[UserWithRoles](
-      user => user hasAnyOf (MTBCoordinator, ApprovedResearcher)
-    )
+    Authorization[UserWithRoles](_ hasAnyOf (MTBCoordinator, ApprovedResearcher))
 
 }
 object QueryPermissions extends QueryPermissions

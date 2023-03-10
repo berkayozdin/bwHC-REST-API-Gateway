@@ -6,9 +6,7 @@ import scala.concurrent.{
   Future,
   ExecutionContext
 }
-
 import javax.inject.Inject
-
 import play.api.mvc.{
   Action,
   AnyContent,
@@ -21,19 +19,16 @@ import play.api.libs.json.{
   Json, Format, Writes
 }
 import Json.toJson
-
 import de.bwhc.mtb.data.entry.dtos.{
   Coding,
+  Medication,
   MTBFile,
   Patient,
   ZPM
 }
 import de.bwhc.mtb.data.entry.views.MTBFileView
-
 import de.bwhc.mtb.query.api._
-
 import de.bwhc.user.api.User
-
 import cats.data.{
   EitherT,
   OptionT,
@@ -42,15 +37,11 @@ import cats.data.{
 import cats.instances.future._
 import cats.syntax.either._
 import cats.syntax.ior._
-
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
 import de.bwhc.rest.util.cphl.syntax._
-
 import de.bwhc.auth.api._
 import de.bwhc.auth.core._
-
 import de.bwhc.services.{WrappedQueryService,WrappedSessionManager}
-
 import de.bwhc.rest.util.sapphyre.Hyper
 import de.bwhc.rest.util.sapphyre.playjson._
 
@@ -94,13 +85,15 @@ with AuthenticationOps[UserWithRoles]
 
       request =>
 
-      val querier = Querier(request.user.userId.value)
+      val querier =
+        Querier(request.user.userId.value)
 
       //TODO: get originating ZPM from request/session
       val origin  = ZPM("Local")
 
       for {
-        qc      <- service.getLocalQCReportFor(origin,querier)
+                   // re-use the local report generation function from the peer-to-peer usage
+        qc      <- service.getLocalQCReport(PeerToPeerRequest(origin,querier))
         outcome = qc.leftMap(List(_))
                     .leftMap(Outcome.fromErrors)
         result  = outcome.toJsonResult
@@ -114,14 +107,112 @@ with AuthenticationOps[UserWithRoles]
 
       request =>
 
-      val querier = Querier(request.user.userId.value)
+      implicit val querier =
+        Querier(request.user.userId.value)
 
       for {
-        qc     <- service.compileGlobalQCReport(querier)
+        qc     <- service.compileGlobalQCReport
         outcome = qc.leftMap(_.toList)
                     .leftMap(Outcome.fromErrors)
         result  = outcome.toJsonResult
       } yield result
+    }
+
+
+  def getGlobalMedicationDistribution: Action[AnyContent] = 
+    AuthenticatedAction( GlobalQCAccessRight ).async {
+      request =>
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      for {
+        qc     <- service.compileGlobalMedicationDistribution
+        outcome = qc.leftMap(_.toList)
+                    .leftMap(Outcome.fromErrors)
+        result  = outcome.toJsonResult
+      } yield result
+    }
+
+
+  def getGlobalTumorEntityDistribution(
+    optCode: Option[Medication.Code],
+    optVersion: Option[String]
+  ): Action[AnyContent] = 
+    AuthenticatedAction( GlobalQCAccessRight ).async {
+      request =>
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      (optCode,optVersion) match {
+        case (Some(code),None)    =>
+          Future.successful(BadRequest(s"Only 'code' defined, missing query parameter 'version'"))
+
+        case (None,Some(version)) =>
+          Future.successful(BadRequest(s"Only 'version' defined, missing query parameter 'code'"))
+
+        case _ => {  
+          val coding = 
+            for {
+              code    <- optCode
+              version <- optVersion       
+            } yield
+              Medication.Coding(
+                code,
+                Medication.System.ATC,
+                None,
+                Some(version)
+              )
+          
+          for {
+            qc     <- service.compileGlobalTumorEntityDistribution(coding)
+            outcome = qc.leftMap(_.toList)
+                        .leftMap(Outcome.fromErrors)
+            result  = outcome.toJsonResult
+          } yield result
+        }
+      }
+    }
+
+
+  def getPatientTherapies(
+    optCode: Option[Medication.Code],
+    optVersion: Option[String]
+  ): Action[AnyContent] = 
+    AuthenticatedAction( GlobalQCAccessRight ).async {
+      request =>
+
+      implicit val querier = Querier(request.user.userId.value)
+
+      (optCode,optVersion) match {
+        case (Some(code),None)    =>
+          Future.successful(BadRequest(s"Only 'code' defined, missing query parameter 'version'"))
+
+        case (None,Some(version)) =>
+          Future.successful(BadRequest(s"Only 'version defined', missing query parameter 'code'"))
+
+        case _ => {  
+          val coding = 
+            for {
+              code    <- optCode
+              version <- optVersion       
+            } yield
+              Medication.Coding(
+                code,
+                Medication.System.ATC,
+                None,
+                Some(version)
+              )
+          
+          for {
+            qc     <- service.compileGlobalPatientTherapies(coding)
+            outcome = qc.leftMap(_.toList)
+                        .leftMap(Outcome.fromErrors)
+            result  = outcome.toJsonResult
+          } yield result
+        }
+      }
     }
 
 

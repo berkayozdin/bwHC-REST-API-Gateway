@@ -104,11 +104,11 @@ with RequestOps
                      BadRequest(toJson(Outcome.fromErrors(List(msg))))
                  },
                  {
-                   case Imported(input,_) =>
-                     Ok
-           
                    case IssuesDetected(qc,_) => 
                      Created(toJson(qc))
+           
+                   case Imported(input,_) =>
+                     Ok
            
                    case _ => InternalServerError
                  }

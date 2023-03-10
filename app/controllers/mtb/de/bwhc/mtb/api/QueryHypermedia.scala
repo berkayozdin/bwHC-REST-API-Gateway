@@ -43,12 +43,9 @@ trait QueryHypermedia
 
 
   private val BASE_URI       = "/bwhc/mtb/api/query"
-//  private val BASE_URI       = "/bwhc/mtb/api"
-//  private val QUERY_BASE_URI = s"$BASE_URI/query"
 
   private val SUBMIT_LOCAL_QUERY     = "submit-local-query"
   private val SUBMIT_FEDERATED_QUERY = "submit-federated-query"
-//  private val APPLY_FILTER           = "apply-filter"
   private val APPLY_FILTERS          = "apply-filters"
   private val RETRIEVE_MTBFILE       = "retrieve-mtbfile"
 

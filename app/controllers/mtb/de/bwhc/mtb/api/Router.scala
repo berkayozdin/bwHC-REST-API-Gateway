@@ -84,6 +84,19 @@ extends SimpleRouter
                          }
       }
 
+    //-------------------------------------------------------------------------
+    // ZPM Therpay Reporting
+    //-------------------------------------------------------------------------
+    case GET(p"/reporting/global-medication-distribution") => queryController.getGlobalMedicationDistribution
+
+    case GET(p"/reporting/global-tumor-entity-distribution" ?
+             q_o"code=${MedicationCode(code)}" &
+             q_o"version=$version") => queryController.getGlobalTumorEntityDistribution(code,version)
+
+    case GET(p"/reporting/patient-therapies" ?
+             q_o"code=${MedicationCode(code)}" &
+             q_o"version=$version") => queryController.getPatientTherapies(code,version)
+
 
     //-------------------------------------------------------------------------
     // MTBFile Queries                                                  
@@ -101,7 +114,6 @@ extends SimpleRouter
 //    case POST(p"/query:reset")                     => queryController.resetQuery
     case POST(p"/query/${QueryId(qid)}")           => queryController.update(qid)
     case PUT(p"/query/$id/filters")                => queryController.applyFilters(Query.Id(id))
-//    case PUT(p"/query/$id/filter")                 => queryController.applyFilter(Query.Id(id))
                                                   
     case GET(p"/query/${QueryId(qid)}/result-summary")               => queryController.resultSummaryFrom(qid)
     case GET(p"/query/${QueryId(qid)}/patients")                     => queryController.patientsFrom(qid)

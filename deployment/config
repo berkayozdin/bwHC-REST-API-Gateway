@@ -10,7 +10,7 @@
 #export PLAY_HTTP_ADDRESS=
 
 
-# APPLICATION_SECRET MUST be a random String of at least 32 characters
+# TODO: APPLICATION_SECRET MUST be a random String of at least 32 characters
 export APPLICATION_SECRET=TODO
 
 # Location of the PID-File
@@ -39,15 +39,16 @@ export BWHC_CONNECTOR_CONFIG=$BWHC_BASE_DIR/bwhcConnectorConfig.xml
 
 
 #TODO adapt data directories
-#export BWHC_DATA_BASE_DIR=TODO
-#export BWHC_DATA_ENTRY_DIR="$BWHC_DATA_BASE_DIR/data_entry"
-#export BWHC_QUERY_DATA_DIR="$BWHC_DATA_BASE_DIR/query_data"
-#export BWHC_USER_DB_DIR="$BWHC_DATA_BASE_DIR/user_data"
+export BWHC_DATA_BASE_DIR=TODO
+export BWHC_DATA_ENTRY_DIR="$BWHC_DATA_BASE_DIR/data_entry"
+export BWHC_QUERY_DATA_DIR="$BWHC_DATA_BASE_DIR/query_data"
+export BWHC_USER_DB_DIR="$BWHC_DATA_BASE_DIR/user_data"
 
-export BWHC_DATA_ENTRY_DIR=TODO
-export BWHC_QUERY_DATA_DIR=TODO
-export BWHC_USER_DB_DIR=TODO
+#export BWHC_DATA_ENTRY_DIR=
+#export BWHC_QUERY_DATA_DIR=
+#export BWHC_USER_DB_DIR=
 
 export BWHC_HGNC_DIR="$BWHC_BASE_DIR/hgnc_data/"
 
+export GENERATE_N_RANDOM_FILES=TODO
 #-----------------------------------------------------------------------------

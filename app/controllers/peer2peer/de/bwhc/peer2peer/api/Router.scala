@@ -27,14 +27,20 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
 
     // Return Ok by default, as this implies this node is "online"
-    case GET(p"/status")           => controller.Action { Ok }
+    case GET(p"/status")                     => controller.Action { Ok }
+                                             
+                                             
+    case POST(p"/query")                     => controller.processQuery
+                                             
+    case POST(p"/LocalQCReport")             => controller.getLocalQCReport
 
+    case POST(p"/medication-distribution")   => controller.getMedicationDistributionReport
+    
+    case POST(p"/tumor-entity-distribution") => controller.getTumorEntityDistributionReport
 
-    case POST(p"/query")           => controller.processQuery
+    case POST(p"/patient-therapies")         => controller.getPatientTherapies
 
-    case POST(p"/LocalQCReport")   => controller.getLocalQCReport
-
-    case POST(p"/MTBFile:request") => controller.processMTBFileRequest
+    case POST(p"/MTBFile:request")           => controller.processMTBFileRequest
 
   }
 

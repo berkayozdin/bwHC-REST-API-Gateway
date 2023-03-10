@@ -5,7 +5,7 @@ import sbt.Keys._
 name := "bwhc-rest-api-gateway"
 organization in ThisBuild := "de.bwhc"
 scalaVersion in ThisBuild := "2.13.8"
-version in ThisBuild := "1.0-SNAPSHOT"
+version in ThisBuild := "1.1-SNAPSHOT"
 
 
 scalacOptions ++= Seq(
@@ -26,8 +26,8 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
 
    // Fake Data dependencies
-  "de.bwhc"                %% "mtb-dto-generators"              % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "fhir-mappings"                   % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "mtb-dto-generators"              % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "fhir-mappings"                   % "1.1-SNAPSHOT",
 
   // User Service dependencies
   "de.bwhc"                %% "user-service-api"                % "1.0-SNAPSHOT",
@@ -35,16 +35,23 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "user-service-fs-repos"           % "1.0-SNAPSHOT",
 
   // Data Entry/Validation Service dependencies
-  "de.bwhc"                %% "data-entry-service-api"          % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "data-entry-service-impl"         % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "data-entry-service-dependencies" % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "data-entry-service-api"          % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "data-entry-service-impl"         % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "data-entry-service-dependencies" % "1.1-SNAPSHOT",
 
   // Query Service dependencies
+  "de.bwhc"                %% "query-service-api"               % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "query-service-impl"              % "1.1-SNAPSHOT",
+//  "de.bwhc"                %% "bwhc-broker-connector"           % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "bwhc-connector"                  % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "fs-mtbfile-db"                   % "1.1-SNAPSHOT",
+/*
   "de.bwhc"                %% "query-service-api"               % "1.0-SNAPSHOT",
   "de.bwhc"                %% "query-service-impl"              % "1.0-SNAPSHOT",
-//  "de.bwhc"                %% "bwhc-broker-connector"           % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "bwhc-connector"                  % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "bwhc-broker-connector"           % "1.0-SNAPSHOT",
+//  "de.bwhc"                %% "bwhc-connector"                  % "1.0-SNAPSHOT",
   "de.bwhc"                %% "fs-mtbfile-db"                   % "1.0-SNAPSHOT",
+*/
 
   // Catalog dependencies
   "de.bwhc"                %% "hgnc-api"                        % "1.0-SNAPSHOT",
@@ -55,6 +62,10 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "medication-catalog-impl"         % "1.0-SNAPSHOT",
 )
 
+dependencyOverrides ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % "2.0.0",
+  "org.scala-lang.modules" %% "scala-java8-compat" % "1.0.2",
+)
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala)

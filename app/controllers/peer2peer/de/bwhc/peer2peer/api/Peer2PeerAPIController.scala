@@ -6,9 +6,7 @@ import scala.concurrent.{
   Future,
   ExecutionContext
 }
-
 import javax.inject.Inject
-
 import play.api.mvc.{
   Action,
   AnyContent,
@@ -20,24 +18,19 @@ import play.api.mvc.{
 import play.api.libs.json.{
   Json, Format
 }
-
 import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
   Patient,
   ZPM
 }
 import de.bwhc.mtb.query.api._
-
-
 import cats.data.{
   EitherT,
   OptionT
 }
 import cats.instances.future._
 import cats.syntax.either._
-
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
-
 import de.bwhc.services.WrappedQueryService
 
 
@@ -58,39 +51,63 @@ with RequestOps
   // Peer-to-peer operations
   //---------------------------------------------------------------------------
 
-  private val BWHC_SITE_ORIGIN  = "bwhc-site-origin"
-  private val BWHC_QUERY_USERID = "bwhc-query-userid"
-
-
-  def getLocalQCReport: Action[AnyContent] = 
-    Action.async {
-
-      request =>
-
-      val result =
-        for {
-          form    <- request.body.asFormUrlEncoded
-          origin  <- form.get(BWHC_SITE_ORIGIN).flatMap(_.headOption).map(ZPM(_))
-          querier <- form.get(BWHC_QUERY_USERID).flatMap(_.headOption).map(Querier(_))
-          res =
-            for {
-              qc      <- queryService.instance.getLocalQCReportFor(origin,querier)
-              outcome =  qc.leftMap(List(_))
-                           .leftMap(Outcome.fromErrors)
-            } yield outcome.toJsonResult
-        
-        } yield res
-
-      result.getOrElse(
-        Future.successful(
-          BadRequest(s"Missing Form Parameter(s): $BWHC_SITE_ORIGIN and/or $BWHC_QUERY_USERID")
-        )
-      )
+  def getLocalQCReport = 
+    JsonAction[PeerToPeerRequest[Map[String,String]]]{
+      p2pReq =>
+        queryService.instance.getLocalQCReport(p2pReq)
+          .map(
+            _.leftMap(List(_))
+             .leftMap(Outcome.fromErrors)
+             .toJsonResult
+           )
     }
- 
+       
 
-  def processQuery = //: Action[AnyContent] = 
-    JsonAction[PeerToPeerQuery]{
+  def getMedicationDistributionReport =
+    JsonAction[PeerToPeerRequest[Report.Filters]]{
+      p2pReq =>
+        queryService.instance
+          .compileLocalMedicationDistributionFor(p2pReq)
+          .map(
+            _.leftMap(_.toList)
+             .leftMap(Outcome.fromErrors)
+             .toJsonResult
+           )
+
+    }
+
+
+  def getTumorEntityDistributionReport =
+    JsonAction[PeerToPeerRequest[Report.Filters]]{
+      p2pReq =>
+        queryService.instance
+          .compileLocalTumorEntityDistributionFor(p2pReq)
+          .map(
+            _.leftMap(_.toList)
+             .leftMap(Outcome.fromErrors)
+             .toJsonResult
+           )
+
+    }
+
+
+  def getPatientTherapies =
+    JsonAction[PeerToPeerRequest[Report.Filters]]{
+      p2pReq =>
+        queryService.instance
+          .compilePatientTherapies(p2pReq)
+          .map(
+            _.leftMap(_.toList)
+             .leftMap(Outcome.fromErrors)
+             .toJsonResult
+           )
+
+    }
+
+
+  def processQuery =
+//    JsonAction[PeerToPeerQuery]{
+    JsonAction[PeerToPeerRequest[Query.Parameters]]{
       query =>
         queryService.instance.resultsOf(query)
           .map(SearchSet(_))
@@ -99,8 +116,9 @@ with RequestOps
     }
 
 
-  def processMTBFileRequest = //: Action[AnyContent] = 
-    JsonAction[PeerToPeerMTBFileRequest]{
+  def processMTBFileRequest =
+//    JsonAction[PeerToPeerMTBFileRequest]{
+    JsonAction[PeerToPeerRequest[MTBFileParameters]]{
       req =>
         queryService.instance.process(req)
           .map {
