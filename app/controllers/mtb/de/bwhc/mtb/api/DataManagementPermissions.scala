@@ -10,10 +10,9 @@ trait DataManagementPermissions
 
   import de.bwhc.user.api.Role._
 
-
+/*  
   private val AdminRights =
     Authorization[UserWithRoles](_ hasRole Admin)
-
 
   private val DocumentaristRights =
     Authorization[UserWithRoles](_ hasRole Documentarist)
@@ -21,8 +20,12 @@ trait DataManagementPermissions
 
   val PatientStatusAccessRights = AdminRights
 
-
   val DataQualityAccessRights = DocumentaristRights
+*/
+
+
+  val DataQualityAccessRights =
+    Authorization[UserWithRoles](_ hasAnyOf (Admin,Documentarist,GlobalZPMCoordinator,MTBCoordinator))
 
 }
 object DataManagementPermissions extends DataManagementPermissions

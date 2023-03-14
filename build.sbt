@@ -30,9 +30,9 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "fhir-mappings"                   % "1.1-SNAPSHOT",
 
   // User Service dependencies
-  "de.bwhc"                %% "user-service-api"                % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "user-service-impl"               % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "user-service-fs-repos"           % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "user-service-api"                % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "user-service-impl"               % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "user-service-fs-repos"           % "1.1-SNAPSHOT",
 
   // Data Entry/Validation Service dependencies
   "de.bwhc"                %% "data-entry-service-api"          % "1.1-SNAPSHOT",
@@ -45,13 +45,6 @@ libraryDependencies ++= Seq(
 //  "de.bwhc"                %% "bwhc-broker-connector"           % "1.1-SNAPSHOT",
   "de.bwhc"                %% "bwhc-connector"                  % "1.1-SNAPSHOT",
   "de.bwhc"                %% "fs-mtbfile-db"                   % "1.1-SNAPSHOT",
-/*
-  "de.bwhc"                %% "query-service-api"               % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "query-service-impl"              % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "bwhc-broker-connector"           % "1.0-SNAPSHOT",
-//  "de.bwhc"                %% "bwhc-connector"                  % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "fs-mtbfile-db"                   % "1.0-SNAPSHOT",
-*/
 
   // Catalog dependencies
   "de.bwhc"                %% "hgnc-api"                        % "1.0-SNAPSHOT",

@@ -131,32 +131,6 @@ with AuthenticationOps[UserWithRoles]
         } yield Ok(json)
       }
 
-/*
-  def patientsForQC(
-    genders: Seq[String],
-    errorMsg: Option[String],
-    entityType: Option[String],
-    attribute: Option[String]
-  ): Action[AnyContent] =
-    AuthenticatedAction( DataQualityAccessRights )
-      .async {
-
-        val filter =
-          MTBDataService.Filter(
-            Option(genders.toSet.map(Gender.withName)).filterNot(_.isEmpty),
-            errorMsg,
-            entityType,
-            attribute
-          )
-
-        for {
-          pats      <- dataService.instance.patientsWithIncompleteData(filter) 
-          hyperPats =  HyperPatients(pats)
-          json      =  toJson(hyperPats)   
-        } yield Ok(json)
-      }
-*/
-
   
   def mtbfile(id: String): Action[AnyContent] =
     AuthenticatedAction(DataQualityAccessRights).async {

@@ -8,9 +8,7 @@ import scala.concurrent.{
   Future,
   ExecutionContext
 }
-
 import javax.inject.Inject
-
 import play.api.mvc.{
   Action,
   AnyContent,
@@ -21,21 +19,16 @@ import play.api.mvc.{
 import play.api.libs.json.{
   Json, JsValue, JsObject, Format
 }
-
 import cats.Functor
-
 import de.bwhc.catalogs.icd.{
   ICD10GM, ICD10GMCatalogs, ICDO3Catalogs
 }
 import de.bwhc.catalogs.hgnc.HGNCCatalog
 import de.bwhc.catalogs.med.MedicationCatalog
-
+import de.bwhc.user.api.Role
 import de.bwhc.mtb.data.entry.dtos._
 import de.bwhc.mtb.query.api.Query
-
 import de.bwhc.rest.util.SearchSet
-
-
 import shapeless.{Poly1,Generic,::}
 import shapeless.syntax._
 
@@ -70,9 +63,23 @@ object Catalogs
   }
 
 
+  
+  implicit val userRolesValueSet =
+    ValueSet[Role.Value](
+      "Nutzer-Rollen",
+      Role.Admin                -> "Admin",
+      Role.Documentarist        -> "Dokumentar:in",
+      Role.LocalZPMCoordinator  -> "ZPM-Koordinator:in (Lokal)",
+      Role.GlobalZPMCoordinator -> "ZPM-Koordinator:in (Global)",
+      Role.MTBCoordinator       -> "MTB-Koordinator:in",
+      Role.MTBMember            -> "MTB-Mitarbeiter:in",
+      Role.Researcher           -> "Forscher:in"
+    )
+
 
   lazy val jsonValueSets =
     (
+     ValueSet[Role.Value] ::
      ValueSet[Query.Mode.Value] ::
      ValueSet[Query.DrugUsage.Value] ::
      ValueSets.allValueSets.toHList

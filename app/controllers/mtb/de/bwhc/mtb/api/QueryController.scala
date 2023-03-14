@@ -416,7 +416,6 @@ with AuthenticationOps[UserWithRoles]
     queryId: Query.Id
   ): Future[Result] = {
     OptionT(rs)
-//      .map(_.map(Hyper(_)))
       .map(SearchSet(_))
       .map(Json.toJson(_))
       .fold(
