@@ -119,34 +119,6 @@ with RequestOps
     }
 
 
-/*
-  def processUpload: Action[AnyContent] =
-    JsonAction[MTBFile]{ mtbfile =>
-
-      (dataService.instance ! Upload(mtbfile))
-        .map(
-          _.fold(
-            {
-              case InvalidData(qc) =>
-                UnprocessableEntity(toJson(qc))
-
-              case UnspecificError(msg) =>
-                BadRequest(toJson(Outcome.fromErrors(List(msg))))
-            },
-            {
-              case Imported(input,_) =>
-                Ok(toJson(input))
-
-              case IssuesDetected(qc,_) => 
-                Created(toJson(qc))
-
-              case _ => InternalServerError
-            }
-          )
-        )
-    }
-*/
-
   def delete(patId: String): Action[AnyContent] = {
      Action.async {
        (dataService.instance ! Delete(Patient.Id(patId)))

@@ -27,7 +27,7 @@ import de.bwhc.catalogs.hgnc.HGNCCatalog
 import de.bwhc.catalogs.med.MedicationCatalog
 import de.bwhc.user.api.Role
 import de.bwhc.mtb.data.entry.dtos._
-import de.bwhc.mtb.query.api.Query
+import de.bwhc.mtb.query.api.{Query,VitalStatus}
 import de.bwhc.rest.util.SearchSet
 import shapeless.{Poly1,Generic,::}
 import shapeless.syntax._
@@ -80,6 +80,7 @@ object Catalogs
   lazy val jsonValueSets =
     (
      ValueSet[Role.Value] ::
+     ValueSet[VitalStatus.Value] ::
      ValueSet[Query.Mode.Value] ::
      ValueSet[Query.DrugUsage.Value] ::
      ValueSets.allValueSets.toHList

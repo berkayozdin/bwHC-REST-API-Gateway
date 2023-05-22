@@ -15,9 +15,11 @@ import de.bwhc.util.syntax.piping._
 import de.bwhc.mtb.query.api.{
   PatientView,
   Query,
+  PreparedQuery,
   QueryOps,
   NGSSummary,
-  ResultSummary
+  ResultSummary,
+  VariantsOfInterest
 }
 import de.bwhc.mtb.data.entry.dtos.{
   MTBFile,
@@ -49,14 +51,15 @@ trait QueryHypermedia
   private val APPLY_FILTERS          = "apply-filters"
   private val RETRIEVE_MTBFILE       = "retrieve-mtbfile"
 
-  private val QUERY           = "query"
-  private val RESULT_SUMMARY  = "result-summary"
-  private val PATIENTS        = "patients"
-  private val NGS_SUMMARIES   = "ngs-summaries"
-  private val RECOMMENDATIONS = "therapy-recommendations"
-  private val THERAPIES       = "molecular-therapies"
-  private val MTBFILE         = "mtbfile"
-  private val MTBFILEVIEW     = "mtbfileView"
+  private val QUERY            = "query"
+  private val RESULT_SUMMARY   = "result-summary"
+  private val PATIENTS         = "patients"
+  private val NGS_SUMMARIES    = "ngs-summaries"
+  private val VARIANT_OVERVIEW = "variants-of-interest"
+  private val RECOMMENDATIONS  = "therapy-recommendations"
+  private val THERAPIES        = "molecular-therapies"
+  private val MTBFILE          = "mtbfile"
+  private val MTBFILEVIEW      = "mtbfileView"
 
 
 
@@ -103,6 +106,9 @@ trait QueryHypermedia
   private def TherapiesLink(queryId: Query.Id) =
     Link(s"$BASE_URI/${queryId.value}/molecular-therapies")
 
+  private def VariantOverviewLink(queryId: Query.Id) =
+    Link(s"$BASE_URI/${queryId.value}/variants-of-interest")
+
   private def MTBFileLink(queryId: Query.Id, patId: Patient.Id) = 
     Link(s"$BASE_URI/${queryId.value}/mtbfiles/${patId.value}")
 
@@ -116,7 +122,6 @@ trait QueryHypermedia
       QUERY         -> JsValueSchema[QueryOps.Command.Submit],
       UPDATE        -> JsValueSchema[QueryOps.Command.Update],
       APPLY_FILTERS -> JsValueSchema[QueryOps.Command.ApplyFilters],
-//      APPLY_FILTER -> JsValueSchema[QueryOps.Command.ApplyFilter],
       PATIENTS     -> JsValueSchema[PatientView],
     )
 
@@ -148,6 +153,33 @@ trait QueryHypermedia
   }
 
 
+
+  private val PREPARED_QUERIES = "/bwhc/mtb/api/prepared-queries"
+
+
+  def HyperPreparedQuery(
+    query: PreparedQuery
+  ) = {
+
+    val id = query.id.value
+
+    query.withLinks(
+      COLLECTION -> Link(PREPARED_QUERIES),
+      SELF       -> Link(s"$PREPARED_QUERIES/$id")
+    )
+    .withActions(
+      "update" -> Action(Method.PUT    -> s"$PREPARED_QUERIES/$id"),
+      "delete" -> Action(Method.DELETE -> s"$PREPARED_QUERIES/$id")
+    )
+
+  }
+
+
+  val CreatePreparedQueryAction =
+    "create" -> Action(Method.POST -> PREPARED_QUERIES)
+
+
+
   def HyperQuery(
     query: Query
   )(
@@ -171,10 +203,11 @@ trait QueryHypermedia
           q =>
           if (mtbFileAccess)
             q.withLinks(
-              PATIENTS        -> PatientsLink(query.id),
-              NGS_SUMMARIES   -> NGSSummariesLink(query.id),
-              RECOMMENDATIONS -> RecommendationsLink(query.id),
-              THERAPIES       -> TherapiesLink(query.id)
+              PATIENTS         -> PatientsLink(query.id),
+              NGS_SUMMARIES    -> NGSSummariesLink(query.id),
+              RECOMMENDATIONS  -> RecommendationsLink(query.id),
+              THERAPIES        -> TherapiesLink(query.id),
+              VARIANT_OVERVIEW -> VariantOverviewLink(query.id)
             )
           else q 
         )
@@ -209,6 +242,22 @@ trait QueryHypermedia
     )
 
   }
+
+
+  def HyperVariantsOfInterest(
+    variants: VariantsOfInterest
+  )(
+    queryId: Query.Id
+  ) = {
+    variants.withLinks(
+      BASE       -> ApiBaseLink,
+      QUERY      -> QueryLink(queryId),
+      MTBFILE    -> MTBFileLink(queryId,Patient.Id("{PatientId}")),
+      MTBFILEVIEW -> MTBFileViewLink(queryId,Patient.Id("{PatientId}"))
+
+    )
+  }
+
 
 
   def HyperMTBFile(

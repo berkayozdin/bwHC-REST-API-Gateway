@@ -2,13 +2,17 @@ package de.bwhc.mtb.api
 
 
 import scala.util.{Either,Left,Right}
+import scala.util.chaining._
 import scala.concurrent.{
   Future,
   ExecutionContext
 }
 import javax.inject.Inject
+import akka.util.ByteString
+import play.api.http.Writeable
 import play.api.mvc.{
   Action,
+  Accepting,
   AnyContent,
   BaseController,
   ControllerComponents,
@@ -38,7 +42,6 @@ import cats.instances.future._
 import cats.syntax.either._
 import cats.syntax.ior._
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
-import de.bwhc.rest.util.cphl.syntax._
 import de.bwhc.auth.api._
 import de.bwhc.auth.core._
 import de.bwhc.services.{WrappedQueryService,WrappedSessionManager}
@@ -176,12 +179,47 @@ with AuthenticationOps[UserWithRoles]
     }
 
 
+  import de.bwhc.util.csv._
+
+  private val TEXT_CSV = "text/csv"
+
+  implicit val csvDelimiter =
+    Delimiter.Pipe
+
+  implicit val csvWriteable =
+    Writeable[Seq[CsvValue]](
+      csvs =>
+        csvs.foldLeft(
+          ByteString.empty
+        )(
+          (acc,csv) =>
+            acc ++ ByteString(s"${csv.toCsvString}\n","UTF-8")
+        ),
+      Some(TEXT_CSV)
+    )
+
+  private def toCsvWithHeader[T](
+    ts: Seq[T]
+  )(
+    implicit csv: CsvWriter[T]
+  ): Seq[CsvValue] = {
+    import de.bwhc.util.csv.Csv.syntax._
+
+    csv.headers +: ts.toCsv
+  }
+
+
   def getPatientTherapies(
     optCode: Option[Medication.Code],
     optVersion: Option[String]
   ): Action[AnyContent] = 
     AuthenticatedAction( GlobalQCAccessRight ).async {
       request =>
+
+      import java.io.StringWriter
+      import PatientTherapies.csv._
+      import scala.util.chaining._
+
 
       implicit val querier = Querier(request.user.userId.value)
 
@@ -209,7 +247,31 @@ with AuthenticationOps[UserWithRoles]
             qc     <- service.compileGlobalPatientTherapies(coding)
             outcome = qc.leftMap(_.toList)
                         .leftMap(Outcome.fromErrors)
-            result  = outcome.toJsonResult
+            
+//            result  = outcome.toJsonResult
+            
+            result  = 
+              if (request.acceptedTypes.find(_.mediaSubType.contains("csv")).isDefined){ 
+                outcome.fold(
+                  err =>
+                    InternalServerError(Json.toJson(err)),
+                  rep =>
+                    Ok(
+                      rep.data
+                         .flatMap(denormalize)
+                         .pipe(toCsvWithHeader(_))
+                    ),
+                  (_,rep) =>
+                    Ok(
+                      rep.data
+                         .flatMap(denormalize)
+                         .pipe(toCsvWithHeader(_))
+                    ),
+                )
+              } else {
+                outcome.toJsonResult
+              }
+
           } yield result
         }
       }
@@ -249,11 +311,132 @@ with AuthenticationOps[UserWithRoles]
     }
 
   //---------------------------------------------------------------------------
+  // Prepared Query Operations
+  //---------------------------------------------------------------------------
+  
+  import QueryHypermedia._
+
+  def savePreparedQuery =
+    AuthenticatedAction( EvidenceQueryRight ).async {
+
+      request => 
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      errorsOrJson[PreparedQuery.Create]
+        .apply(request)
+        .fold(
+          Future.successful,
+          cmd =>
+            (service ! cmd)
+              .map(
+                _.leftMap(_.toList)
+                 .leftMap(Outcome.fromErrors)
+                 .map(HyperPreparedQuery(_))
+                 .toJsonResult
+              )
+        ) 
+  }
+
+
+  def getPreparedQueries =
+    AuthenticatedAction( EvidenceQueryRight ).async {
+      request => 
+
+      import de.bwhc.rest.util.sapphyre.syntax._
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      service.preparedQueries
+        .map(
+          _.bimap(
+            List(_),
+            _.map(HyperPreparedQuery(_))
+          )
+          .bimap(
+            Outcome.fromErrors,
+            SearchSet(_)
+              .withActions(CreatePreparedQueryAction)
+          )
+          .toJsonResult
+        )
+    }
+
+
+  def getPreparedQuery(id: PreparedQuery.Id) =
+    AuthenticatedAction( EvidenceQueryRight ).async {
+      request => 
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      service.preparedQuery(id)
+        .map(
+          _.leftMap(List(_))
+           .leftMap(Outcome.fromErrors)
+           .leftMap(Json.toJson(_))
+           .fold(
+             InternalServerError(_),
+             _.map(HyperPreparedQuery(_))
+              .map(Json.toJson(_))
+              .map(Ok(_))
+              .getOrElse(NotFound(s"Invalid PreparedQuery ID ${id.value}"))
+           )
+        )
+    }
+
+
+
+  def updatePreparedQuery(id: PreparedQuery.Id) =
+    AuthenticatedAction( EvidenceQueryRight ).async {
+
+      request => 
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      errorsOrJson[PreparedQuery.Update]
+        .apply(request)
+        .fold(
+          Future.successful,
+          cmd =>
+            (service ! cmd)
+              .map(
+                _.leftMap(_.toList)
+                 .bimap(
+                   Outcome.fromErrors,
+                   HyperPreparedQuery(_)
+                 )
+                 .toJsonResult
+              )
+        ) 
+  }
+
+  def deletePreparedQuery(id: PreparedQuery.Id) =
+    AuthenticatedAction( EvidenceQueryRight ).async {
+
+      request => 
+
+      implicit val querier =
+        Querier(request.user.userId.value)
+
+      (service ! PreparedQuery.Delete(id))
+        .map(
+          _.leftMap(_.toList)
+           .leftMap(Outcome.fromErrors)
+           .toJsonResult
+        )
+      
+  }
+
+
+  //---------------------------------------------------------------------------
   // Query commands
   //---------------------------------------------------------------------------
 
   import QueryOps.Command
-  import QueryHypermedia._
 
 
   def submit: Action[AnyContent] =
@@ -372,6 +555,7 @@ with AuthenticationOps[UserWithRoles]
   
       }
  
+
   //---------------------------------------------------------------------------
   // Query data access queries
   //---------------------------------------------------------------------------
@@ -486,9 +670,24 @@ with AuthenticationOps[UserWithRoles]
       }
 
 
+  def variantsOfInterestOf(
+    queryId: Query.Id,
+  ): Action[AnyContent] = 
+    AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )
+      .async {
+        OptionT(service variantsOfInterestOf queryId)
+          .map(HyperVariantsOfInterest(_)(queryId))
+          .map(Json.toJson(_))
+          .fold(
+            NotFound(s"Invalid Query ID ${queryId.value}")
+          )(       
+            Ok(_)
+          )      
+      }
+
+
   def mtbfileFrom(
     queryId: Query.Id,
-//    patId: String
     patId: Patient.Id
   ): Action[AnyContent] = 
     AuthenticatedAction( AccessRightFor(queryId) AND MTBFileAccessRight )

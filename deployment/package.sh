@@ -60,6 +60,7 @@ FILES=(
   "logback.xml"
   "production.conf"
   "bwhc-backend-service"
+  "user_migration_v1.1.sh"
 )
 
 for FILE in "${FILES[@]}"; do

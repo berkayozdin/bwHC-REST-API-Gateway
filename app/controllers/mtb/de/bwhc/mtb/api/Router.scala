@@ -99,6 +99,17 @@ extends SimpleRouter
 
 
     //-------------------------------------------------------------------------
+    // Prepared Queries                                                  
+    //-------------------------------------------------------------------------
+
+    case POST(p"/prepared-queries")                          => queryController.savePreparedQuery
+    case GET(p"/prepared-queries/${PreparedQueryId(id)}")    => queryController.getPreparedQuery(id)
+    case GET(p"/prepared-queries")                           => queryController.getPreparedQueries
+    case PUT(p"/prepared-queries/${PreparedQueryId(id)}")    => queryController.updatePreparedQuery(id)
+    case DELETE(p"/prepared-queries/${PreparedQueryId(id)}") => queryController.deletePreparedQuery(id)
+
+
+    //-------------------------------------------------------------------------
     // MTBFile Queries                                                  
     //-------------------------------------------------------------------------
 //    case OPTIONS(p"/query")                            => queryController.QueryApi
@@ -120,6 +131,7 @@ extends SimpleRouter
     case GET(p"/query/${QueryId(qid)}/therapy-recommendations")      => queryController.therapyRecommendationsFrom(qid)
     case GET(p"/query/${QueryId(qid)}/molecular-therapies")          => queryController.molecularTherapiesFrom(qid)
     case GET(p"/query/${QueryId(qid)}/ngs-summaries")                => queryController.ngsSummariesFrom(qid)
+    case GET(p"/query/${QueryId(qid)}/variants-of-interest")         => queryController.variantsOfInterestOf(qid)
     case GET(p"/query/${QueryId(qid)}/mtbfiles/${PatId(patId)}")     => queryController.mtbfileFrom(qid,patId)
     case GET(p"/query/${QueryId(qid)}/mtbfileViews/${PatId(patId)}") => queryController.mtbfileViewFrom(qid,patId)
     case GET(p"/query/${QueryId(qid)}")                              => queryController.query(qid)

@@ -5,7 +5,10 @@ import de.bwhc.mtb.data.entry.dtos.{
   Patient,
   Medication
 }
-import de.bwhc.mtb.query.api.Query
+import de.bwhc.mtb.query.api.{
+  PreparedQuery,
+  Query
+}
 
 
 abstract class Extractor[S,T](
@@ -26,6 +29,8 @@ abstract class OptExtractor[S,T](
 
 
 object QueryId extends Extractor(Query.Id(_))
+
+object PreparedQueryId extends Extractor(PreparedQuery.Id(_))
 
 object PatId extends Extractor(Patient.Id(_))
 
