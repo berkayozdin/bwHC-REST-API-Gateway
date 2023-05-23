@@ -1,11 +1,10 @@
 import sbt.Keys._
 
 
-
 name := "bwhc-rest-api-gateway"
-organization in ThisBuild := "de.bwhc"
-scalaVersion in ThisBuild := "2.13.8"
-version in ThisBuild := "1.1-SNAPSHOT"
+ThisBuild / organization := "de.bwhc"
+ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / version := "1.1-SNAPSHOT"
 
 
 scalacOptions ++= Seq(
