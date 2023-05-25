@@ -5,9 +5,7 @@ import scala.concurrent.{
   Future,
   ExecutionContext
 }
-
 import javax.inject.Inject
-
 import play.api.mvc.{
   Action,
   AnyContent,
@@ -17,13 +15,9 @@ import play.api.mvc.{
   Accepting
 }
 import play.api.libs.json.Json.toJson
-
 import de.ekut.tbi.generators.Gen
-
-import de.bwhc.mtb.data.entry.dtos.MTBFile
-import de.bwhc.mtb.data.gens._
-
-
+import de.bwhc.mtb.dtos.MTBFile
+import de.bwhc.mtb.dto.gens._
 import org.hl7.fhir.r4.FHIRJson._
 import de.bwhc.fhir.MTBFileBundle
 import de.bwhc.fhir.Mappings._

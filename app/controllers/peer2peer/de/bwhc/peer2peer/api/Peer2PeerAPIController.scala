@@ -18,7 +18,7 @@ import play.api.mvc.{
 import play.api.libs.json.{
   Json, Format
 }
-import de.bwhc.mtb.data.entry.dtos.{
+import de.bwhc.mtb.dtos.{
   MTBFile,
   Patient,
   ZPM
@@ -30,7 +30,11 @@ import cats.data.{
 }
 import cats.instances.future._
 import cats.syntax.either._
-import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
+import de.bwhc.rest.util.{
+  Outcome,
+  RequestOps,
+  SearchSet
+}
 import de.bwhc.services.WrappedQueryService
 
 
@@ -106,7 +110,6 @@ with RequestOps
 
 
   def processQuery =
-//    JsonAction[PeerToPeerQuery]{
     JsonAction[PeerToPeerRequest[Query.Parameters]]{
       query =>
         queryService.instance.resultsOf(query)
@@ -117,7 +120,6 @@ with RequestOps
 
 
   def processMTBFileRequest =
-//    JsonAction[PeerToPeerMTBFileRequest]{
     JsonAction[PeerToPeerRequest[MTBFileParameters]]{
       req =>
         queryService.instance.process(req)

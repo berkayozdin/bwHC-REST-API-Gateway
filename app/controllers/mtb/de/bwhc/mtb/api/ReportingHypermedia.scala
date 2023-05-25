@@ -5,7 +5,7 @@ import scala.concurrent.{ExecutionContext,Future}
 import de.bwhc.auth.api.UserWithRoles
 import de.bwhc.rest.util.sapphyre._
 import de.bwhc.util.syntax.piping._
-import de.bwhc.mtb.data.entry.dtos.{
+import de.bwhc.mtb.dtos.{
   Medication
 }
 import de.bwhc.mtb.query.api.{

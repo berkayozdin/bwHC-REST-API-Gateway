@@ -7,7 +7,7 @@ import de.bwhc.rest.util.cphl.syntax._
 
 import play.api.libs.json.{JsObject, JsValue}
 
-import de.bwhc.mtb.data.entry.dtos.{Patient,MTBFile}
+import de.bwhc.mtb.dtos.{Patient,MTBFile}
 import de.bwhc.mtb.data.entry.api.DataQualityReport
 
 import json._

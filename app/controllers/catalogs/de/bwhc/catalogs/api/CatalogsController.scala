@@ -17,19 +17,31 @@ import play.api.mvc.{
   Request,
 }
 import play.api.libs.json.{
-  Json, JsValue, JsObject, Format
+  Json,
+  JsValue,
+  JsObject,
+  Format
 }
 import cats.Functor
 import de.bwhc.catalogs.icd.{
-  ICD10GM, ICD10GMCatalogs, ICDO3Catalogs
+  ICD10GM,
+  ICD10GMCatalogs,
+  ICDO3Catalogs
 }
 import de.bwhc.catalogs.hgnc.HGNCCatalog
 import de.bwhc.catalogs.med.MedicationCatalog
 import de.bwhc.user.api.Role
-import de.bwhc.mtb.data.entry.dtos._
-import de.bwhc.mtb.query.api.{Query,VitalStatus}
+import de.bwhc.mtb.dtos._
+import de.bwhc.mtb.query.api.{
+  Query,
+  VitalStatus
+}
 import de.bwhc.rest.util.SearchSet
-import shapeless.{Poly1,Generic,::}
+import shapeless.{
+  Poly1,
+  Generic,
+  ::
+}
 import shapeless.syntax._
 
 

@@ -23,7 +23,7 @@ import play.api.libs.json.{
   Json, Format, Writes
 }
 import Json.toJson
-import de.bwhc.mtb.data.entry.dtos.{
+import de.bwhc.mtb.dtos.{
   Coding,
   Medication,
   MTBFile,

@@ -6,7 +6,7 @@ import scala.concurrent.{ExecutionContext,Future}
 import de.bwhc.rest.util.Table
 import de.bwhc.rest.util.sapphyre._
 
-import de.bwhc.mtb.data.entry.dtos.{Patient,MTBFile}
+import de.bwhc.mtb.dtos.{Patient,MTBFile}
 import de.bwhc.mtb.data.entry.api.{DataQualityReport,PatientDataInfo}
 
 import de.bwhc.auth.api.UserWithRoles

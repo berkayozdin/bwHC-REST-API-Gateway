@@ -30,7 +30,7 @@ import Json.toJson
 import cats.Id
 import cats.syntax.either._
 
-import de.bwhc.mtb.data.entry.dtos.{
+import de.bwhc.mtb.dtos.{
   Gender,
   HealthInsurance,
   MTBFile,

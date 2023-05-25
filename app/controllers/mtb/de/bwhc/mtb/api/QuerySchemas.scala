@@ -1,7 +1,7 @@
 package de.bwhc.mtb.api
 
 
-import de.bwhc.mtb.data.entry.dtos._
+import de.bwhc.mtb.dtos._
 import de.bwhc.mtb.data.entry.views.MolecularTherapyView
 import de.bwhc.mtb.query.api._
 

@@ -1,7 +1,7 @@
 package de.bwhc.mtb.api
 
 
-import de.bwhc.mtb.data.entry.dtos.{
+import de.bwhc.mtb.dtos.{
   Patient,
   Medication
 }

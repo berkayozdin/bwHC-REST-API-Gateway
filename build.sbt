@@ -25,8 +25,8 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "session-manager-impl"            % "1.0-SNAPSHOT",
 
    // Fake Data dependencies
-  "de.bwhc"                %% "mtb-dto-generators"              % "1.1-SNAPSHOT",
-  "de.bwhc"                %% "fhir-mappings"                   % "1.1-SNAPSHOT",
+  "de.bwhc"                %% "mtb-dto-generators"              % "1.0-SNAPSHOT",
+  "de.bwhc"                %% "fhir-mappings"                   % "1.0-SNAPSHOT",
 
   // User Service dependencies
   "de.bwhc"                %% "user-service-api"                % "1.1-SNAPSHOT",
@@ -46,12 +46,12 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "fs-mtbfile-db"                   % "1.1-SNAPSHOT",
 
   // Catalog dependencies
-  "de.bwhc"                %% "hgnc-api"                        % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "hgnc-impl"                       % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "icd-catalogs-api"                % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "icd-catalogs-impl"               % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "medication-catalog-api"          % "1.0-SNAPSHOT",
-  "de.bwhc"                %% "medication-catalog-impl"         % "1.0-SNAPSHOT",
+//  "de.bwhc"                %% "hgnc-api"                        % "1.0",
+//  "de.bwhc"                %% "icd-catalogs-api"                % "1.0",
+//  "de.bwhc"                %% "medication-catalog-api"          % "1.0",
+  "de.bwhc"                %% "hgnc-impl"                       % "1.0",
+  "de.bwhc"                %% "icd-catalogs-impl"               % "1.0",
+  "de.bwhc"                %% "medication-catalog-impl"         % "1.0",
 )
 
 dependencyOverrides ++= Seq(

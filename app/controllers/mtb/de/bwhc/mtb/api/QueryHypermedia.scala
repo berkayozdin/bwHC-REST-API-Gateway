@@ -1,17 +1,15 @@
 package de.bwhc.mtb.api
 
 
-import scala.concurrent.{ExecutionContext,Future}
-
+import scala.concurrent.{
+  ExecutionContext,
+  Future
+}
 import play.api.libs.json.JsValue
-
 import de.bwhc.util.json.schema._
 import de.bwhc.rest.util.sapphyre._
-
 import de.bwhc.auth.api.UserWithRoles
-
 import de.bwhc.util.syntax.piping._
-
 import de.bwhc.mtb.query.api.{
   PatientView,
   Query,
@@ -21,11 +19,11 @@ import de.bwhc.mtb.query.api.{
   ResultSummary,
   VariantsOfInterest
 }
-import de.bwhc.mtb.data.entry.dtos.{
+import de.bwhc.mtb.dtos.{
   MTBFile,
   Patient
 }
-import de.bwhc.mtb.data.entry.views.{
+import de.bwhc.mtb.views.{
   MTBFileView,
   TherapyRecommendationView,
   MolecularTherapyView
