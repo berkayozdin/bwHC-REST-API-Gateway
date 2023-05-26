@@ -2,7 +2,7 @@ package de.bwhc.mtb.api
 
 
 import de.bwhc.mtb.dtos._
-import de.bwhc.mtb.data.entry.views.MolecularTherapyView
+import de.bwhc.mtb.views.MolecularTherapyView
 import de.bwhc.mtb.query.api._
 
 import json.{Schema,Json}
@@ -41,9 +41,6 @@ object DTOSchemas
     sch(s"coding-${codeSch.refName.get}")
   }
 
-
-//  implicit def intervalSchema[T: Numeric: Schema]: Schema[Interval[T]] =
-//    Json.schema[ClosedInterval[T]].asInstanceOf[Schema[Interval[T]]]
 
   implicit val intIntervalSchema: Schema[Interval[Int]] =
     Json.schema[ClosedInterval[Int]].asInstanceOf[Schema[Interval[Int]]]

@@ -3,7 +3,6 @@ package de.bwhc.mtb.api
 
 
 import java.time.{LocalDate,YearMonth}
-
 import scala.util.{
   Left,
   Right
@@ -12,9 +11,7 @@ import scala.concurrent.{
   Future,
   ExecutionContext
 }
-
 import javax.inject.Inject
-
 import play.api.mvc.{
   Action,
   AnyContent,
@@ -26,31 +23,22 @@ import play.api.mvc.{
 }
 import play.api.libs.json.{Json,JsObject}
 import Json.toJson
-
 import cats.Id
 import cats.syntax.either._
-
 import de.bwhc.mtb.dtos.{
   Gender,
   HealthInsurance,
   MTBFile,
   Patient
 }
-import de.bwhc.mtb.data.entry.views.MTBFileView
-
+import de.bwhc.mtb.views.MTBFileView
 import de.bwhc.mtb.data.entry.api.MTBDataService
-
 import de.bwhc.rest.util.{Outcome,RequestOps,SearchSet}
-
 import de.bwhc.rest.util.cphl.syntax._
-
 import de.bwhc.rest.util.sapphyre.Hyper
 import de.bwhc.rest.util.sapphyre.playjson._
-
 import de.bwhc.auth.core._
 import de.bwhc.auth.api._
-
-
 import de.bwhc.services._
 
 

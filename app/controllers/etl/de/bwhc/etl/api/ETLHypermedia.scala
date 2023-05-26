@@ -2,14 +2,9 @@ package de.bwhc.etl.api
 
 
 import de.bwhc.rest.util.sapphyre._
-
-
-import de.bwhc.mtb.data.entry.dtos.{Patient,MTBFile}
-
-
+import de.bwhc.mtb.dtos.{Patient,MTBFile}
 import json._
 import com.github.andyglow.jsonschema.CatsSupport._
-
 import de.bwhc.util.json.schema._
 
 

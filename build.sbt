@@ -46,9 +46,6 @@ libraryDependencies ++= Seq(
   "de.bwhc"                %% "fs-mtbfile-db"                   % "1.1-SNAPSHOT",
 
   // Catalog dependencies
-//  "de.bwhc"                %% "hgnc-api"                        % "1.0",
-//  "de.bwhc"                %% "icd-catalogs-api"                % "1.0",
-//  "de.bwhc"                %% "medication-catalog-api"          % "1.0",
   "de.bwhc"                %% "hgnc-impl"                       % "1.0",
   "de.bwhc"                %% "icd-catalogs-impl"               % "1.0",
   "de.bwhc"                %% "medication-catalog-impl"         % "1.0",

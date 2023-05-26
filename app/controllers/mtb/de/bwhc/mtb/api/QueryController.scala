@@ -30,7 +30,7 @@ import de.bwhc.mtb.dtos.{
   Patient,
   ZPM
 }
-import de.bwhc.mtb.data.entry.views.MTBFileView
+import de.bwhc.mtb.views.MTBFileView
 import de.bwhc.mtb.query.api._
 import de.bwhc.user.api.User
 import cats.data.{
