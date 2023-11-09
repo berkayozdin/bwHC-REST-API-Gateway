@@ -13,6 +13,9 @@
 # TODO: APPLICATION_SECRET MUST be a random String of at least 32 characters
 export APPLICATION_SECRET=TODO
 
+#export X_CSRF_TOKEN="...."
+
+
 # Location of the PID-File
 export PID_FILE="/tmp/bwhc-backend.pid"
 
@@ -50,5 +53,6 @@ export BWHC_USER_DB_DIR="$BWHC_DATA_BASE_DIR/user_data"
 
 export BWHC_HGNC_DIR="$BWHC_BASE_DIR/hgnc_data/"
 
-export GENERATE_N_RANDOM_FILES=TODO
+# TODO: Set to positive Int to activate random data generation upon application start-up
+export GENERATE_N_RANDOM_FILES=-1
 #-----------------------------------------------------------------------------

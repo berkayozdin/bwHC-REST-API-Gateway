@@ -74,7 +74,7 @@ case "$1" in
         -Dconfig.file=$BWHC_BASE_DIR/production.conf \
         -Dlogger.file=$BWHC_BASE_DIR/logback.xml \
         -Dpidfile.path=$PID_FILE \
-        -Dbwhc.zpm.site=$ZPM_SITE \
+        -Dbwhc.zpm.site="$ZPM_SITE" \
         -Dbwhc.data.entry.dir=$BWHC_DATA_ENTRY_DIR \
         -Dbwhc.query.data.dir=$BWHC_QUERY_DATA_DIR \
         -Dbwhc.user.data.dir=$BWHC_USER_DB_DIR \

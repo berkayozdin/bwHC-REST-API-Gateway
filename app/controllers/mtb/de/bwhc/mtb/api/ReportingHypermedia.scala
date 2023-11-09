@@ -46,21 +46,7 @@ trait ReportingHypermedia
     Link(s"$BASE_URI/QCReport?scope=$scope")
 
   private val MedicationDistributionLink =
-    Link(s"$BASE_URI/$MEDICATION_DISTRIBUTION")
-/*
-  private def TumorEntityDistributionLinkFor(code: String, version: String) =
-    Link(s"$BASE_URI/$TUMOR_ENTITY_DISTRIBUTION?code=$code&version=$version")
-
-  private def TumorEntityDistributionLink =
-    TumorEntityDistributionLinkFor("{ATC-code}","{ATC-version}")
-
-
-  private def PatientTherapiesLinkFor(code: String, version: String) =
-    Link(s"$BASE_URI/$PATIENT_THERAPIES?code=$code&version=$version")
-
-  private def PatientTherapiesLink =
-    PatientTherapiesLinkFor("{ATC-code}","{ATC-version}")
-*/
+    Link(s"$BASE_URI/$MEDICATION_DISTRIBUTION[?usage={used|recommended}]")
 
   private def TumorEntityDistributionLink =
     Link(s"$BASE_URI/$TUMOR_ENTITY_DISTRIBUTION[?code={ATC-code}&version={ATC-version}]")

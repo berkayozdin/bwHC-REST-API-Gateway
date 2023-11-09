@@ -44,14 +44,6 @@ fi
 mkdir $PCKG_DIR
 
 
-#cp $TARGET $PCKG_DIR/
-#cp install.sh $PCKG_DIR/
-#cp config $PCKG_DIR/
-#cp bwhcConnectorConfig.xml $PCKG_DIR/
-#cp logback.xml  $PCKG_DIR/
-#cp production.conf $PCKG_DIR/
-#cp bwhc-backend-service $PCKG_DIR/
-
 FILES=(
   "$TARGET"
   "install.sh"
@@ -72,7 +64,6 @@ done
 REPLACE_APP_PLACEHOLDER_CMD="s/$BWHC_APP_PLACEHOLDER/$BWHC_APP_NAME/g"
 
 sed -i $REPLACE_APP_PLACEHOLDER_CMD $PCKG_DIR/bwhc-backend-service
-
 sed -i $REPLACE_APP_PLACEHOLDER_CMD $PCKG_DIR/install.sh
 sed -i "s/PREFIX_PLACEHOLDER/$BWHC_APP_PREFIX/g" $PCKG_DIR/install.sh
 

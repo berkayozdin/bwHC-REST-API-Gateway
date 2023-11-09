@@ -122,7 +122,9 @@ with AuthenticationOps[UserWithRoles]
     }
 
 
-  def getGlobalMedicationDistribution: Action[AnyContent] = 
+  def getGlobalMedicationDistribution(
+    medicationUsage: Option[Query.DrugUsage.Value]
+  ): Action[AnyContent] = 
     AuthenticatedAction( GlobalQCAccessRight ).async {
       request =>
 
@@ -130,7 +132,7 @@ with AuthenticationOps[UserWithRoles]
         Querier(request.user.userId.value)
 
       for {
-        qc     <- service.compileGlobalMedicationDistribution
+        qc     <- service.compileGlobalMedicationDistribution(medicationUsage)
         outcome = qc.leftMap(_.toList)
                     .leftMap(Outcome.fromErrors)
         result  = outcome.toJsonResult
@@ -193,7 +195,7 @@ with AuthenticationOps[UserWithRoles]
           ByteString.empty
         )(
           (acc,csv) =>
-            acc ++ ByteString(s"${csv.toCsvString}\n","UTF-8")
+            acc ++ ByteString(s"${csv.toCsvString}\n",ByteString.UTF_8)
         ),
       Some(TEXT_CSV)
     )
@@ -247,8 +249,6 @@ with AuthenticationOps[UserWithRoles]
             qc     <- service.compileGlobalPatientTherapies(coding)
             outcome = qc.leftMap(_.toList)
                         .leftMap(Outcome.fromErrors)
-            
-//            result  = outcome.toJsonResult
             
             result  = 
               if (request.acceptedTypes.find(_.mediaSubType.contains("csv")).isDefined){ 

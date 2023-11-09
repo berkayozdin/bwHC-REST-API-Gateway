@@ -152,7 +152,7 @@ trait QueryHypermedia
 
 
 
-  private val PREPARED_QUERIES = "/bwhc/mtb/api/prepared-queries"
+  val PREPARED_QUERIES = "/bwhc/mtb/api/prepared-queries"
 
 
   def HyperPreparedQuery(

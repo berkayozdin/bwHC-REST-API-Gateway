@@ -124,7 +124,8 @@ with AuthenticationOps[UserWithRoles]
                     (r => if (allUsersAccess)  r.withLinks(UserHypermedia.USERS -> UserHypermedia.UsersLink)          else r) |
                     (r => if (dataQCAccess)    r.withLinks(DATA_QC_API          -> DataQualityHypermedia.ApiBaseLink) else r) |
                     (r => if (reportingAccess) r.withLinks(REPORTING_API        -> ReportingHypermedia.ApiBaseLink)   else r) |  
-                    (r => if (queryAccess)     r.withLinks(QUERY_API            -> QueryHypermedia.ApiBaseLink)       else r)   
+                    (r => if (queryAccess)     r.withLinks(QUERY_API            -> QueryHypermedia.ApiBaseLink)       else r) |  
+                    (r => if (queryAccess)     r.withLinks("prepared-queries"   -> Link(QueryHypermedia.PREPARED_QUERIES)) else r)   
                    
                 } yield result
 

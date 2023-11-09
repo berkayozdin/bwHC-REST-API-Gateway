@@ -36,17 +36,5 @@ object PatId extends Extractor(Patient.Id(_))
 
 object MedicationCode extends OptExtractor(Medication.Code(_))
 
-/*
+object MedicationUsage extends OptExtractor(Query.DrugUsage.withName(_))
 
-object QueryId
-{
-  def unapply(s: String): Option[Query.Id] = 
-    Some(Query.Id(s))
-}
-
-object PatId
-{
-  def unapply(s: String): Option[Patient.Id] = 
-    Some(Patient.Id(s))
-}
-*/

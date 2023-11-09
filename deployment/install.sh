@@ -43,10 +43,13 @@ done
 cd "$TARGET_DIR"
 
 if [ -d "$BWHC_APP_DIR" ]; then
-  echo "Removing previous bwHC backend app"
+  echo "Replacing previous bwHC backend app installation"
   rm -r $BWHC_APP_DIR
 fi
 
 
 unzip -q $BWHC_ZIP
+
+
+echo "Done!"
 

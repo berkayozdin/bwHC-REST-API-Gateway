@@ -3,14 +3,11 @@ package de.bwhc.mtb.api
 
 
 import javax.inject.Inject
-
 import play.api.mvc.Results.{Ok,NotFound}
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
 import play.api.routing.sird._
-
 import de.bwhc.mtb.query.api.Query
-
 import play.api.libs.json.Json.toJson
 import de.bwhc.rest.util.sapphyre.playjson._
 
@@ -87,7 +84,9 @@ extends SimpleRouter
     //-------------------------------------------------------------------------
     // ZPM Therpay Reporting
     //-------------------------------------------------------------------------
-    case GET(p"/reporting/global-medication-distribution") => queryController.getGlobalMedicationDistribution
+//    case GET(p"/reporting/global-medication-distribution") => queryController.getGlobalMedicationDistribution
+    case GET(p"/reporting/global-medication-distribution" ?
+             q_o"usage=${MedicationUsage(usage)}") => queryController.getGlobalMedicationDistribution(usage)
 
     case GET(p"/reporting/global-tumor-entity-distribution" ?
              q_o"code=${MedicationCode(code)}" &

@@ -47,7 +47,7 @@ libraryDependencies ++= Seq(
 
   // Catalog dependencies
   "de.bwhc"                %% "hgnc-impl"                       % "1.0",
-  "de.bwhc"                %% "icd-catalogs-impl"               % "1.0",
+  "de.bwhc"                %% "icd-catalogs-impl"               % "1.1",
   "de.bwhc"                %% "medication-catalog-impl"         % "1.0",
 )
 
