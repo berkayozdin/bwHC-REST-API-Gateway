@@ -162,11 +162,23 @@ extends BaseController
                               .map(Json.toJson(_))
 
           case "atc"       => Try {
-                                val v = version.getOrElse(medications.latestVersion)
-                                pattern.map(medications.findMatching(_,v)).getOrElse(medications.entries(v))
+                                version match {
+                                  case Some(v) =>
+                                    pattern.map(medications.findMatching(_,v)).getOrElse(medications.entries(v))
+
+                                  // If no version is specified, concatenate all available ATC versions,
+                                  // so that users can selected medications or med. classes whose coding
+                                  // has changed accross ATC versions 
+                                  case None =>
+                                    medications.availableVersions
+                                      .flatMap(
+                                        v => pattern.map(medications.findMatching(_,v)).getOrElse(medications.entries(v))
+                                      )
+                                }
                               }
                               .map(SearchSet(_))
                               .map(Json.toJson(_))
+
 
           case _           => Try { throw new IllegalArgumentException(s"Unknown Coding $system") }
 
