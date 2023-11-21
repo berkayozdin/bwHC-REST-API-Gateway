@@ -158,13 +158,13 @@ __Response__: Created User (w/o password)
 
 | Role | Code |
 | ---- | ---- |
-| Administrator            | Admin |
-| Documentarist            | Documentarist |
-| ZPM-Coordinator (local)  | LocalZPMCoordinator |
-| ZPM-Coordinator (global) | GlobalZPMCoordinator |
-| MTB-Coordinator (local)  | MTBCoordinator |
-| Researcher               | Researcher |
-
+| Admin                       | Admin                |
+| Dokumentar:in               | Documentarist        |
+| ZPM-Koordinator:in (Lokal)  | LocalZPMCoordinator  |
+| ZPM-Koordinator:in (Global) | GlobalZPMCoordinator |
+| MTB-Koordinator:in          | MTBCoordinator       |
+| MTB-Mitarbeiter:in          | MTBMember            |
+| Forscher:in                 | Researcher           |
 
 -------
 #### Get List of all Users (Admin only)
@@ -190,6 +190,20 @@ __PUT__ http://HOST:PORT/bwhc/user/api/users/{UserID}
   "password" : "new-top-secret",       // Optional
   "givenName" : "Ute",                 // Optional
   "familyName" : "Musterfrau"          // Optional
+}
+```
+
+-------
+#### Change Password (User her-/himself and Admin)
+
+__PUT__ http://HOST:PORT/bwhc/user/api/users/{UserID}/change-password
+
+```javascript
+{
+  "id" : "fb53eb3b-27a5-4045-acdc-f31ff514bf9a",
+  "currentPassword" : "top-secret",   // Current password
+  "newPassword1" : "new-top-secret",  // New password 
+  "newPassword2" : "new-top-secret",  // New password repeated 
 }
 ```
 

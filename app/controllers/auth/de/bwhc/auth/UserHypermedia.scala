@@ -30,6 +30,7 @@ trait UserHypermedia
   val USER         = "user"
   val USERS        = "users"
   val UPDATE_ROLES = "update-roles"
+  val CHANGE_PASSWORD = "change-password"
 
 
   val ApiBaseLink =
@@ -61,6 +62,9 @@ trait UserHypermedia
         
   def UpdateRolesAction(id: User.Id) =
     UPDATE_ROLES -> Action(PUT -> s"${UserLink(id).href}/roles")
+        
+  def ChangePasswordAction(id: User.Id) =
+    CHANGE_PASSWORD -> Action(PUT -> s"${UserLink(id).href}/change-password")
         
   def DeleteUserAction(id: User.Id) =
     Relations.DELETE -> Action(Method.DELETE, UserLink(id))
@@ -121,7 +125,7 @@ trait UserHypermedia
 
       actions =
         Seq.empty[(String,Action)] |
-        (as => if (canUpdate)      as :+ UpdateUserAction(user.id) 
+        (as => if (canUpdate)      as :+ UpdateUserAction(user.id) :+ ChangePasswordAction(user.id)
                else as) |
         (as => if (canUpdateRoles) as :+ UpdateRolesAction(user.id) 
                else as) |

@@ -55,8 +55,12 @@ extends SimpleRouter
     case GET(p"/users/$id")         => userController.get(User.Id(id))
                                    
     case POST(p"/users")            => userController.create
-    case PUT(p"/users/$id")         => userController.update
     case PUT(p"/users/$id/roles")   => userController.updateRoles
+
+    case PUT(p"/users/$id/change-password")  => userController.changePassword
+
+    case PUT(p"/users/$id")         => userController.update
+
     case DELETE(p"/users/$id")      => userController.delete(User.Id(id))
 
   }

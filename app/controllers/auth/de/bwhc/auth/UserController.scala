@@ -225,7 +225,7 @@ with AuthenticationOps[UserWithRoles]
           Future.successful,
           update => 
             for {
-              allowed <- agent has UpdateUserRights(update.id)
+              allowed <- agent has UpdateUserRights(update)
               result <- if (allowed) process(update)(agent)
                         else Future.successful(Forbidden)
             } yield result
@@ -239,6 +239,27 @@ with AuthenticationOps[UserWithRoles]
         req =>
         (errorsOrJson[UserCommand.UpdateRoles] thenApply (process(_)(req.user))).apply(req)
       }
+
+
+  def changePassword: Action[AnyContent] =
+    AuthenticatedAction.async {
+
+      request => 
+
+      implicit val agent = request.user
+
+      errorsOrJson[UserCommand.ChangePassword].apply(request)
+        .fold(
+          Future.successful,
+          update => 
+            for {
+              allowed <- agent has UpdateUserRights(update.id)
+              result <- if (allowed) process(update)(agent)
+                        else Future.successful(Forbidden)
+            } yield result
+        )
+    }
+
 
 
   def delete(id: User.Id): Action[AnyContent] =

@@ -1,7 +1,7 @@
 package de.bwhc.rest.auth
 
 
-import de.bwhc.user.api.{User,Role}
+import de.bwhc.user.api.{User,UserCommand,Role}
 
 import de.bwhc.auth.core.Authorization
 import de.bwhc.auth.api.UserWithRoles
@@ -23,7 +23,21 @@ trait UserManagementPermissions
       (user.userId == id) || (user hasRole Admin) 
     )
 
+
   def UpdateUserRights(id: User.Id) = ReadUserRights(id)
+
+
+  // Ensure only admin user can "directly" change the password on user update
+  // Normal users should have access only to explicit "change password" function,
+  // which requires the current and repeated new password
+  def UpdateUserRights(up: UserCommand.Update) = 
+    ReadUserRights(up.id) AND (
+      if (up.password.isDefined)
+        CreateUserRights
+      else
+        Authorization[UserWithRoles](_ => false) 
+    )
+
 
   val UpdateUserRolesRights = AdminRights
 
