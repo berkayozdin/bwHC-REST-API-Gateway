@@ -61,8 +61,8 @@ case "$1" in
       echo "-------------------------------------------------------------------------"
 
 
-      #N_RANDOM_FILES=50    
-      #-Dbwhc.query.data.generate=$N_RANDOM_FILES \
+      N_RANDOM_FILES=50    
+      -Dbwhc.query.data.generate=$N_RANDOM_FILES \
  
  
       if [ -n "$N_RANDOM_FILES" ] && (( $N_RANDOM_FILES > 2000 )); then
